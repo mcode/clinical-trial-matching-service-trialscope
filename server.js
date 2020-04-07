@@ -2,6 +2,8 @@ try{
 	var express = require('express'),
 		app = express(),
 		bodyParser = require('body-parser'),
+		config = require('./env.js'),
+		enviroment = new config().defaultEnvObject(),
 		fetch = require('node-fetch');
 		app.use(bodyParser.json());
 		
@@ -23,14 +25,14 @@ try{
 	  
 	  /* Default call*/
       app.get('/', function(req, res) {
-               res.status(200).send('Hello from Clinical Trial');
+			   res.status(200).send("Hello from Clinical Trial");
        });
 	   
 	   /* get clinical trial results*/
       app.post('/getClinicalTrial', function(req, res) {
 				var myHeaders = new fetch.Headers;
 				myHeaders.append("Content-Type", "application/json");
-				myHeaders.append("Authorization", "Bearer ***REMOVED***");
+				myHeaders.append("Authorization", "Bearer "+enviroment.token);
 				
 				var raw = JSON.stringify({"query": req.body.inputParam});
 
@@ -41,7 +43,7 @@ try{
 				  redirect: 'follow'
 				};
 				
-				fetch("https://clinicaltrialconnect.dev/graphql", requestOptions)
+				fetch(enviroment.trialscope_endpoint, requestOptions)
 				  .then(response => response.text())
 				  .then(result => {
 					  res.status(200).send(result);
@@ -51,7 +53,7 @@ try{
 				  });
        });
 	  
-	  app.listen(3000)
+	  app.listen(enviroment.port)
 }
 catch(e){
 }
