@@ -2,7 +2,7 @@ class configuration {
 	 constructor(){
 		this.TRIALSCOPE_ENDPOINT = "https://clinicaltrialconnect.dev/graphql";
 		this.PORT = 3000;
-		this.TOKEN = "***REMOVED***";
+		this.TOKEN = process.env.TRIALSCOPE_TOKEN;
 	 }
    defaultEnvObject(){
 	   return {
