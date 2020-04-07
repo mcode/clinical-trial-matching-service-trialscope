@@ -32,7 +32,7 @@ try{
 				myHeaders.append("Content-Type", "application/json");
 				myHeaders.append("Authorization", "Bearer ***REMOVED***");
 				
-				var raw = JSON.stringify({"query":"{baseMatches(conditions:["+req.body.conditions+"],baseFilters: {coordinates:{latitude:40.713216,longitude:-75.7496572 },travelRadius:"+req.body.travelRadius+",gender:FEMALE,age:50,phase:"+req.body.phase+",studyType:"+req.body.studyType+"}){totalCount    edges{      node{        nctId        title        conditions        gender        phase        minimumAge        maximumAge        sites {          facility          contactName          contactEmail          contactPhone          latitude          longitude        }      }    }  }}"});
+				var raw = JSON.stringify({"query": req.body.inputParam});
 
 				var requestOptions = {
 				  method: 'POST',
