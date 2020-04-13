@@ -28,10 +28,6 @@ try{
 	  /* Default call*/
       app.get('/', function(req, res) {
 			   res.status(200).send("Hello from Clinical Trial");
-			   // testing code list to trialscope conditions
-			   //var test = mapping.mapConditions(["254837009", "363406005"]);
-			   //test = JSON.stringify(Array.from(test));
-			   //res.status(200).send(test);
        });
 
       /* get trialscope conditions (str) list from code (str) list */

@@ -7,19 +7,19 @@ exports.mapConditions = function (codeList) {
     for (index = 0; index < codeList.length; index++) {
         conditions = union(conditions, codeToConditions(codeList[index]));
     }
-  return conditions;
+    return conditions;
 };
 
 /* Takes snomed code (str) and returns (str) list
 of related trialscope conditions */
 function codeToConditions(code) {
     conditions = new Set();
-	for(var term in jsonMapping){
-	    if(jsonMapping[term].includes(code)){
-	        conditions.add(term);
-	    }
-	}
-	return conditions;
+    for(var term in jsonMapping){
+        if(jsonMapping[term].includes(code)){
+            conditions.add(term);
+        }
+    }
+    return conditions;
 }
 
 /* Set union function - returns new set */
