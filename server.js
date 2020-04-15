@@ -1,3 +1,5 @@
+var mapping = require('./mapping');
+
 try{
 	var express = require('express'),
 		app = express(),
@@ -27,6 +29,14 @@ try{
       app.get('/', function(req, res) {
 			   res.status(200).send("Hello from Clinical Trial");
        });
+
+      /* get trialscope conditions (str) list from code (str) list */
+      app.post('/getConditions', function(req, res) {
+                var codeList = req.body;
+                var conditions = mapping.mapConditions(codeList);
+                var result = JSON.stringify(Array.from(conditions));
+                res.status(200).send(result);
+      });
 	   
 	   /* get clinical trial results*/
       app.post('/getClinicalTrial', function(req, res) {
