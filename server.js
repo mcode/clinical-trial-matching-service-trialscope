@@ -63,6 +63,9 @@ try{
 				  });
        });
 	  
+    app.use(express.static('public'));
+
+
 	  app.listen(enviroment.port)
 }
 catch(e){
