@@ -43,7 +43,8 @@ function runConvert() {
     }
   };
   request.open('POST', '/getConditions');
-  request.send();
+  request.setRequestHeader('Content-Type', 'application/json');
+  request.send(form.codes.value);
 }
 </script>
   </head>
