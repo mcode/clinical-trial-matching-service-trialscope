@@ -5,7 +5,7 @@ const mapping = require('./mapping'),
   fetch = require('node-fetch');
 
 const app = express(),
-  enviroment = new config().defaultEnvObject();
+  environment = new config().defaultEnvObject();
 
 app.use(bodyParser.json());
 
@@ -39,7 +39,7 @@ app.post('/getConditions', function(req, res) {
 app.post('/getClinicalTrial', function(req, res) {
   const myHeaders = new fetch.Headers;
   myHeaders.append('Content-Type', 'application/json');
-  myHeaders.append('Authorization', 'Bearer ' + enviroment.token);
+  myHeaders.append('Authorization', 'Bearer ' + environment.token);
 
   const raw = JSON.stringify({query: req.body.inputParam});
 
@@ -50,7 +50,7 @@ app.post('/getClinicalTrial', function(req, res) {
     redirect: 'follow'
   };
 
-  fetch(enviroment.trialscope_endpoint, requestOptions)
+  fetch(environment.trialscope_endpoint, requestOptions)
     .then(response => response.text())
     .then(result => {
       res.status(200).send(result);
@@ -62,4 +62,4 @@ app.post('/getClinicalTrial', function(req, res) {
 
 app.use(express.static('public'));
 
-app.listen(enviroment.port);
+app.listen(environment.port);
