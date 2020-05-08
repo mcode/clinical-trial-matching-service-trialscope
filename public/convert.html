@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html>
+  <head><title>Code Convert Test</title>
+
+<script type="text/javascript">
+function runConvert() {
+  const form = document.getElementById('convertForm');
+  const request = new XMLHttpRequest();
+  request.responseType = 'json';
+  request.onreadystatechange = () => {
+    if (request.readyState === XMLHttpRequest.DONE) {
+      const div = document.getElementById('results');
+      if (request.status === 200) {
+        const response = request.response;
+        div.innerHTML = '';
+        if (Array.isArray(response)) {
+          if (response.length === 0) {
+            div.append('No results');
+          } else {
+            const ul = document.createElement('ul');
+            div.append(ul);
+            for (const code of response) {
+              const li = document.createElement('li');
+              li.append(code);
+              ul.append(li);
+            }
+          }
+        } else {
+          div.append('Bad response type from server:');
+          const pre = document.createElement('pre');
+          pre.append(JSON.stringify(document.response, null, 2));
+          div.append(pre);
+        }
+      } else {
+        console.log('error');
+        div.innerHTML = '';
+        div.append(`Error converting codes: ${request.status} ${request.statusText}`);
+        const pre = document.createElement('pre');
+        pre.append(typeof document.response === 'string' ? document.response : JSON.stringify(document.response, null, 2));
+        div.append(pre);
+      }
+    }
+  };
+  request.open('POST', '/getConditions');
+  request.setRequestHeader('Content-Type', 'application/json');
+  request.send(form.codes.value);
+}
+</script>
+  </head>
+  <body>
+    <h1>Convert Test</h1>
+    <form id="convertForm" method="GET" action="/getConditions" onsubmit="try { runConvert(); } catch (ex) { console.log(ex); alert('Error: ' + ex); }; return false">
+      <input type="text" name="codes">
+      <input type="submit" value="Convert">
+    </form>
+    <div id="results"></div>
+  </body>
+</html>
