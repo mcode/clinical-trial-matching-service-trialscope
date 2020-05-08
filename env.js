@@ -6,9 +6,9 @@ class configuration {
   }
   defaultEnvObject() {
     return {
-      port : this.PORT,
-      token : this.TOKEN,
-      trialscope_endpoint : this.TRIALSCOPE_ENDPOINT
+      port: this.PORT,
+      token: this.TOKEN,
+      trialscope_endpoint: this.TRIALSCOPE_ENDPOINT
     };
   }
 }

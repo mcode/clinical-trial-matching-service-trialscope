@@ -60,4 +60,5 @@ app.post('/getClinicalTrial', function(req, res) {
     });
 });
 
+console.log(`Starting server on port ${enviroment.port}...`);
 app.listen(enviroment.port);
