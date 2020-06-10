@@ -61,5 +61,5 @@ app.post('/getClinicalTrial', function(req, res) {
 });
 
 app.use(express.static('public'));
-console.log(`Starting server on port ${enviroment.port}...`);
+console.log(`Starting server on port ${environment.port}...`);
 app.listen(environment.port);
