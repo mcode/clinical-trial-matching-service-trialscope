@@ -9,7 +9,7 @@ const app = express(),
 
 app.use(bodyParser.json());
 
-app.use(function(_req, res, next) {
+app.use(function (_req, res, next) {
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -23,25 +23,60 @@ app.use(function(_req, res, next) {
 });
 
 /* Default call*/
-app.get('/', function(_req, res) {
+app.get('/', function (_req, res) {
   res.status(200).send('Hello from Clinical Trial');
 });
 
 /* get trialscope conditions (str) list from code (str) list */
-app.post('/getConditions', function(req, res) {
+app.post('/getConditions', function (req, res) {
   let codeList = req.body;
   let conditions = mapping.mapConditions(codeList);
   let result = JSON.stringify(Array.from(conditions));
   res.status(200).send(result);
 });
 
+/* The api request will be mainly created in this file
+
+@param bundled_query - the string json object of search parameters with the number of results/page and starting place
+  
+Call this function in the server
+
+*/
+function createRequest(bundled_query) {
+  let query = bundled_query.query;
+  let first = bundled_query.first;
+  let after = bundled_query.after;
+  var input =
+    `
+    {
+      baseMatches(first: ${first} after: ${JSON.stringify(after)} ${query})
+    {
+      totalCount
+      edges {
+        node {
+          nctId title conditions gender description detailedDescription
+          criteria sponsor overallContactPhone overallContactEmail
+          overallStatus armGroups phase minimumAge studyType
+          maximumAge sites {
+            facility contactName contactEmail contactPhone latitude longitude
+          }
+        }
+        cursor
+      }
+      pageInfo { endCursor hasNextPage }
+    } }`
+  return input;
+}
+
+
 /* get clinical trial results*/
-app.post('/getClinicalTrial', function(req, res) {
+app.post('/getClinicalTrial', function (req, res) {
   const myHeaders = new fetch.Headers;
   myHeaders.append('Content-Type', 'application/json');
   myHeaders.append('Authorization', 'Bearer ' + environment.token);
 
-  const raw = JSON.stringify({query: req.body.inputParam});
+  let input = createRequest(req.body)
+  const raw = JSON.stringify({ query: input });
 
   const requestOptions = {
     method: 'POST',
@@ -55,11 +90,11 @@ app.post('/getClinicalTrial', function(req, res) {
     .then(result => {
       res.status(200).send(result);
     })
-    .catch(error =>{
+    .catch(error => {
       res.status(400).send(error);
     });
 });
 
 app.use(express.static('public'));
-console.log(`Starting server on port ${enviroment.port}...`);
+console.log(`Starting server on port ${environment.port}...`);
 app.listen(environment.port);
