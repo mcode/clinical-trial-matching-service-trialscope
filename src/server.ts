@@ -1,9 +1,9 @@
+import express from 'express';
+import { runTrialScopeQuery, runRawTrialScopeQuery } from './trialscope';
+
 const mapping = require('./mapping'),
-  express = require('express'),
   bodyParser = require('body-parser'),
-  config = require('./env.js'),
-  { runTrialScopeQuery, runRawTrialScopeQuery } = require('./trialscope'),
-  fetch = require('node-fetch');
+  config = require('../env.js');
 
 const app = express(),
   environment = new config().defaultEnvObject();
@@ -38,19 +38,6 @@ app.post('/getConditions', function(req, res) {
   const result = JSON.stringify(Array.from(conditions));
   res.status(200).send(result);
 });
-
-/* The api request will be mainly created in this file
-
-@param bundled_query - the string json object of search parameters with the number of results/page and starting place
-
-Call this function in the server
-
-*/
-function createRequest(bundled_query) {
-  console.log(bundled_query);
-  return bundled_query.inputParam;
-}
-
 
 /**
  * Get clinical trial results (the "main" API).
