@@ -13,7 +13,7 @@ app.use(bodyParser.json({
   limit: "10MB"
 }));
 
-app.use(function(_req, res, next) {
+app.use(function (_req, res, next) {
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -27,12 +27,12 @@ app.use(function(_req, res, next) {
 });
 
 /* Default call*/
-app.get('/', function(_req, res) {
+app.get('/', function (_req, res) {
   res.status(200).send('Hello from Clinical Trial');
 });
 
 /* get trialscope conditions (str) list from code (str) list */
-app.post('/getConditions', function(req, res) {
+app.post('/getConditions', function (req, res) {
   const codeList = req.body;
   const conditions = mapping.mapConditions(codeList);
   const result = JSON.stringify(Array.from(conditions));
@@ -42,7 +42,7 @@ app.post('/getConditions', function(req, res) {
 /**
  * Get clinical trial results (the "main" API).
  */
-app.post('/getClinicalTrial', function(req, res) {
+app.post('/getClinicalTrial', function (req, res) {
   if ('patientData' in req.body) {
     const patientBundle = typeof req.body.patientData === 'string' ? JSON.parse(req.body.patientData) : req.body.patientData;
     runTrialScopeQuery(patientBundle).then(result => {
@@ -65,4 +65,5 @@ app.post('/getClinicalTrial', function(req, res) {
 
 app.use(express.static('public'));
 console.log(`Starting server on port ${environment.port}...`);
-app.listen(environment.port);
+var server = app.listen(environment.port);
+module.exports = server;
