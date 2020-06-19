@@ -1,8 +1,11 @@
 /**
- * Module for dealing with TrialScope
+ * Module for running queries via TrialScope
  */
-const https = require('https'),
-  mapConditions = require('./mapping').mapConditions;
+
+import https from 'https';
+import { mapConditions } from './mapping';
+import { Bundle, Condition } from './bundle';
+import { IncomingMessage } from 'http';
 
 const environment = new (require('../env'))().defaultEnvObject();
 
@@ -11,7 +14,7 @@ if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_T
 }
 
 class TrialScopeError extends Error {
-  constructor(message, public result, public body) {
+  constructor(message: string, public result: IncomingMessage, public body: string) {
     super(message);
   }
 }
@@ -41,7 +44,7 @@ export class TrialScopeQuery {
   recruitmentStatus = 'all';
   after?: string = null;
   first = 30;
-  constructor(patientBundle) {
+  constructor(patientBundle: Bundle) {
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
@@ -68,7 +71,7 @@ export class TrialScopeQuery {
       }
     }
   }
-  addCondition(condition) {
+  addCondition(condition: Condition) {
     // Should have a code
     // TODO: Limit to specific coding systems (maybe)
     for (const code of condition.code.coding) {
@@ -124,10 +127,12 @@ export class TrialScopeQuery {
   }
 }
 
-export default function runTrialScopeQuery(patientBundle) {
+export function runTrialScopeQuery(patientBundle: Bundle) {
   console.log('Creating TrialScope query...');
   return runRawTrialScopeQuery(new TrialScopeQuery(patientBundle));
 }
+
+export default runTrialScopeQuery;
 
 /**
  * Runs a TrialScope query.
@@ -140,7 +145,7 @@ export function runRawTrialScopeQuery(query: TrialScopeQuery|string): Promise<Tr
     return new Promise((resolve, reject) => {
       sendQuery(query.toQuery()).then(result => {
         // Result is a parsed JSON object. See if we need to load more pages.
-        const loadNextPage = (previousPage) => {
+        const loadNextPage = (previousPage: TrialScopeResponse) => {
           query.after = previousPage.data.baseMatches.pageInfo.endCursor;
           sendQuery(query.toQuery()).then(nextPage => {
             // Append results.
