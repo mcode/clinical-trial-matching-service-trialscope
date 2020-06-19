@@ -1,3 +1,4 @@
+"use strict";
 const fs = require('fs'),
   path = require('path');
 
@@ -47,7 +48,7 @@ class configuration {
   defaultEnvObject() {
     return {
       port: this.PORT,
-      token: this.TOKEN,
+      token: this.TRIALSCOPE_TOKEN,
       trialscope_endpoint: this.TRIALSCOPE_ENDPOINT
     };
   }

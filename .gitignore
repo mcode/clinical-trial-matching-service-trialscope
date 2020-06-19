@@ -1,5 +1,8 @@
 .env.local
 
+# Ignore built files
+/dist
+
 # Ignore installed modules
 /node_modules
 

@@ -1,9 +1,8 @@
 const mapping = require('./mapping'),
   express = require('express'),
   bodyParser = require('body-parser'),
-  config = require('./env.js'),
-  { runTrialScopeQuery, runRawTrialScopeQuery } = require('./trialscope'),
-  fetch = require('node-fetch');
+  config = require('../env.js'),
+  { runTrialScopeQuery, runRawTrialScopeQuery } = require('./trialscope');
 
 const app = express(),
   environment = new config().defaultEnvObject();

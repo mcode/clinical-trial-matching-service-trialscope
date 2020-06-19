@@ -1,4 +1,4 @@
-const jsonMapping = require('./condition_snomed.json');
+const jsonMapping = require('../data/condition_snomed.json');
 
 /**
  * Takes (str) list of snomed codes and returns (str)
@@ -6,8 +6,8 @@ const jsonMapping = require('./condition_snomed.json');
  * @param {string[]} codeList the list of codes
  * @return {Set<string>} a set of codes
  */
-exports.mapConditions = function(codeList) {
-  let conditions = new Set();
+export function mapConditions(codeList: string[]): Set<string> {
+  let conditions = new Set<string>();
   for (let index = 0; index < codeList.length; index++) {
     conditions = union(conditions, codeToConditions(codeList[index]));
   }
@@ -20,8 +20,8 @@ exports.mapConditions = function(codeList) {
  * @param {string} code the code to look up
  * @return {Set<string>} a set of codes
  */
-function codeToConditions(code) {
-  let conditions = new Set();
+function codeToConditions(code: string): Set<string> {
+  let conditions = new Set<string>();
   for (let term in jsonMapping) {
     if (jsonMapping[term].includes(code)) {
       conditions.add(term);
@@ -31,8 +31,8 @@ function codeToConditions(code) {
 }
 
 /* Set union function - returns new set */
-function union(setA, setB) {
-  let _union = new Set(setA);
+function union<T>(setA: Set<T>, setB: Set<T>) {
+  let _union = new Set<T>(setA);
   for (let elem of setB) {
     _union.add(elem);
   }
