@@ -6,7 +6,7 @@ const https = require('https'),
 
 const environment = new (require('../env'))().defaultEnvObject();
 
-if (typeof environment.token !== 'string' || environment.token === '') {
+if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
   throw new Error('TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.');
 }
 
@@ -179,7 +179,7 @@ function sendQuery(query: string): Promise<TrialScopeResponse> {
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Content-Length': body.byteLength.toString(),
-        'Authorization': 'Bearer ' + environment.token
+        'Authorization': 'Bearer ' + environment.TRIALSCOPE_TOKEN
       }
     }, result => {
       let responseBody = '';
