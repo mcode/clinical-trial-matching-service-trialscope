@@ -1,4 +1,11 @@
 /**
+ * This module contains type definitions for various FHIR types. At some point
+ * these types should likely be replaced with an open source library, but as
+ * we're currently only using a very small subset of FHIR, this covers only that
+ * small subset.
+ */
+
+/**
  * Mark URLs
  */
 type URLString = string;
