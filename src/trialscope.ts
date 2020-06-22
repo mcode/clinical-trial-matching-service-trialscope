@@ -7,6 +7,7 @@ import { mapConditions } from './mapping';
 import { Bundle, Condition } from './bundle';
 import { IncomingMessage } from 'http';
 
+
 const environment = new (require('../env'))().defaultEnvObject();
 
 if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
@@ -23,7 +24,7 @@ export interface TrialScopeResponse {
   data: {
     baseMatches: {
       totalCount: number;
-      edges: { node: { }, cursor: string }[];
+      edges: { node: {}, cursor: string }[];
       pageInfo: {
         endCursor: string;
         hasNextPage: boolean;
@@ -106,18 +107,18 @@ export class TrialScopeQuery {
     }
     let query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
-        'node {' +
-          'nctId title conditions gender description detailedDescription ' +
-          'criteria sponsor overallContactPhone overallContactEmail ' +
-          'overallStatus armGroups phase minimumAge studyType ' +
-          'maximumAge sites { ' +
-            'facility contactName contactEmail contactPhone latitude longitude ' +
-          '} ' +
-        '} ' +
-        'cursor ' +
+      'node {' +
+      'nctId title conditions gender description detailedDescription ' +
+      'criteria sponsor overallContactPhone overallContactEmail ' +
+      'overallStatus armGroups phase minimumAge studyType ' +
+      'maximumAge sites { ' +
+      'facility contactName contactEmail contactPhone latitude longitude ' +
+      '} ' +
+      '} ' +
+      'cursor ' +
       '} ' +
       'pageInfo { endCursor hasNextPage }' +
-    '} }';
+      '} }';
     console.log('Generated query:');
     console.log(query);
     return query;
@@ -139,7 +140,7 @@ export default runTrialScopeQuery;
  *
  * @param {TrialScopeQuery|string} query the query to run
  */
-export function runRawTrialScopeQuery(query: TrialScopeQuery|string): Promise<TrialScopeResponse> {
+export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<TrialScopeResponse> {
   if (typeof query === 'object' && typeof query.toQuery === 'function') {
     // If given an object, assume we're going to need to paginate and load everything
     return new Promise((resolve, reject) => {

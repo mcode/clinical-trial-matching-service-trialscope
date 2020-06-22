@@ -39,27 +39,50 @@ app.post('/getConditions', function (req, res) {
   res.status(200).send(result);
 });
 
+
+function validateRequest(req) {
+  if ('patientData' in req.body || 'inputParam' in req.body) {
+    return true;
+  }
+  else {
+
+    throw "Malformed request";
+
+  }
+
+}
+
+
 /**
  * Get clinical trial results (the "main" API).
  */
 app.post('/getClinicalTrial', function (req, res) {
-  if ('patientData' in req.body) {
-    const patientBundle = typeof req.body.patientData === 'string' ? JSON.parse(req.body.patientData) : req.body.patientData;
-    runTrialScopeQuery(patientBundle).then(result => {
-      res.status(200).send(JSON.stringify(result));
-    }).catch(error => {
-      console.error(error);
-      res.status(500).send(`"Error from server"`);
-    });
-  } else {
-    // Backwards-compat: if there is no patient body, just run the query directly
-    runRawTrialScopeQuery(req.body.inputParam).then(result => {
-      res.status(200).send(result);
-    }).catch(error => {
-      console.error(error);
-      res.status(400).send({ error: error.toString() });
-    });
-    return;
+  try {
+    validateRequest(req);
+    if ('patientData' in req.body) {
+
+      console.log(req.body);
+      const patientBundle = typeof req.body.patientData === 'string' ? JSON.parse(req.body.patientData) : req.body.patientData;
+      runTrialScopeQuery(patientBundle).then(result => {
+        res.status(200).send(JSON.stringify(result));
+      }).catch(error => {
+        console.error(error);
+        res.status(500).send(`"Error from server"`);
+      });
+    } else {
+      // Backwards-compat: if there is no patient body, just run the query directly
+
+      runRawTrialScopeQuery(req.body.inputParam).then(result => {
+        res.status(200).send(result);
+      }).catch(error => {
+        console.error(error);
+        res.status(400).send({ error: error.toString() });
+      });
+      return;
+    }
+  }
+  catch (err) {
+    res.status(400).send({ error: err.toString() });
   }
 });
 
