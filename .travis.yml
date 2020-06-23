@@ -7,5 +7,5 @@ node_js:
 cache: npm
 
 script:
-  - npx eslint *.js
+  - npm run lint
   - npm test
