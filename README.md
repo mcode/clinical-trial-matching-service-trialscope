@@ -4,7 +4,7 @@ Backend service that calls APIs for the front-end clinical-trial-matching-engine
 
 # Setup
 
-1. Create a file named `.env.local` and add `TRIALSCOPE_TOKEN=<api_token>` to the top of the file and save
+1. Create a file named `.env.local` in the root of the project and add `TRIALSCOPE_TOKEN=<api_token>` to the top of the file and save (where `<api-token>` is the TrialScope-provided API token)
 2. Run `npm install`
 3. Run `npm run-script build`
 3. Run `npm start`
