@@ -10,7 +10,7 @@ const defaults: {[key: string]: string | null} = {
 try {
   // Sadly there is no good way to *synchronously* read lines from a file and
   // Node provides no way to make a module load wait on a Promise.
-  const envLocal = fs.readFileSync(path.join(__dirname, '.env.local'), { encoding: 'utf8' });
+  const envLocal = fs.readFileSync(path.join(__dirname, '../.env.local'), { encoding: 'utf8' });
   // Note that the following will collapse \r\r into a single line, but it
   // doesn't matter, empty lines are ignored anyway.
   for (const line of envLocal.split(/\r?[\r\n]/)) {
@@ -46,12 +46,12 @@ export default class configuration {
     // Default to defaults
     this.TRIALSCOPE_ENDPOINT = defaults.TRIALSCOPE_ENDPOINT;
     this.TRIALSCOPE_TOKEN = defaults.TRIALSCOPE_TOKEN;
-    this.PORT = parseInt(defaults.port);
+    this.PORT = parseInt(defaults.PORT);
   }
   /**
    * @return Configuration information
    */
-  defaultEnvObject(): {port: number,TRIALSCOPE_TOKEN: string,trialscope_endpoint: string} {
+  defaultEnvObject(): {port: number, TRIALSCOPE_TOKEN: string, trialscope_endpoint: string} {
     return {
       port: this.PORT,
       TRIALSCOPE_TOKEN: this.TRIALSCOPE_TOKEN,
