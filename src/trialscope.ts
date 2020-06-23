@@ -6,9 +6,9 @@ import https from 'https';
 import { mapConditions } from './mapping';
 import { Bundle, Condition } from './bundle';
 import { IncomingMessage } from 'http';
+import Configuration from './env';
 
-
-const environment = new (require('../env'))().defaultEnvObject();
+const environment = new Configuration().defaultEnvObject();
 
 if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
   throw new Error('TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.');
@@ -24,7 +24,7 @@ export interface TrialScopeResponse {
   data: {
     baseMatches: {
       totalCount: number;
-      edges: { node: {}, cursor: string }[];
+      edges: { node: Record<string, unknown>, cursor: string }[];
       pageInfo: {
         endCursor: string;
         hasNextPage: boolean;
@@ -72,25 +72,25 @@ export class TrialScopeQuery {
       }
     }
   }
-  addCondition(condition: Condition) {
+  addCondition(condition: Condition): void {
     // Should have a code
     // TODO: Limit to specific coding systems (maybe)
     for (const code of condition.code.coding) {
       this.conditions.add(code.code);
     }
   }
-  getTrialScopeConditions() {
+  getTrialScopeConditions(): Set<string> {
     return mapConditions(Array.from(this.conditions));
   }
   /**
    * Create a TrialScope query.
    * @return {string} the TrialScope GraphQL query
    */
-  toQuery() {
+  toQuery(): string {
     let baseMatches = `conditions:[${Array.from(this.getTrialScopeConditions()).join(', ')}], baseFilters: { zipCode: "${this.zipCode}"`;
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
-      baseMatches += ',travelRadius: ' + this.travelRadius;
+      baseMatches += ',travelRadius: ' + this.travelRadius.toString();
     }
     if (this.phase !== 'any') {
       baseMatches += ',phase:' + this.phase;
@@ -100,12 +100,12 @@ export class TrialScopeQuery {
     }
     baseMatches += ' }';
     if (this.first !== null) {
-      baseMatches += ', first: ' + this.first;
+      baseMatches += ', first: ' + this.first.toString();
     }
     if (this.after !== null) {
       baseMatches += ', after: ' + JSON.stringify(this.after);
     }
-    let query = `{ baseMatches(${baseMatches}) {` +
+    const query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
       'node {' +
       'nctId title conditions gender description detailedDescription ' +
@@ -123,12 +123,12 @@ export class TrialScopeQuery {
     console.log(query);
     return query;
   }
-  toString() {
+  toString(): string {
     return this.toQuery();
   }
 }
 
-export function runTrialScopeQuery(patientBundle: Bundle) {
+export function runTrialScopeQuery(patientBundle: Bundle): Promise<TrialScopeResponse> {
   console.log('Creating TrialScope query...');
   return runRawTrialScopeQuery(new TrialScopeQuery(patientBundle));
 }
