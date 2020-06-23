@@ -38,7 +38,7 @@ describe("server tests", () => {
     it("responds to /getClinicalTrial with improper patient bundle ", () => {
         return request(server)
             .post('/getClinicalTrial')
-            .send({ patientData: { name: "bet" } })
+            .send({ patientData: {} })
             .set('Accept', 'application/json')
             .expect(500);
 
