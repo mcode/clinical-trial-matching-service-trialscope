@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 const fs = require('fs'),
   path = require('path');
 
@@ -29,7 +29,7 @@ try {
     console.error('Unexpected error loading .env.local:');
     console.error(ex);
   }
-};
+}
 
 // Override defaults with environment variables if they exist
 for (const k in defaults) {
