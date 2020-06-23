@@ -39,7 +39,7 @@ app.post('/getConditions', function (req, res) {
   res.status(200).send(result);
 });
 
-
+//rudimentary check to see if the json fields exists/non-empty
 function validateRequest(req) {
   if ('patientData' in req.body || 'inputParam' in req.body) {
     return true;
@@ -52,17 +52,12 @@ function validateRequest(req) {
 
 }
 
-
 /**
  * Get clinical trial results (the "main" API).
  */
 app.post('/getClinicalTrial', function (req, res) {
-  try {
-    validateRequest(req);
-  }
-  catch (err) {
-    res.status(400).send({ error: err.toString() });
-  }
+  //rudimentary checks to see if the json fields exists/non-empty
+
   if ('patientData' in req.body) {
 
     console.log(req.body);
@@ -73,9 +68,8 @@ app.post('/getClinicalTrial', function (req, res) {
       console.error(error);
       res.status(500).send(`"Error from server"`);
     });
-  } else {
+  } else if ('inputParam' in req.body) {
     // Backwards-compat: if there is no patient body, just run the query directly
-
     runRawTrialScopeQuery(req.body.inputParam).then(result => {
       res.status(200).send(result);
     }).catch(error => {
@@ -83,6 +77,10 @@ app.post('/getClinicalTrial', function (req, res) {
       res.status(400).send({ error: error.toString() });
     });
     return;
+  }
+  else {// request missing json fields
+    res.status(400).send("Request missing required fields");
+
   }
 
 
