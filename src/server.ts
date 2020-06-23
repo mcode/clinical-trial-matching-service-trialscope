@@ -39,19 +39,6 @@ app.post('/getConditions', function (req, res) {
   res.status(200).send(result);
 });
 
-//rudimentary check to see if the json fields exists/non-empty
-function validateRequest(req) {
-  if ('patientData' in req.body || 'inputParam' in req.body) {
-    return true;
-  }
-  else {
-
-    throw "Malformed request";
-
-  }
-
-}
-
 /**
  * Get clinical trial results (the "main" API).
  */
@@ -60,7 +47,6 @@ app.post('/getClinicalTrial', function (req, res) {
 
   if ('patientData' in req.body) {
 
-    console.log(req.body);
     const patientBundle = typeof req.body.patientData === 'string' ? JSON.parse(req.body.patientData) : req.body.patientData;
     runTrialScopeQuery(patientBundle).then(result => {
       res.status(200).send(JSON.stringify(result));
