@@ -1,10 +1,9 @@
-'use strict';
-const fs = require('fs'),
-  path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const defaults = {
+const defaults: {[key: string]: string | null} = {
   TRIALSCOPE_ENDPOINT: 'https://clinicaltrialconnect.dev/graphql',
-  PORT: 3000,
+  PORT: '3000',
   TRIALSCOPE_TOKEN: null
 };
 
@@ -24,8 +23,9 @@ try {
     }
   }
 } catch(ex) {
+  const e: NodeJS.ErrnoException = ex as NodeJS.ErrnoException;
   // Ignore ENOENT, it means the file doesn't exist, which is fine
-  if (ex.code !== 'ENOENT') {
+  if (e.code !== 'ENOENT') {
     console.error('Unexpected error loading .env.local:');
     console.error(ex);
   }
@@ -38,14 +38,20 @@ for (const k in defaults) {
   }
 }
 
-class configuration {
+export default class configuration {
+  TRIALSCOPE_ENDPOINT: string;
+  PORT: number;
+  TRIALSCOPE_TOKEN: string | null;
   constructor() {
     // Default to defaults
-    for (const k in defaults) {
-      this[k] = defaults[k];
-    }
+    this.TRIALSCOPE_ENDPOINT = defaults.TRIALSCOPE_ENDPOINT;
+    this.TRIALSCOPE_TOKEN = defaults.TRIALSCOPE_TOKEN;
+    this.PORT = parseInt(defaults.port);
   }
-  defaultEnvObject() {
+  /**
+   * @return Configuration information
+   */
+  defaultEnvObject(): {port: number,TRIALSCOPE_TOKEN: string,trialscope_endpoint: string} {
     return {
       port: this.PORT,
       TRIALSCOPE_TOKEN: this.TRIALSCOPE_TOKEN,
@@ -53,11 +59,10 @@ class configuration {
     };
   }
 }
-module.exports = configuration;
 
 if (module.parent === null) {
   console.log('Environment as loaded:');
-  for (const k in defaults) {
-    console.log(`  ${k} = ${defaults[k]}`);
+  for (const k of Object.entries(defaults)) {
+    console.log(`  ${k[0]} = ${k[1]}`);
   }
 }
