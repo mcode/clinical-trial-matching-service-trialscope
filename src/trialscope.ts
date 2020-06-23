@@ -33,6 +33,21 @@ export interface TrialScopeResponse {
   }
 }
 
+export interface TrialScopeTrial {
+  nctId?: string;
+  title?: string;
+  overallStatus?: string;
+  phase?: string;
+  studyType?: string;
+  conditions?: string;
+  keywords?: string;
+  overallContactName?: string;
+  overallContactPhone?: string;
+  overallContactEmail?: string;
+  countries?: string;
+  detailedDescription?: string;
+}
+
 /**
  * Object for storing the various parameters necessary for the TrialScope query
  * based on a patient bundle.
@@ -108,9 +123,9 @@ export class TrialScopeQuery {
     const query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
         'node {' +
-          'nctId title conditions gender description detailedDescription ' +
-          'criteria sponsor overallContactPhone overallContactEmail ' +
-          'overallStatus armGroups phase minimumAge studyType ' +
+          'nctId title conditions keywords gender description detailedDescription ' +
+          'criteria sponsor overallContactName overallContactPhone overallContactEmail ' +
+          'overallStatus armGroups phase minimumAge studyType countries ' +
           'maximumAge sites { ' +
             'facility contactName contactEmail contactPhone latitude longitude ' +
           '} ' +

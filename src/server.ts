@@ -4,6 +4,7 @@ import * as mapping from './mapping';
 import bodyParser from 'body-parser';
 import Configuration from './env';
 import { isBundle } from './bundle';
+import { SearchSet } from './searchset';
 
 const app = express();
 
@@ -49,6 +50,8 @@ app.post('/getClinicalTrial', function(req, res) {
     const patientBundle = (typeof postBody.patientData === 'string' ? JSON.parse(postBody.patientData) : postBody.patientData) as Record<string, unknown>;
     if (isBundle(patientBundle)) {
       runTrialScopeQuery(patientBundle).then(result => {
+        const test = new SearchSet(result);
+        console.log(JSON.stringify(test, null, 2));
         res.status(200).send(JSON.stringify(result));
       }).catch(error => {
         console.error(error);
