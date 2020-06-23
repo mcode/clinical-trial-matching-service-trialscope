@@ -1,4 +1,5 @@
-const jsonMapping = require('./condition_snomed.json');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const jsonMapping = require('../data/condition_snomed.json') as {[key: string]: string[]};
 
 /**
  * Takes (str) list of snomed codes and returns (str)
@@ -6,13 +7,13 @@ const jsonMapping = require('./condition_snomed.json');
  * @param {string[]} codeList the list of codes
  * @return {Set<string>} a set of codes
  */
-exports.mapConditions = function(codeList) {
-  let conditions = new Set();
+export function mapConditions(codeList: string[]): Set<string> {
+  let conditions = new Set<string>();
   for (let index = 0; index < codeList.length; index++) {
     conditions = union(conditions, codeToConditions(codeList[index]));
   }
   return conditions;
-};
+}
 
 /**
  * Takes snomed code (str) and returns (str) list
@@ -20,9 +21,9 @@ exports.mapConditions = function(codeList) {
  * @param {string} code the code to look up
  * @return {Set<string>} a set of codes
  */
-function codeToConditions(code) {
-  let conditions = new Set();
-  for (let term in jsonMapping) {
+function codeToConditions(code: string): Set<string> {
+  const conditions = new Set<string>();
+  for (const term in jsonMapping) {
     if (jsonMapping[term].includes(code)) {
       conditions.add(term);
     }
@@ -31,9 +32,9 @@ function codeToConditions(code) {
 }
 
 /* Set union function - returns new set */
-function union(setA, setB) {
-  let _union = new Set(setA);
-  for (let elem of setB) {
+function union<T>(setA: Set<T>, setB: Set<T>) {
+  const _union = new Set<T>(setA);
+  for (const elem of setB) {
     _union.add(elem);
   }
   return _union;

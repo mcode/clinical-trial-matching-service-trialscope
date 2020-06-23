@@ -1,12 +1,13 @@
-const mapping = require('./mapping'),
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  config = require('./env.js'),
-  { runTrialScopeQuery, runRawTrialScopeQuery } = require('./trialscope'),
-  fetch = require('node-fetch');
+import express from 'express';
+import { runTrialScopeQuery, runRawTrialScopeQuery } from './trialscope';
+import * as mapping from './mapping';
+import bodyParser from 'body-parser';
+import Configuration from './env';
+import { isBundle } from './bundle';
 
-const app = express(),
-  environment = new config().defaultEnvObject();
+const app = express();
+
+const environment = new Configuration().defaultEnvObject();
 
 app.use(bodyParser.json({
   // Need to increase the payload limit to receive patient bundles
@@ -33,44 +34,34 @@ app.get('/', function(_req, res) {
 
 /* get trialscope conditions (str) list from code (str) list */
 app.post('/getConditions', function(req, res) {
-  const codeList = req.body;
+  const codeList = req.body as string[];
   const conditions = mapping.mapConditions(codeList);
   const result = JSON.stringify(Array.from(conditions));
   res.status(200).send(result);
 });
 
-/* The api request will be mainly created in this file
-
-@param bundled_query - the string json object of search parameters with the number of results/page and starting place
-
-Call this function in the server
-
-*/
-function createRequest(bundled_query) {
-  console.log(bundled_query);
-  return bundled_query.inputParam;
-}
-
-
 /**
  * Get clinical trial results (the "main" API).
  */
 app.post('/getClinicalTrial', function(req, res) {
-  if ('patientData' in req.body) {
-    const patientBundle = typeof req.body.patientData === 'string' ? JSON.parse(req.body.patientData) : req.body.patientData;
-    runTrialScopeQuery(patientBundle).then(result => {
-      res.status(200).send(JSON.stringify(result));
-    }).catch(error => {
-      console.error(error);
-      res.status(500).send(`"Error from server"`);
-    });
+  const postBody = req.body as Record<string, unknown>;
+  if ('patientData' in postBody) {
+    const patientBundle = (typeof postBody.patientData === 'string' ? JSON.parse(postBody.patientData) : postBody.patientData) as Record<string, unknown>;
+    if (isBundle(patientBundle)) {
+      runTrialScopeQuery(patientBundle).then(result => {
+        res.status(200).send(JSON.stringify(result));
+      }).catch(error => {
+        console.error(error);
+        res.status(500).send(`"Error from server"`);
+      });
+    }
   } else {
     // Backwards-compat: if there is no patient body, just run the query directly
-    runRawTrialScopeQuery(req.body.inputParam).then(result => {
+    runRawTrialScopeQuery(postBody.inputParam as string).then(result => {
       res.status(200).send(result);
     }).catch(error => {
       console.error(error);
-      res.status(400).send({ error: error.toString() });
+      res.status(400).send({ error: (error as Error).toString() });
     });
     return;
   }

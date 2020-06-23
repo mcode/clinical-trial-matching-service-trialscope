@@ -1,20 +1,35 @@
 /**
- * Module for dealing with TrialScope
+ * Module for running queries via TrialScope
  */
-const https = require('https'),
-  mapConditions = require('./mapping').mapConditions;
 
-const environment = new (require('./env'))().defaultEnvObject();
+import https from 'https';
+import { mapConditions } from './mapping';
+import { Bundle, Condition } from './bundle';
+import { IncomingMessage } from 'http';
+import Configuration from './env';
+
+const environment = new Configuration().defaultEnvObject();
 
 if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
-  throw new Error('TrialScope token is not set in environment.');
+  throw new Error('TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.');
 }
 
 class TrialScopeError extends Error {
-  constructor(message, result, body) {
+  constructor(message: string, public result: IncomingMessage, public body: string) {
     super(message);
-    this.result = result;
-    this.body = body;
+  }
+}
+
+export interface TrialScopeResponse {
+  data: {
+    baseMatches: {
+      totalCount: number;
+      edges: { node: Record<string, unknown>, cursor: string }[];
+      pageInfo: {
+        endCursor: string;
+        hasNextPage: boolean;
+      }
+    }
   }
 }
 
@@ -22,15 +37,15 @@ class TrialScopeError extends Error {
  * Object for storing the various parameters necessary for the TrialScope query
  * based on a patient bundle.
  */
-class TrialScopeQuery {
-  constructor(patientBundle) {
-    this.conditions = new Set();
-    this.zipCode = null;
-    this.travelRadius = null;
-    this.phase = 'any';
-    this.recruitmentStatus = 'all';
-    this.after = null;
-    this.first = 30;
+export class TrialScopeQuery {
+  conditions = new Set<string>();
+  zipCode?: string = null;
+  travelRadius?: number = null;
+  phase = 'any';
+  recruitmentStatus = 'all';
+  after?: string = null;
+  first = 30;
+  constructor(patientBundle: Bundle) {
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
@@ -57,25 +72,25 @@ class TrialScopeQuery {
       }
     }
   }
-  addCondition(condition) {
+  addCondition(condition: Condition): void {
     // Should have a code
     // TODO: Limit to specific coding systems (maybe)
     for (const code of condition.code.coding) {
       this.conditions.add(code.code);
     }
   }
-  getTrialScopeConditions() {
+  getTrialScopeConditions(): Set<string> {
     return mapConditions(Array.from(this.conditions));
   }
   /**
    * Create a TrialScope query.
    * @return {string} the TrialScope GraphQL query
    */
-  toQuery() {
+  toQuery(): string {
     let baseMatches = `conditions:[${Array.from(this.getTrialScopeConditions()).join(', ')}], baseFilters: { zipCode: "${this.zipCode}"`;
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
-      baseMatches += ',travelRadius: ' + this.travelRadius;
+      baseMatches += ',travelRadius: ' + this.travelRadius.toString();
     }
     if (this.phase !== 'any') {
       baseMatches += ',phase:' + this.phase;
@@ -85,12 +100,12 @@ class TrialScopeQuery {
     }
     baseMatches += ' }';
     if (this.first !== null) {
-      baseMatches += ', first: ' + this.first;
+      baseMatches += ', first: ' + this.first.toString();
     }
     if (this.after !== null) {
       baseMatches += ', after: ' + JSON.stringify(this.after);
     }
-    let query = `{ baseMatches(${baseMatches}) {` +
+    const query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
         'node {' +
           'nctId title conditions gender description detailedDescription ' +
@@ -108,28 +123,30 @@ class TrialScopeQuery {
     console.log(query);
     return query;
   }
-  toString() {
+  toString(): string {
     return this.toQuery();
   }
 }
 
-function runTrialScopeQuery(patientBundle) {
+export function runTrialScopeQuery(patientBundle: Bundle): Promise<TrialScopeResponse> {
   console.log('Creating TrialScope query...');
-  return runQuery(new TrialScopeQuery(patientBundle));
+  return runRawTrialScopeQuery(new TrialScopeQuery(patientBundle));
 }
+
+export default runTrialScopeQuery;
 
 /**
  * Runs a TrialScope query.
  *
  * @param {TrialScopeQuery|string} query the query to run
  */
-function runQuery(query) {
+export function runRawTrialScopeQuery(query: TrialScopeQuery|string): Promise<TrialScopeResponse> {
   if (typeof query === 'object' && typeof query.toQuery === 'function') {
     // If given an object, assume we're going to need to paginate and load everything
     return new Promise((resolve, reject) => {
       sendQuery(query.toQuery()).then(result => {
         // Result is a parsed JSON object. See if we need to load more pages.
-        const loadNextPage = (previousPage) => {
+        const loadNextPage = (previousPage: TrialScopeResponse) => {
           query.after = previousPage.data.baseMatches.pageInfo.endCursor;
           sendQuery(query.toQuery()).then(nextPage => {
             // Append results.
@@ -158,7 +175,7 @@ function runQuery(query) {
   }
 }
 
-function sendQuery(query) {
+function sendQuery(query: string): Promise<TrialScopeResponse> {
   return new Promise((resolve, reject) => {
     const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
     console.log('Running raw TrialScope query');
@@ -191,9 +208,3 @@ function sendQuery(query) {
     request.end();
   });
 }
-
-module.exports = {
-  runTrialScopeQuery: runTrialScopeQuery,
-  runRawTrialScopeQuery: runQuery,
-  TrialScopeQuery: TrialScopeQuery
-};
