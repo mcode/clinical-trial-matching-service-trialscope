@@ -93,8 +93,8 @@ export class ResearchStudy {
   }
 
   convertStringArrayToCodeableConcept(tsConditions: string): CodeableConcept[] {
-    const jsonConditions = JSON.parse(tsConditions);
-    let fhirConditions: CodeableConcept[] = [];
+    const jsonConditions: string[] = JSON.parse(tsConditions) as string[];
+    const fhirConditions: CodeableConcept[] = [];
     for (const condition of jsonConditions) {
       fhirConditions.push({text: condition});
     }
