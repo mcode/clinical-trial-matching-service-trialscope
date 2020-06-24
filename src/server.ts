@@ -77,5 +77,5 @@ app.post('/getClinicalTrial', function (req, res) {
 
 app.use(express.static('public'));
 console.log(`Starting server on port ${environment.port}...`);
-const server = app.listen(environment.port);
-module.exports = server;
+export const server = app.listen(environment.port);
+export default server;
