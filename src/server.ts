@@ -54,6 +54,8 @@ app.post('/getClinicalTrial', function (req, res) {
         console.error(error);
         res.status(500).send(`"Error from server"`);
       });
+    } else {
+      res.status(400).send({ error: 'Invalid patientBundle' });
     }
   } else if ('inputParam' in postBody) {
     // Backwards-compat: if there is no patient body, just run the query directly
@@ -75,5 +77,5 @@ app.post('/getClinicalTrial', function (req, res) {
 
 app.use(express.static('public'));
 console.log(`Starting server on port ${environment.port}...`);
-var server = app.listen(environment.port);
+const server = app.listen(environment.port);
 module.exports = server;

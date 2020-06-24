@@ -40,7 +40,7 @@ describe("server tests", () => {
             .post('/getClinicalTrial')
             .send({ patientData: {} })
             .set('Accept', 'application/json')
-            .expect(500);
+            .expect(400);
 
     });
     it("responds to /getClinicalTrial with no patientBundle param  ", () => {
