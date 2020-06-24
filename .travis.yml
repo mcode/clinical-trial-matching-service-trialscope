@@ -1,6 +1,10 @@
 ---
 language: node_js
 
+env:
+  global:
+    - TRIALSCOPE_TOKEN=fake_token
+
 node_js:
   - "12"
 
