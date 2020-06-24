@@ -34,6 +34,17 @@ export interface ContactDetail {
   telecom?: {system?: string; value?: string; use?: string;}[];
 }
 
+export interface Arm {
+  name?: string;
+  type?: CodeableConcept;
+  description?: string;
+}
+
+export interface Objective {
+  name?: string;
+  type?: CodeableConcept;
+}
+
 export class ResearchStudy {
   resourceType = 'ResearchStudy';
   id?: string;
@@ -47,8 +58,10 @@ export class ResearchStudy {
   keyword?: CodeableConcept[];
   location?: CodeableConcept[];
   description?: string; // Should be actually be markdown
+  arm?: Arm[];
+  objective?: Objective[];
 
-  constructor(trial: TrialScopeTrial, id: number) { // the ridiculous if statements are to account for empties being returned from trialscope - if there's a better eay, please let me knoe
+  constructor(trial: TrialScopeTrial, id: number) { // the ridiculous if statements are to account for empties being returned from trialscope - if there's a better eay, please let me know - also empty takes many forms ("", "[]", null, etc.) and I don't actually know what they are for each trialscope attribute
     this.id = String(id);
     if (trial.nctId != "") {
       this.identifier = [{use: "official", system: "http://clinicaltrilas.gov", value: trial.nctId}];
@@ -79,6 +92,25 @@ export class ResearchStudy {
     }
     if (trial.detailedDescription != "") {
       this.description = trial.detailedDescription;
+    }
+    if (typeof trial.armGroups[Symbol.iterator] === 'function') { // ts returns {} when empty, which is not iterable
+      this.arm = [];
+      for (const armgroup of trial.armGroups) {
+        const singleArm : Arm = {};
+        if (armgroup.arm_group_label) {
+          singleArm.name = armgroup.arm_group_label;
+        }
+        if (armgroup.arm_group_type) {
+          singleArm.type = {text: armgroup.arm_group_type};
+        }
+        if (armgroup.description) {
+          singleArm.description = armgroup.description;
+        }
+        this.arm.push(singleArm);
+      }
+    }
+    if (trial.officialTitle != "") {
+      this.objective = [{name: trial.officialTitle}];
     }
   }
 

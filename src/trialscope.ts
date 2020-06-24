@@ -46,6 +46,14 @@ export interface TrialScopeTrial {
   overallContactEmail?: string;
   countries?: string;
   detailedDescription?: string;
+  armGroups?: ArmGroup[];
+  officialTitle?: string;
+}
+
+export interface ArmGroup {
+  description?: string;
+  arm_group_type?: string;
+  arm_group_label?: string;
 }
 
 /**
@@ -123,7 +131,7 @@ export class TrialScopeQuery {
     const query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
         'node {' +
-          'nctId title conditions keywords gender description detailedDescription ' +
+          'nctId title officialTitle conditions keywords gender description detailedDescription ' +
           'criteria sponsor overallContactName overallContactPhone overallContactEmail ' +
           'overallStatus armGroups phase minimumAge studyType countries ' +
           'maximumAge sites { ' +
