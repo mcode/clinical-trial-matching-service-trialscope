@@ -6,6 +6,8 @@
 # Ignore installed modules
 /node_modules
 
+/src/tmp
+
 # System Files
 .DS_Store
 Thumbs.db

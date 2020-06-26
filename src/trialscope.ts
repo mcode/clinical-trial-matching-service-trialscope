@@ -107,18 +107,18 @@ export class TrialScopeQuery {
     }
     const query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
-      'node {' +
-      'nctId title conditions gender description detailedDescription ' +
-      'criteria sponsor overallContactPhone overallContactEmail ' +
-      'overallStatus armGroups phase minimumAge studyType ' +
-      'maximumAge sites { ' +
-      'facility contactName contactEmail contactPhone latitude longitude ' +
-      '} ' +
-      '} ' +
-      'cursor ' +
+        'node {' +
+          'nctId title conditions gender description detailedDescription ' +
+          'criteria sponsor overallContactPhone overallContactEmail ' +
+          'overallStatus armGroups phase minimumAge studyType ' +
+          'maximumAge sites { ' +
+            'facility contactName contactEmail contactPhone latitude longitude ' +
+          '} ' +
+        '} ' +
+        'cursor ' +
       '} ' +
       'pageInfo { endCursor hasNextPage }' +
-      '} }';
+    '} }';
     console.log('Generated query:');
     console.log(query);
     return query;
