@@ -140,7 +140,7 @@ export default runTrialScopeQuery;
  *
  * @param {TrialScopeQuery|string} query the query to run
  */
-export function runRawTrialScopeQuery(query: TrialScopeQuery|string): Promise<TrialScopeResponse> {
+export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<TrialScopeResponse> {
   if (typeof query === 'object' && typeof query.toQuery === 'function') {
     // If given an object, assume we're going to need to paginate and load everything
     return new Promise((resolve, reject) => {

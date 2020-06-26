@@ -14,7 +14,7 @@ app.use(bodyParser.json({
   limit: "10MB"
 }));
 
-app.use(function(_req, res, next) {
+app.use(function (_req, res, next) {
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -28,12 +28,12 @@ app.use(function(_req, res, next) {
 });
 
 /* Default call*/
-app.get('/', function(_req, res) {
+app.get('/', function (_req, res) {
   res.status(200).send('Hello from Clinical Trial');
 });
 
 /* get trialscope conditions (str) list from code (str) list */
-app.post('/getConditions', function(req, res) {
+app.post('/getConditions', function (req, res) {
   const codeList = req.body as string[];
   const conditions = mapping.mapConditions(codeList);
   const result = JSON.stringify(Array.from(conditions));
@@ -43,7 +43,7 @@ app.post('/getConditions', function(req, res) {
 /**
  * Get clinical trial results (the "main" API).
  */
-app.post('/getClinicalTrial', function(req, res) {
+app.post('/getClinicalTrial', function (req, res) {
   const postBody = req.body as Record<string, unknown>;
   if ('patientData' in postBody) {
     const patientBundle = (typeof postBody.patientData === 'string' ? JSON.parse(postBody.patientData) : postBody.patientData) as Record<string, unknown>;
@@ -54,8 +54,10 @@ app.post('/getClinicalTrial', function(req, res) {
         console.error(error);
         res.status(500).send(`"Error from server"`);
       });
+    } else {
+      res.status(400).send({ error: 'Invalid patientBundle' });
     }
-  } else {
+  } else if ('inputParam' in postBody) {
     // Backwards-compat: if there is no patient body, just run the query directly
     runRawTrialScopeQuery(postBody.inputParam as string).then(result => {
       res.status(200).send(result);
@@ -65,8 +67,15 @@ app.post('/getClinicalTrial', function(req, res) {
     });
     return;
   }
+  else {// request missing json fields
+    res.status(400).send("Request missing required fields");
+
+  }
+
+
 });
 
 app.use(express.static('public'));
 console.log(`Starting server on port ${environment.port}...`);
-app.listen(environment.port);
+export const server = app.listen(environment.port);
+export default server;
