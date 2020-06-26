@@ -6,7 +6,7 @@
 # Ignore installed modules
 /node_modules
 
-/src/tmp
+/src/tmp/org.hl7.fhir.publisher.jar
 
 # System Files
 .DS_Store
