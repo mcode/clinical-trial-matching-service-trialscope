@@ -48,12 +48,25 @@ export interface TrialScopeTrial {
   detailedDescription?: string;
   armGroups?: ArmGroup[];
   officialTitle?: string;
+  criteria?: string;
+  sponsor?: string;
+  overallOfficialName?: string;
+  sites?: Site[];
 }
 
 export interface ArmGroup {
   description?: string;
   arm_group_type?: string;
   arm_group_label?: string;
+}
+
+export interface Site {
+  facility?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 /**
@@ -132,7 +145,7 @@ export class TrialScopeQuery {
       'totalCount edges {' +
         'node {' +
           'nctId title officialTitle conditions keywords gender description detailedDescription ' +
-          'criteria sponsor overallContactName overallContactPhone overallContactEmail ' +
+          'criteria sponsor overallContactName overallContactPhone overallContactEmail overallOfficialName ' +
           'overallStatus armGroups phase minimumAge studyType countries ' +
           'maximumAge sites { ' +
             'facility contactName contactEmail contactPhone latitude longitude ' +

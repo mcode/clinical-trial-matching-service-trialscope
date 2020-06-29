@@ -1,5 +1,6 @@
-import { TrialScopeTrial } from './trialscope';
+import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
 
+// Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>();
 phaseCodeMap.set("Early Phase 1", "early-phase-1");
 phaseCodeMap.set("N/A", "n-a");
@@ -18,6 +19,7 @@ statusMap.set("Enrolling by invitation", "active");
 statusMap.set("Not yet recruiting", "approved");
 statusMap.set("Recruiting", "active");
 
+// FHIR data types supporting ResearchStudy
 export interface Identifier{
   use?: string;
   system?: string;
@@ -31,7 +33,13 @@ export interface CodeableConcept {
 
 export interface ContactDetail {
   name?: string;
-  telecom?: {system?: string; value?: string; use?: string;}[];
+  telecom?: Telecom[];
+}
+
+export interface Telecom {
+  system?: string;
+  value?: string;
+  use?: string;
 }
 
 export interface Arm {
@@ -45,6 +53,53 @@ export interface Objective {
   type?: CodeableConcept;
 }
 
+export interface Reference {
+  reference?: string;
+  type?: string;
+}
+
+// FHIR resources contained within ResearchStudy
+export interface Group {
+  resourceType?: string
+  id?: string;
+  type?: string;
+  actual?: boolean;
+  text?: Narrative; // Narrative isn't currently being used because I don't know how to wrap the trial criteria and all its spacing in xhtml
+  name?: string; // right now I'm storing criteria here instead
+}
+
+export interface Location {
+  resourceType?: string
+  id?: string;
+  name?: string;
+  telecom?: Telecom[];
+  position?: {longitude?: number; latitude?: number};
+}
+
+export interface Organization {
+  resourceType?: string
+  id?: string;
+  name?: string;
+}
+
+export interface Practitioner {
+  resourceType?: string
+  id?: string;
+  name?: HumanName[];
+}
+
+// FHIR data types supporting resources contained in ResearchStudy
+export interface Narrative{
+  status: string;
+  div: string; // should actually be escaped xhtml
+}
+
+export interface HumanName {
+  use?: string;
+  text: string;
+}
+
+// ResearchStudy implementation
 export class ResearchStudy {
   resourceType = 'ResearchStudy';
   id?: string;
@@ -57,31 +112,36 @@ export class ResearchStudy {
   contact?: ContactDetail[];
   keyword?: CodeableConcept[];
   location?: CodeableConcept[];
-  description?: string; // Should be actually be markdown
+  description?: string; // Should actually be markdown
   arm?: Arm[];
   objective?: Objective[];
+  enrollment?: Reference[];
+  sponsor?: Reference;
+  principalInvestigator?: Reference;
+  site?: Reference[];
+  contained?: (Group | Location | Organization | Practitioner)[];
 
-  constructor(trial: TrialScopeTrial, id: number) { // the ridiculous if statements are to account for empties being returned from trialscope - if there's a better eay, please let me know - also empty takes many forms ("", "[]", null, etc.) and I don't actually know what they are for each trialscope attribute
+  constructor(trial: TrialScopeTrial, id: number) { // the ridiculous number of if statements are to account for empties being returned from trialscope - if there's a better eay, please let me know - also empty takes many forms ("", "[]", null, etc.) and I don't actually know what they are for each trialscope attribute and I'm not sure how to find out other than trial and error
     this.id = String(id);
-    if (trial.nctId != "") {
+    if (trial.nctId) {
       this.identifier = [{use: "official", system: "http://clinicaltrilas.gov", value: trial.nctId}];
     }
-    if (trial.title != "") {
+    if (trial.title) {
       this.title = trial.title;
     }
-    if (trial.overallStatus != "") {
+    if (trial.overallStatus) {
       this.status = this.convertStatus(trial.overallStatus);
     }
-    if (trial.phase != "") {
+    if (trial.phase) {
       this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(trial.phase), display: trial.phase}], text: trial.phase};
     }
-    if (trial.studyType != "") {
+    if (trial.studyType) {
       this.category = [{text: trial.studyType}];
     }
     if (trial.conditions != "[]") {
       this.condition = this.convertStringArrayToCodeableConcept(trial.conditions);
     }
-    if (trial.overallContactName != "" || trial.overallContactPhone != "" || trial.overallContactEmail != null) {
+    if (trial.overallContactName || trial.overallContactPhone || trial.overallContactEmail) {
       this.contact = this.setContact(trial.overallContactName, trial.overallContactPhone, trial.overallContactEmail);
     }
     if (trial.keywords != "[]") {
@@ -90,27 +150,41 @@ export class ResearchStudy {
     if (trial.countries != "[]") {
       this.location = this.convertStringArrayToCodeableConcept(trial.countries);
     }
-    if (trial.detailedDescription != "") {
+    if (trial.detailedDescription) {
       this.description = trial.detailedDescription;
     }
     if (typeof trial.armGroups[Symbol.iterator] === 'function') { // ts returns {} when empty, which is not iterable
-      this.arm = [];
-      for (const armgroup of trial.armGroups) {
-        const singleArm : Arm = {};
-        if (armgroup.arm_group_label) {
-          singleArm.name = armgroup.arm_group_label;
-        }
-        if (armgroup.arm_group_type) {
-          singleArm.type = {text: armgroup.arm_group_type};
-        }
-        if (armgroup.description) {
-          singleArm.description = armgroup.description;
-        }
-        this.arm.push(singleArm);
-      }
+      this.arm = this.setArm(trial.armGroups);
     }
-    if (trial.officialTitle != "") {
+    if (trial.officialTitle) {
       this.objective = [{name: trial.officialTitle}];
+    }
+    if (trial.criteria) {
+      this.enrollment = [{reference: "#group" + this.id, type: "Group"}];
+    }
+    if (trial.sponsor) {
+      this.sponsor = {reference: "#org" + this.id, type: "Organization"};
+    }
+    if (trial.overallOfficialName) {
+      this.principalInvestigator = {reference: "#practitioner" + this.id, type: "Practitioner"};
+    }
+    if (trial.sites != []) {
+      this.site = this.setSiteReferences(trial.sites);
+    }
+    if (this.enrollment || this.site || this.sponsor || this.principalInvestigator) {
+      this.contained = [];
+    }
+    if (this.enrollment) {
+      this.contained.push({resourceType: "Group", id: "group" + this.id, type: "person", actual: false, name: trial.criteria}); //text: {status: "additional", div: trial.criteria}
+    }
+    if (this.sponsor) {
+      this.contained.push({resourceType: "Organization", id: "org" + this.id, name: trial.sponsor});
+    }
+    if (this.principalInvestigator) {
+      this.contained.push({resourceType: "Practitioner", id: "practitioner" + this.id, name: [{use: "official", text: trial.overallOfficialName}]});
+    }
+    if (this.site) {
+      this.addSitesToContained(trial.sites);
     }
   }
 
@@ -134,23 +208,76 @@ export class ResearchStudy {
   }
 
   setContact(name: string, phone: string, email: string): ContactDetail[] {
-    let contact = {};
-    if (name != "" && phone != "" && email != null) {
-      contact = {name: name, telecom: [{system: "phone", value: phone, use: "work"}, {system: "email", value: email, use: "work"}]};
-    } else if (name != "" && phone != "") {
-      contact = {name: name, telecom: [{system: "phone", value: phone, use: "work"}]};
-    } else if (name != "" && email != null) {
-      contact = {name: name, telecom: [{system: "email", value: email, use: "work"}]};
-    } else if (phone != "" && email != null) {
-      contact = {telecom: [{system: "phone", value: phone, use: "work"}, {system: "email", value: email, use: "work"}]};
-    } else if (name != "") {
-      contact = {name: name};
-    } else if (phone != "") {
-      contact = {telecom: [{system: "phone", value: phone, use: "work"}]};
-    } else if (email != null) {
-      contact = {telecom: [{system: "email", value: email, use: "work"}]};
+    const contact: ContactDetail = {};
+    if (name) {
+      contact.name = name;
+    }
+    if (phone || email) {
+      const telecoms: Telecom[] = [];
+      if (phone) {
+        telecoms.push({system: "phone", value: phone, use: "work"});
+      }
+      if (email) {
+        telecoms.push({system: "email", value: email, use: "work"});
+      }
+      contact.telecom = telecoms;
     }
     return [contact];
+  }
+
+  setArm(armGroups: ArmGroup[]): Arm[] {
+    const arms: Arm[] = [];
+    for (const armgroup of armGroups) {
+      const singleArm : Arm = {};
+      if (armgroup.arm_group_label) {
+        singleArm.name = armgroup.arm_group_label;
+      }
+      if (armgroup.arm_group_type) {
+        singleArm.type = {text: armgroup.arm_group_type};
+      }
+      if (armgroup.description) {
+        singleArm.description = armgroup.description;
+      }
+      arms.push(singleArm);
+    }
+     return arms;
+  }
+
+  setSiteReferences(sites: Site[]): Reference[] {
+    const siteReferences = [];
+    let siteIndex: number = 0;
+    for (const site of sites) {
+      siteReferences.push({reference: "#location" + this.id + "-" + siteIndex, type: "Location"});
+      siteIndex++;
+    }
+    return siteReferences;
+  }
+
+  addSitesToContained(sites: Site[]): void {
+    let locationIndex: number = 0;
+    for (const location of sites) {
+      const local: Location = {};
+      local.resourceType = "Location";
+      local.id = "location" + this.id + "-" + locationIndex;
+      if (location.facility) {
+        local.name = location.facility;
+      }
+      if (location.contactEmail || location.contactPhone) {
+        const localTelecom: Telecom[] = [];
+        if (location.contactEmail) {
+          localTelecom.push({system: "email", value: location.contactEmail, use: "work"});
+        }
+        if (location.contactPhone) {
+          localTelecom.push({system: "phone", value: location.contactPhone, use: "work"});
+        }
+        local.telecom = localTelecom;
+      }
+      if (location.latitude && location.longitude) {
+        local.position = {latitude: location.latitude, longitude: location.longitude};
+      }
+      this.contained.push(local);
+      locationIndex++;
+    }
   }
 
 }
