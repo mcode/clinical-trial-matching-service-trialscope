@@ -5,10 +5,15 @@ Download the fhir validator here: https://storage.googleapis.com/ig-build/org.hl
 Paste an example research study in the resource.json file before running the test
 
 */
+
+//NOTE: The jar file must be named org.hl7.fhir.validator.jar
+
+
+
 describe("Fhir Validator jar", () => {
 
     /*This test case is temporarily disabled. Change xit --> it to run this test case.
-      Note: The test must be disabled (changed to xit) on commit 
+      NOTE: The test must be disabled (changed to xit) on commit 
     */
 
 
