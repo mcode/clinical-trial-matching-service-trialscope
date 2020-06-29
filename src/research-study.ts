@@ -244,21 +244,21 @@ export class ResearchStudy {
   }
 
   setSiteReferences(sites: Site[]): Reference[] {
-    const siteReferences = [];
-    let siteIndex: number = 0;
+    const siteReferences: Reference[] = [];
+    let siteIndex = 0;
     for (const site of sites) {
-      siteReferences.push({reference: "#location" + this.id + "-" + siteIndex, type: "Location"});
+      siteReferences.push({reference: "#location" + this.id + "-" + String(siteIndex), type: "Location"});
       siteIndex++;
     }
     return siteReferences;
   }
 
   addSitesToContained(sites: Site[]): void {
-    let locationIndex: number = 0;
+    let locationIndex = 0;
     for (const location of sites) {
       const local: Location = {};
       local.resourceType = "Location";
-      local.id = "location" + this.id + "-" + locationIndex;
+      local.id = "location" + this.id + "-" + String(locationIndex);
       if (location.facility) {
         local.name = location.facility;
       }
