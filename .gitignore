@@ -5,8 +5,8 @@
 
 # Ignore installed modules
 /node_modules
+spec/tmp/org.hl7.fhir.validator.jar
 
-/src/tmp/org.hl7.fhir.publisher.jar
 
 # System Files
 .DS_Store
