@@ -1,0 +1,3 @@
+singleQuote: true
+# Because this is being used as a linter, make longer lines OK
+printWidth: 120
