@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const jsonMapping = require('../data/condition_snomed.json') as {[key: string]: string[]};
+const jsonMapping = require('../data/condition_snomed.json') as { [key: string]: string[] };
 
 /**
  * Takes (str) list of snomed codes and returns (str)

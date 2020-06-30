@@ -11,7 +11,9 @@ import Configuration from './env';
 const environment = new Configuration().defaultEnvObject();
 
 if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
-  throw new Error('TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.');
+  throw new Error(
+    'TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.'
+  );
 }
 
 class TrialScopeError extends Error {
@@ -24,13 +26,13 @@ export interface TrialScopeResponse {
   data: {
     baseMatches: {
       totalCount: number;
-      edges: { node: Record<string, unknown>, cursor: string }[];
+      edges: { node: Record<string, unknown>; cursor: string }[];
       pageInfo: {
         endCursor: string;
         hasNextPage: boolean;
-      }
-    }
-  }
+      };
+    };
+  };
 }
 
 /**
@@ -87,7 +89,9 @@ export class TrialScopeQuery {
    * @return {string} the TrialScope GraphQL query
    */
   toQuery(): string {
-    let baseMatches = `conditions:[${Array.from(this.getTrialScopeConditions()).join(', ')}], baseFilters: { zipCode: "${this.zipCode}"`;
+    let baseMatches = `conditions:[${Array.from(this.getTrialScopeConditions()).join(
+      ', '
+    )}], baseFilters: { zipCode: "${this.zipCode}"`;
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
       baseMatches += ',travelRadius: ' + this.travelRadius.toString();
@@ -105,6 +109,7 @@ export class TrialScopeQuery {
     if (this.after !== null) {
       baseMatches += ', after: ' + JSON.stringify(this.after);
     }
+    // prettier-ignore
     const query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
         'node {' +
@@ -144,30 +149,34 @@ export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<
   if (typeof query === 'object' && typeof query.toQuery === 'function') {
     // If given an object, assume we're going to need to paginate and load everything
     return new Promise((resolve, reject) => {
-      sendQuery(query.toQuery()).then(result => {
-        // Result is a parsed JSON object. See if we need to load more pages.
-        const loadNextPage = (previousPage: TrialScopeResponse) => {
-          query.after = previousPage.data.baseMatches.pageInfo.endCursor;
-          sendQuery(query.toQuery()).then(nextPage => {
-            // Append results.
-            result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
-            if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
-              // Keep going
-              loadNextPage(nextPage);
-            } else {
-              resolve(result);
-            }
-          }).catch(reject);
-        };
-        if (result.data.baseMatches.pageInfo.hasNextPage) {
-          // Since this result object is the ultimate result, alter it to
-          // pretend it doesn't have a next page
-          result.data.baseMatches.pageInfo.hasNextPage = false;
-          loadNextPage(result);
-        } else {
-          resolve(result);
-        }
-      }).catch(reject);
+      sendQuery(query.toQuery())
+        .then((result) => {
+          // Result is a parsed JSON object. See if we need to load more pages.
+          const loadNextPage = (previousPage: TrialScopeResponse) => {
+            query.after = previousPage.data.baseMatches.pageInfo.endCursor;
+            sendQuery(query.toQuery())
+              .then((nextPage) => {
+                // Append results.
+                result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
+                if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
+                  // Keep going
+                  loadNextPage(nextPage);
+                } else {
+                  resolve(result);
+                }
+              })
+              .catch(reject);
+          };
+          if (result.data.baseMatches.pageInfo.hasNextPage) {
+            // Since this result object is the ultimate result, alter it to
+            // pretend it doesn't have a next page
+            result.data.baseMatches.pageInfo.hasNextPage = false;
+            loadNextPage(result);
+          } else {
+            resolve(result);
+          }
+        })
+        .catch(reject);
     });
   } else if (typeof query === 'string') {
     // Run directly
@@ -180,29 +189,35 @@ function sendQuery(query: string): Promise<TrialScopeResponse> {
     const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
     console.log('Running raw TrialScope query');
     console.log(query);
-    const request = https.request(environment.trialscope_endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Content-Length': body.byteLength.toString(),
-        'Authorization': 'Bearer ' + environment.TRIALSCOPE_TOKEN
-      }
-    }, result => {
-      let responseBody = '';
-      result.on('data', chunk => {
-        responseBody += chunk;
-      });
-      result.on('end', () => {
-        console.log('Complete');
-        if (result.statusCode === 200) {
-          resolve(JSON.parse(responseBody));
-        } else {
-          reject(new TrialScopeError(`Server returned ${result.statusCode} ${result.statusMessage}`, result, responseBody));
+    const request = https.request(
+      environment.trialscope_endpoint,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Content-Length': body.byteLength.toString(),
+          Authorization: 'Bearer ' + environment.TRIALSCOPE_TOKEN
         }
-      });
-    });
+      },
+      (result) => {
+        let responseBody = '';
+        result.on('data', (chunk) => {
+          responseBody += chunk;
+        });
+        result.on('end', () => {
+          console.log('Complete');
+          if (result.statusCode === 200) {
+            resolve(JSON.parse(responseBody));
+          } else {
+            reject(
+              new TrialScopeError(`Server returned ${result.statusCode} ${result.statusMessage}`, result, responseBody)
+            );
+          }
+        });
+      }
+    );
 
-    request.on('error', error => reject(error));
+    request.on('error', (error) => reject(error));
 
     request.write(body);
     request.end();

@@ -39,7 +39,7 @@ export interface Parameters extends BaseResource {
 }
 
 export interface Code {
-  coding: { system: URLString, code: string, display?: string }[];
+  coding: { system: URLString; code: string; display?: string }[];
   text?: string;
 }
 

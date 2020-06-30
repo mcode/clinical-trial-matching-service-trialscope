@@ -9,10 +9,12 @@ const app = express();
 
 const environment = new Configuration().defaultEnvObject();
 
-app.use(bodyParser.json({
-  // Need to increase the payload limit to receive patient bundles
-  limit: "10MB"
-}));
+app.use(
+  bodyParser.json({
+    // Need to increase the payload limit to receive patient bundles
+    limit: '10MB'
+  })
+);
 
 app.use(function (_req, res, next) {
   // Website you wish to allow to connect
@@ -22,7 +24,10 @@ app.use(function (_req, res, next) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
   // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With, WU-Api-Key, WU-Api-Secret');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With, WU-Api-Key, WU-Api-Secret'
+  );
 
   next();
 });
@@ -46,33 +51,36 @@ app.post('/getConditions', function (req, res) {
 app.post('/getClinicalTrial', function (req, res) {
   const postBody = req.body as Record<string, unknown>;
   if ('patientData' in postBody) {
-    const patientBundle = (typeof postBody.patientData === 'string' ? JSON.parse(postBody.patientData) : postBody.patientData) as Record<string, unknown>;
+    const patientBundle = (typeof postBody.patientData === 'string'
+      ? JSON.parse(postBody.patientData)
+      : postBody.patientData) as Record<string, unknown>;
     if (isBundle(patientBundle)) {
-      runTrialScopeQuery(patientBundle).then(result => {
-        res.status(200).send(JSON.stringify(result));
-      }).catch(error => {
-        console.error(error);
-        res.status(500).send(`"Error from server"`);
-      });
+      runTrialScopeQuery(patientBundle)
+        .then((result) => {
+          res.status(200).send(JSON.stringify(result));
+        })
+        .catch((error) => {
+          console.error(error);
+          res.status(500).send(`"Error from server"`);
+        });
     } else {
       res.status(400).send({ error: 'Invalid patientBundle' });
     }
   } else if ('inputParam' in postBody) {
     // Backwards-compat: if there is no patient body, just run the query directly
-    runRawTrialScopeQuery(postBody.inputParam as string).then(result => {
-      res.status(200).send(result);
-    }).catch(error => {
-      console.error(error);
-      res.status(400).send({ error: (error as Error).toString() });
-    });
+    runRawTrialScopeQuery(postBody.inputParam as string)
+      .then((result) => {
+        res.status(200).send(result);
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(400).send({ error: (error as Error).toString() });
+      });
     return;
+  } else {
+    // request missing json fields
+    res.status(400).send('Request missing required fields');
   }
-  else {// request missing json fields
-    res.status(400).send("Request missing required fields");
-
-  }
-
-
 });
 
 app.use(express.static('public'));
