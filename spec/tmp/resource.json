@@ -9,7 +9,7 @@
           "identifier": [
             {
               "use": "official",
-              "system": "http://clinicaltrilas.gov",
+              "system": "http://clinicaltrials.gov",
               "value": "NCT02513394"
             }
           ],
@@ -95,7 +95,7 @@
           "identifier": [
             {
               "use": "official",
-              "system": "http://clinicaltrilas.gov",
+              "system": "http://clinicaltrials.gov",
               "value": "NCT01674140"
             }
           ],
@@ -197,7 +197,7 @@
           "identifier": [
             {
               "use": "official",
-              "system": "http://clinicaltrilas.gov",
+              "system": "http://clinicaltrials.gov",
               "value": "NCT03488693"
             }
           ],
@@ -283,7 +283,7 @@
           "identifier": [
             {
               "use": "official",
-              "system": "http://clinicaltrilas.gov",
+              "system": "http://clinicaltrials.gov",
               "value": "NCT03662204"
             }
           ],
@@ -434,7 +434,7 @@
           "identifier": [
             {
               "use": "official",
-              "system": "http://clinicaltrilas.gov",
+              "system": "http://clinicaltrials.gov",
               "value": "NCT02744092"
             }
           ],
