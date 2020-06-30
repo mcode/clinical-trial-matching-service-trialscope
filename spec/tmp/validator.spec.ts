@@ -32,7 +32,7 @@ describe("Fhir Validator jar", () => {
             const child=   exec('java -jar ./spec/tmp/org.hl7.fhir.validator.jar ./spec/tmp/resource.json', function (error, stdout,stderr) { //standard output of jar file is through stdout
                 console.log(`Output -> ${stdout}`);
                 if (error !== null) {
-                    console.log(`Error ->  ${error}`);
+                    console.log(`Error ->  ${stderr}`);
             
                 }
         
