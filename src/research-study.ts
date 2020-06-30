@@ -124,7 +124,7 @@ export class ResearchStudy {
   constructor(trial: TrialScopeTrial, id: number) { // the ridiculous number of if statements are to account for empties being returned from trialscope - if there's a better eay, please let me know - also empty takes many forms ("", "[]", null, etc.) and I don't actually know what they are for each trialscope attribute and I'm not sure how to find out other than trial and error
     this.id = String(id);
     if (trial.nctId) {
-      this.identifier = [{use: "official", system: "http://clinicaltrilas.gov", value: trial.nctId}];
+      this.identifier = [{use: "official", system: "http://clinicaltrials.gov", value: trial.nctId}];
     }
     if (trial.title) {
       this.title = trial.title;
