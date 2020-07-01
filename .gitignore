@@ -2,6 +2,7 @@
 
 # Ignore built files
 /dist
+/dist-spec
 
 # Ignore installed modules
 /node_modules
