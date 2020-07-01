@@ -56,6 +56,7 @@ export interface Objective {
 export interface Reference {
   reference?: string;
   type?: string;
+  display?: string;
 }
 
 // FHIR resources contained within ResearchStudy
@@ -64,8 +65,6 @@ export interface Group {
   id?: string;
   type?: string;
   actual?: boolean;
-  text?: Narrative; // Narrative isn't currently being used because I don't know how to wrap the trial criteria and all its spacing in xhtml
-  name?: string; // right now I'm storing criteria here instead
 }
 
 export interface Location {
@@ -89,11 +88,6 @@ export interface Practitioner {
 }
 
 // FHIR data types supporting resources contained in ResearchStudy
-export interface Narrative{
-  status: string;
-  div: string; // should actually be escaped xhtml
-}
-
 export interface HumanName {
   use?: string;
   text: string;
@@ -121,7 +115,7 @@ export class ResearchStudy {
   site?: Reference[];
   contained?: (Group | Location | Organization | Practitioner)[];
 
-  constructor(trial: TrialScopeTrial, id: number) { // the ridiculous number of if statements are to account for empties being returned from trialscope - if there's a better eay, please let me know - also empty takes many forms ("", "[]", null, etc.) and I don't actually know what they are for each trialscope attribute and I'm not sure how to find out other than trial and error
+  constructor(trial: TrialScopeTrial, id: number) {
     this.id = String(id);
     if (trial.nctId) {
       this.identifier = [{use: "official", system: "http://clinicaltrials.gov", value: trial.nctId}];
@@ -160,7 +154,7 @@ export class ResearchStudy {
       this.objective = [{name: trial.officialTitle}];
     }
     if (trial.criteria) {
-      this.enrollment = [{reference: "#group" + this.id, type: "Group"}];
+      this.enrollment = [{reference: "#group" + this.id, type: "Group", display: trial.criteria}];
     }
     if (trial.sponsor) {
       this.sponsor = {reference: "#org" + this.id, type: "Organization"};
@@ -175,7 +169,7 @@ export class ResearchStudy {
       this.contained = [];
     }
     if (this.enrollment) {
-      this.contained.push({resourceType: "Group", id: "group" + this.id, type: "person", actual: false, name: trial.criteria}); //text: {status: "additional", div: trial.criteria}
+      this.contained.push({resourceType: "Group", id: "group" + this.id, type: "person", actual: false});
     }
     if (this.sponsor) {
       this.contained.push({resourceType: "Organization", id: "org" + this.id, name: trial.sponsor});
