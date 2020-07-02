@@ -54,7 +54,7 @@ app.post('/getClinicalTrial', function (req, res) {
         const fhirResult = new SearchSet(result);
         console.log(JSON.stringify(fhirResult, null, 2));
         //fs.writeFile("<filepath>", JSON.stringify(fhirResult, null, 2), function(err) { if (err) { console.log(err); } });
-        res.status(200).send(JSON.stringify(result));
+        res.status(200).send(JSON.stringify(fhirResult));
       }).catch(error => {
         console.error(error);
         res.status(500).send(`"Error from server"`);
