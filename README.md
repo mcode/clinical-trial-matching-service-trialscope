@@ -1,6 +1,8 @@
 # clinical-trial-matching-service
 
-Backend service that calls APIs for the front-end clinical-trial-matching-engine.
+Backend service that calls [TrialScope's](https://www.trialscope.com/) APIs for the front-end clinical-trial-matching-engine.
+
+For more information on the architecture and data schemas of the clinical trial matching system, please visit the clinical-trial-matching-engine [wiki](https://github.com/mcode/clinical-trial-matching-engine/wiki).
 
 # Setup
 
