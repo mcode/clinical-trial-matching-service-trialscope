@@ -1,23 +1,25 @@
 import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
 
 // Mappings between trialscope value sets and FHIR value sets
-const phaseCodeMap = new Map<string, string>();
-phaseCodeMap.set("Early Phase 1", "early-phase-1");
-phaseCodeMap.set("N/A", "n-a");
-phaseCodeMap.set("Phase 1", "phase-1");
-phaseCodeMap.set("Phase 1/Phase 2", "phase-1-phase-2");
-phaseCodeMap.set("Phase 2", "phase-2");
-phaseCodeMap.set("Phase 2/Phase 3", "phase-2-phase-3");
-phaseCodeMap.set("Phase 3", "phase-3");
-phaseCodeMap.set("Phase 4", "phase-4");
+const phaseCodeMap = new Map<string, string>([
+  ["Early Phase 1", "early-phase-1"],
+  ["N/A", "n-a"],
+  ["Phase 1", "phase-1"],
+  ["Phase 1/Phase 2", "phase-1-phase-2"],
+  ["Phase 2", "phase-2"],
+  ["Phase 2/Phase 3", "phase-2-phase-3"],
+  ["Phase 3", "phase-3"],
+  ["Phase 4", "phase-4"],
+]);
 
-const statusMap = new Map<string, string>();
-statusMap.set("Active, not recruiting", "closed-to-accrual");
-statusMap.set("Approved for marketing", "approved");
-statusMap.set("Available", "active");
-statusMap.set("Enrolling by invitation", "active");
-statusMap.set("Not yet recruiting", "approved");
-statusMap.set("Recruiting", "active");
+const statusMap = new Map<string, string>([
+  ["Active, not recruiting", "closed-to-accrual"],
+  ["Approved for marketing", "approved"],
+  ["Available", "active"],
+  ["Enrolling by invitation", "active"],
+  ["Not yet recruiting", "approved"],
+  ["Recruiting", "active"],
+]);
 
 // FHIR data types supporting ResearchStudy
 export interface Identifier{
