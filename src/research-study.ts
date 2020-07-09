@@ -1,5 +1,6 @@
 import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
-
+import fs from 'fs';
+import parser from 'xml2json';
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([
   ["Early Phase 1", "early-phase-1"],
@@ -167,6 +168,12 @@ export class ResearchStudy {
     if (trial.sites != []) {
       this.site = this.setSiteReferences(trial.sites);
     }
+    //Checks if research study contains enrollment criteria 
+
+    if(!trial.criteria){
+      
+    }
+
     if (this.enrollment || this.site || this.sponsor || this.principalInvestigator) {
       this.contained = [];
     }
@@ -183,6 +190,23 @@ export class ResearchStudy {
       this.addSitesToContained(trial.sites);
     }
   }
+  //manually adds in enrollment criteria
+  addCriteria() {
+    let nctId :string = this.identifier[0].value; 
+    let filePath :string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
+    let criteria : string;
+    console.log(filePath);
+    fs.readFile(filePath, function (err, data) {
+      let json = JSON.parse(parser.toJson(data));
+      criteria = json.clinical_study.eligibility.criteria.textblock;
+      this.enrollment = [{reference: "#group" + this.id, type: "Group", display: criteria}];
+    });
+
+
+  }
+
+
+
 
   convertStatus(tsStatus: string): string {
     const fhirStatus = statusMap.get(tsStatus);

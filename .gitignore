@@ -3,7 +3,7 @@
 # Ignore built files
 /dist
 /dist-spec
-
+/src/AllPublicXML
 # Ignore installed modules
 /node_modules
 
