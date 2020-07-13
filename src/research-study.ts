@@ -1,6 +1,6 @@
 import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
-import fs from 'fs';
-import parser from 'xml2json';
+import * as fs from 'fs';
+import * as parser from 'xml2json';
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([
   ["Early Phase 1", "early-phase-1"],
@@ -171,7 +171,18 @@ export class ResearchStudy {
     //Checks if research study contains enrollment criteria 
 
     if(!trial.criteria){
-      
+      this.addCriteria();
+    }
+
+    if(!trial.detailedDescription){
+        this.addSummary();
+
+    }
+    if(!trial.phase){
+      this.addPhase();
+    }
+    if(!trial.studyType){
+      this.addStudyType();
     }
 
     if (this.enrollment || this.site || this.sponsor || this.principalInvestigator) {
@@ -192,20 +203,55 @@ export class ResearchStudy {
   }
   //manually adds in enrollment criteria
   addCriteria() {
-    let nctId :string = this.identifier[0].value; 
-    let filePath :string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    let criteria : string;
+    let nctId: string = this.identifier[0].value;
+    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
+    let criteria: string;
     console.log(filePath);
     fs.readFile(filePath, function (err, data) {
       let json = JSON.parse(parser.toJson(data));
       criteria = json.clinical_study.eligibility.criteria.textblock;
-      this.enrollment = [{reference: "#group" + this.id, type: "Group", display: criteria}];
+      this.enrollment = [{ reference: "#group" + this.id, type: "Group", display: criteria }];
     });
-
 
   }
 
+  addSummary() {
+    //let nctId :string = this.identifier[0].value; 
+    let nctId = 'NCT04150146';
+    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
+    let summary: string;
+    fs.readFile(filePath, function (err, data) {
+      let json = JSON.parse(parser.toJson(data));
+      summary = json.clinical_study.brief_summary.textblock;
+      this.description=summary;
+    });
 
+  }
+
+  addPhase() {
+    //let nctId :string = this.identifier[0].value; 
+    let nctId = 'NCT04150146';
+    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
+    let phase: string;
+    fs.readFile(filePath, function (err, data) {
+      let json = JSON.parse(parser.toJson(data));
+      phase = json.clinical_study.phase;
+      this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(phase), display: phase}], text: phase};
+    });
+  }
+
+  addStudyType() {
+    //let nctId :string = this.identifier[0].value; 
+    let nctId = 'NCT04150146';
+    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
+    let studytype: string;
+    fs.readFile(filePath, function (err, data) {
+      let json = JSON.parse(parser.toJson(data));
+      studytype = json.clinical_study.study_type;
+      this.category = [{text: studytype}];
+    });
+
+  }
 
 
   convertStatus(tsStatus: string): string {
