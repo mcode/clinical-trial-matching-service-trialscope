@@ -205,20 +205,20 @@ export class ResearchStudy {
   addCriteria() {
     const nctId: string = this.identifier[0].value;
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    fs.readFile(filePath, function (err, data) {
-      const json = JSON.parse(parser.toJson(data));
-      const criteria = json.clinical_study.eligibility.criteria.textblock;
-      this.enrollment = [{ reference: "#group" + this.id, type: "Group", display: criteria }];
+    fs.readFile(filePath, function (err, data:Buffer) {
+      const json  = JSON.parse(parser.toJson(data));
+      const criteria :string = json.clinical_study.eligibility.criteria.textblock;
+      this.enrollment = [{ reference: `#group${this.id}`, type: "Group", display: criteria }];
     });
 
   }
 
-  addSummary() {
+  addSummary() {  
     const nctId :string = this.identifier[0].value; 
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    fs.readFile(filePath, function (err, data) {
+    fs.readFile(filePath, function (err, data:Buffer) {
       const json = JSON.parse(parser.toJson(data));
-      const summary = json.clinical_study.brief_summary.textblock;
+      const summary:string = json.clinical_study.brief_summary.textblock;
       this.description=summary;
     });
 
@@ -227,9 +227,9 @@ export class ResearchStudy {
   addPhase() {
     const nctId :string = this.identifier[0].value; 
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    fs.readFile(filePath, function (err, data) {
+    fs.readFile(filePath, function (err, data:Buffer) {
       const json = JSON.parse(parser.toJson(data));
-      const phase = json.clinical_study.phase;
+      const phase:string  = json.clinical_study.phase;
       this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(phase), display: phase}], text: phase};
     });
   }
@@ -237,9 +237,9 @@ export class ResearchStudy {
   addStudyType() {
     const nctId :string = this.identifier[0].value; 
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    fs.readFile(filePath, function (err, data) {
+    fs.readFile(filePath, function (err, data: Buffer) {
       const json = JSON.parse(parser.toJson(data));
-      const studytype = json.clinical_study.study_type;
+      const studytype:string  = json.clinical_study.study_type;
       this.category = [{text: studytype}];
     });
 
