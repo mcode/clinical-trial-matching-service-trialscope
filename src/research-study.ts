@@ -203,51 +203,43 @@ export class ResearchStudy {
   }
   //manually adds in enrollment criteria
   addCriteria() {
-    let nctId: string = this.identifier[0].value;
-    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    let criteria: string;
-    console.log(filePath);
+    const nctId: string = this.identifier[0].value;
+    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
     fs.readFile(filePath, function (err, data) {
-      let json = JSON.parse(parser.toJson(data));
-      criteria = json.clinical_study.eligibility.criteria.textblock;
+      const json = JSON.parse(parser.toJson(data));
+      const criteria = json.clinical_study.eligibility.criteria.textblock;
       this.enrollment = [{ reference: "#group" + this.id, type: "Group", display: criteria }];
     });
 
   }
 
   addSummary() {
-    //let nctId :string = this.identifier[0].value; 
-    let nctId = 'NCT04150146';
-    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    let summary: string;
+    const nctId :string = this.identifier[0].value; 
+    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
     fs.readFile(filePath, function (err, data) {
-      let json = JSON.parse(parser.toJson(data));
-      summary = json.clinical_study.brief_summary.textblock;
+      const json = JSON.parse(parser.toJson(data));
+      const summary = json.clinical_study.brief_summary.textblock;
       this.description=summary;
     });
 
   }
 
   addPhase() {
-    //let nctId :string = this.identifier[0].value; 
-    let nctId = 'NCT04150146';
-    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    let phase: string;
+    const nctId :string = this.identifier[0].value; 
+    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
     fs.readFile(filePath, function (err, data) {
-      let json = JSON.parse(parser.toJson(data));
-      phase = json.clinical_study.phase;
+      const json = JSON.parse(parser.toJson(data));
+      const phase = json.clinical_study.phase;
       this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(phase), display: phase}], text: phase};
     });
   }
 
   addStudyType() {
-    //let nctId :string = this.identifier[0].value; 
-    let nctId = 'NCT04150146';
-    let filePath: string = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    let studytype: string;
+    const nctId :string = this.identifier[0].value; 
+    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
     fs.readFile(filePath, function (err, data) {
-      let json = JSON.parse(parser.toJson(data));
-      studytype = json.clinical_study.study_type;
+      const json = JSON.parse(parser.toJson(data));
+      const studytype = json.clinical_study.study_type;
       this.category = [{text: studytype}];
     });
 
