@@ -16,7 +16,8 @@ try {
   for (const line of envLocal.split(/\r?[\r\n]/)) {
     const m = /^\s*(\w+)\s*=\s*(.*)\s*$/.exec(line);
     if (m) {
-      const k = m[1], value = m[2];
+      const k = m[1],
+        value = m[2];
       if (k in defaults) {
         defaults[k] = value;
       }
