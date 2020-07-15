@@ -4,6 +4,7 @@ import * as mapping from './mapping';
 import bodyParser from 'body-parser';
 import Configuration from './env';
 import { isBundle } from './bundle';
+import { SearchSet } from './searchset';
 
 const app = express();
 
@@ -49,10 +50,13 @@ app.post('/getClinicalTrial', function (req, res) {
     const patientBundle = (typeof postBody.patientData === 'string' ? JSON.parse(postBody.patientData) : postBody.patientData) as Record<string, unknown>;
     if (isBundle(patientBundle)) {
       runTrialScopeQuery(patientBundle).then(result => {
-        res.status(200).send(JSON.stringify(result));
+        const fhirResult = new SearchSet(result);
+        // For debugging: dump the result out
+        // console.log(JSON.stringify(fhirResult, null, 2));
+        res.status(200).send(JSON.stringify(fhirResult));
       }).catch(error => {
         console.error(error);
-        res.status(500).send(`"Error from server"`);
+        res.status(500).send({ error: 'Error from server', exception: Object.prototype.toString.call(error) as string });
       });
     } else {
       res.status(400).send({ error: 'Invalid patientBundle' });
@@ -66,13 +70,10 @@ app.post('/getClinicalTrial', function (req, res) {
       res.status(400).send({ error: (error as Error).toString() });
     });
     return;
+  } else {
+    // request missing json fields
+    res.status(400).send({ error: 'Request missing required fields' });
   }
-  else {// request missing json fields
-    res.status(400).send("Request missing required fields");
-
-  }
-
-
 });
 
 app.use(express.static('public'));
