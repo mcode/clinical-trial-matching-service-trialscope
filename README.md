@@ -13,6 +13,25 @@ For more information on the architecture and data schemas of the clinical trial 
 5. Run `npm start`
 6. The service will now be running at http://localhost:3000/
 
+# Requirements
+
+The ResearchStudy object passed back by this server must be [FHIR-compliant] (https://www.hl7.org/fhir/researchstudy.html) and satisfy several requirements. 
+Study must contain: 
+- Title 
+- Summary 
+- Site location
+- Phase 
+- Contact Information i.e. sponsor email, phone number
+- Study Type 
+- Inclusion/ Exclusion criteria
+
+Note: _research-study.ts_ provides a "backup" system for filling in information missing from the object passed back from the matching service. This system fills in the following based on the trial's NctId:
+- Inclusion/Exclusion Criteria
+- Phase 
+- Study Type 
+- Trial Summary 
+
+
 # Lint and tests
 
 Use `npm run lint` to run the linter and `npm test` to run tests.
