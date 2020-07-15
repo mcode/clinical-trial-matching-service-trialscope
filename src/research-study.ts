@@ -270,7 +270,8 @@ export class ResearchStudy {
   addCriteria() {
     const nctId: string = this.identifier[0].value;
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data : Buffer =fs.readFileSync(filePath);
+    const data  =fs.readFileSync(filePath, {encoding: 'utf8'});
+    data.toString
     const json : trialBackup = JSON.parse(parser.toJson(data)) as trialBackup;
     const criteria :string = json.clinical_study.eligibility.criteria.textblock;
     return criteria;
@@ -280,7 +281,7 @@ export class ResearchStudy {
   addSummary() {  
     const nctId :string = this.identifier[0].value; 
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data: Buffer =fs.readFileSync(filePath);
+    const data =fs.readFileSync(filePath, {encoding: 'utf8'});
     const json : trialBackup = JSON.parse(parser.toJson(data)) as trialBackup;
     const summary:string = json.clinical_study.brief_summary.textblock;
     return summary;
@@ -289,7 +290,7 @@ export class ResearchStudy {
   addPhase() {
     const nctId :string = this.identifier[0].value;
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data:Buffer=fs.readFileSync(filePath);
+    const data =fs.readFileSync(filePath, {encoding: 'utf8'});
     const json: trialBackup = JSON.parse(parser.toJson(data)) as trialBackup;
     const phase:string  = json.clinical_study.phase;
     return phase;
@@ -298,7 +299,7 @@ export class ResearchStudy {
   addStudyType() {
     const nctId :string = this.identifier[0].value; 
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data:Buffer =fs.readFileSync(filePath);
+    const data =fs.readFileSync(filePath, {encoding: 'utf8'});
     const json : trialBackup= JSON.parse(parser.toJson(data)) as trialBackup;
     const studytype:string  = json.clinical_study.study_type;
     return studytype;
