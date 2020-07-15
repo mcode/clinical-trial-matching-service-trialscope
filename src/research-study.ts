@@ -271,7 +271,6 @@ export class ResearchStudy {
     const nctId: string = this.identifier[0].value;
     const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
     const data  =fs.readFileSync(filePath, {encoding: 'utf8'});
-    data.toString
     const json : trialBackup = JSON.parse(parser.toJson(data)) as trialBackup;
     const criteria :string = json.clinical_study.eligibility.criteria.textblock;
     return criteria;
