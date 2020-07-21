@@ -1,6 +1,5 @@
 import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
-import fs from 'fs';
-import * as parser from 'xml2json';
+import * as trialbackup from './trialbackup';
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([
   ["Early Phase 1", "early-phase-1"],
@@ -96,68 +95,6 @@ export interface HumanName {
   text: string;
 }
 
-export interface trialBackup 
-{
-  clinical_study: {
-    required_header: {
-      download_date: string,
-      link_text: string,
-      url: string
-    },
-    id_info: { org_study_id: string, nct_id: string},
-    brief_title: string,
-    official_title: string,
-    sponsors: { lead_sponsor: [Record<string, unknown>] },
-    source: string,
-    oversight_info: {
-      has_dmc: string,
-      is_fda_regulated_drug: string,
-      is_fda_regulated_device: string
-    },
-    brief_summary: {
-      textblock: string
-    },
-    overall_status: string,
-    start_date: { type: string, t: string },
-    completion_date: { type: string, t: string },
-    primary_completion_date: { type: string, t: string },
-    phase: string,
-    study_type: string,
-    has_expanded_access: string,
-    study_design_info: {
-      allocation: string,
-      intervention_model: string,
-      primary_purpose: string,
-      masking: string
-    },
-    primary_outcome: [ [Record<string, unknown>], [Record<string, unknown>] ],
-    secondary_outcome: [ [Record<string, unknown>], [Record<string, unknown>], [Record<string, unknown>] ],
-    number_of_arms: string,
-    enrollment: { type: string, t: string },
-    condition: string,
-    arm_group: [ [Record<string, unknown>], [Record<string, unknown>] ],
-    intervention: [ [Record<string, unknown>], [Record<string, unknown>] ],
-    eligibility: {
-      criteria: {textblock: string},
-      gender: string,
-      minimum_age: string,
-      maximum_age: string,
-      healthy_volunteers: string
-    },
-    location: { facility: [Record<string, unknown>] },
-    location_countries: { country: string },
-    verification_date: string,
-    study_first_submitted: string,
-    study_first_submitted_qc: string,
-    study_first_posted: { type: string, t: string },
-    last_update_submitted: string,
-    last_update_submitted_qc: string,
-    last_update_posted: { type: string, t: string},
-    responsible_party: { responsible_party_type: string },
-    intervention_browse: { mesh_term: string },
-    patient_data: { sharing_ipd: string }
-  }
-}
 
 // ResearchStudy implementation
 export class ResearchStudy {
@@ -232,21 +169,23 @@ export class ResearchStudy {
       this.site = this.setSiteReferences(trial.sites);
     }
     //Checks if research study contains enrollment criteria 
-
+    const nctId = this.identifier[0].value;
+    const backup = trialbackup.getBackupTrial(nctId);
     if(!trial.criteria){
-      this.enrollment = [{ reference: `#group${this.id}`, type: "Group", display:  this.addCriteria() }];
+    
+      this.enrollment = [{ reference: `#group${this.id}`, type: "Group", display:  trialbackup.getBackupCriteria(backup) }];
      
     }
     if(!trial.detailedDescription){
-      this.description=  this.addSummary();
+      this.description=  trialbackup.getBackupSummary(backup);
 
     }
     if(!trial.phase){
-      this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(this.addPhase()), display: this.addPhase()}], text: this.addPhase()};
+      this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(trialbackup.getBackupPhase(backup)), display: trialbackup.getBackupPhase(backup)}], text: trialbackup.getBackupPhase(backup)};
      
     }
     if(!trial.studyType){
-      this.category = [{text: this.addStudyType()}];
+      this.category = [{text: trialbackup.getBackupStudyType(backup)}];
       
     }
 
@@ -265,44 +204,6 @@ export class ResearchStudy {
     if (this.site) {
       this.addSitesToContained(trial.sites);
     }
-  }
-  //manually adds in enrollment criteria
-  addCriteria() {
-    const nctId: string = this.identifier[0].value;
-    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data  =fs.readFileSync(filePath, {encoding: 'utf8'});
-    const json : trialBackup = JSON.parse(parser.toJson(data)) as trialBackup;
-    const criteria :string = json.clinical_study.eligibility.criteria.textblock;
-    return criteria;
-
-  }
-
-  addSummary() {  
-    const nctId :string = this.identifier[0].value; 
-    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data =fs.readFileSync(filePath, {encoding: 'utf8'});
-    const json : trialBackup = JSON.parse(parser.toJson(data)) as trialBackup;
-    const summary:string = json.clinical_study.brief_summary.textblock;
-    return summary;
-
-  }
-  addPhase() {
-    const nctId :string = this.identifier[0].value;
-    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data =fs.readFileSync(filePath, {encoding: 'utf8'});
-    const json: trialBackup = JSON.parse(parser.toJson(data)) as trialBackup;
-    const phase:string  = json.clinical_study.phase;
-    return phase;
-    
-  }
-  addStudyType() {
-    const nctId :string = this.identifier[0].value; 
-    const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
-    const data =fs.readFileSync(filePath, {encoding: 'utf8'});
-    const json : trialBackup= JSON.parse(parser.toJson(data)) as trialBackup;
-    const studytype:string  = json.clinical_study.study_type;
-    return studytype;
-
   }
 
   convertStatus(tsStatus: string): string {
