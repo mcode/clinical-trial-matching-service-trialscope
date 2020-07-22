@@ -25,7 +25,7 @@ export class SearchSet {
     for (const node of trials.data.baseMatches.edges) {
       const trial: TrialScopeTrial = node.node;
       const study = new ResearchStudy(trial, index);
-      this.entry.push({ resource: study, search: { mode: 'match', score: 1 } });
+      this.entry.push({ resource: study });
       index++;
     }
   }
