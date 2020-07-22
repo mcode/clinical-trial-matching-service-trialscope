@@ -3,6 +3,7 @@
  */
 
 import https from 'https';
+import http from 'http';
 import { mapConditions } from './mapping';
 import { Bundle, Condition } from './bundle';
 import { IncomingMessage } from 'http';
@@ -331,12 +332,27 @@ export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<
   }
 }
 
+type RequestGeneratorFunction = (url: string | URL, options: https.RequestOptions, callback?: (res: IncomingMessage) => void) => http.ClientRequest;
+
+let generateRequest: RequestGeneratorFunction = https.request;
+
+/**
+ * Override the request generator used to generate HTTPS requests. This may be
+ * useful in some scenarios where the request needs to be modified. It's
+ * primarily intended to be used in tests.
+ *
+ * @param requestGenerator the request generator to use instead of https.request
+ */
+export function setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
+  generateRequest = requestGenerator ? requestGenerator : https.request;
+}
+
 function sendQuery(query: string): Promise<TrialScopeResponse> {
   return new Promise((resolve, reject) => {
     const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
     console.log('Running raw TrialScope query');
     console.log(query);
-    const request = https.request(environment.trialscope_endpoint, {
+    const request = generateRequest(environment.trialscope_endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
