@@ -8,7 +8,7 @@ import data from './sample_trial.json'; //trial misssing summary, inclusion/excl
   *   NOTE: The test must be disabled (changed to xit) on commit 
   * 
   **/
-xdescribe("backup tests", () => {
+describe("backup tests", () => {
 
     const trial :TrialScopeTrial = data as TrialScopeTrial;
     //convert trialscope object to research study 
