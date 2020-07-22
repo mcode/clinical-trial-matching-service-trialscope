@@ -77,13 +77,15 @@ export interface TrialScopeResponse {
   }
 }
 
-function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
+export function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
   if (typeof o !== 'object') {
     return false;
   }
-  if ('data' in o) {
+  if ('data' in o && typeof o['data'] === 'object' && o['data'] !== null) {
     const possibleResponse = o as TrialScopeResponse;
-    return 'baseMatches' in possibleResponse.data;
+    return 'baseMatches' in possibleResponse.data
+      && typeof possibleResponse.data['baseMatches'] === 'object'
+      && possibleResponse.data['baseMatches'] !== null;
   } else {
     return false;
   }
@@ -103,7 +105,7 @@ export interface TrialScopeErrorResponse {
   errors: TrialScopeError[];
 }
 
-function isTrialScopeErrorResponse(o: unknown): o is TrialScopeErrorResponse {
+export function isTrialScopeErrorResponse(o: unknown): o is TrialScopeErrorResponse {
   if (typeof o !== 'object') {
     return false;
   }
