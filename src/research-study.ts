@@ -141,10 +141,10 @@ export class ResearchStudy {
     if (trial.overallContactName || trial.overallContactPhone || trial.overallContactEmail) {
       this.contact = this.setContact(trial.overallContactName, trial.overallContactPhone, trial.overallContactEmail);
     }
-    if (trial.keywords != "[]") {
+    if (trial.keywords && trial.keywords != "[]") {
       this.keyword = this.convertStringArrayToCodeableConcept(trial.keywords);
     }
-    if (trial.countries != "[]") {
+    if (trial.countries && trial.countries != "[]") {
       this.location = this.convertStringArrayToCodeableConcept(trial.countries);
     }
     if (trial.detailedDescription) {
@@ -169,8 +169,10 @@ export class ResearchStudy {
       this.site = this.setSiteReferences(trial.sites);
     }
     //Checks if research study contains enrollment criteria 
+
     const nctId = this.identifier[0].value;
     const backup = trialbackup.getBackupTrial(nctId);
+    
     if(!trial.criteria){
     
       this.enrollment = [{ reference: `#group${this.id}`, type: "Group", display:  trialbackup.getBackupCriteria(backup) }];
@@ -185,7 +187,7 @@ export class ResearchStudy {
      
     }
     if(!trial.studyType){
-      this.category = [{text: trialbackup.getBackupStudyType(backup)}];
+      this.category = [{text: trialbackup.getBackupStudyType(backup)}]; 
       
     }
 

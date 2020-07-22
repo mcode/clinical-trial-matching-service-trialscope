@@ -71,7 +71,7 @@ export interface TrialBackup
 }
 
 export function getBackupTrial(nctId: string) : TrialBackup {
-  const filePath = `./AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
+  const filePath = `src/AllPublicXML/${nctId.substr(0, 7)}xxxx/${nctId}.xml`;
   const data = fs.readFileSync(filePath, {encoding: 'utf8'});
   const json : TrialBackup= JSON.parse(parser.toJson(data)) as TrialBackup;
   return json;
