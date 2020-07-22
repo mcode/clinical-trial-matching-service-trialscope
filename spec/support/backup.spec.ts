@@ -1,9 +1,16 @@
 import { TrialScopeTrial } from './../../src/trialscope';
 import { ResearchStudy } from './../../src/research-study';
 import data from './sample_trial.json'; //trial misssing summary, inclusion/exclusion criteria, phase and study type
-describe("backup tests", () => {
 
-    const trial :TrialScopeTrial =data as TrialScopeTrial;
+
+ /**
+  * This test case is temporarily disabled. Change xit --> it to run this test case.
+  *   NOTE: The test must be disabled (changed to xit) on commit 
+  * 
+  **/
+xdescribe("backup tests", () => {
+
+    const trial :TrialScopeTrial = data as TrialScopeTrial;
     //convert trialscope object to research study 
     const study = new ResearchStudy(trial,1);
     

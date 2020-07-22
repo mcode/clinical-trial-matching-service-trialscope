@@ -25,7 +25,7 @@ Study must contain:
 - Study Type 
 - Inclusion/ Exclusion criteria
 
-Note: _research-study.ts_ provides a "backup" system for filling in information missing from the object passed back from the matching service. This system fills in the following based on the trial's NctId:
+Note: _trialbackup.ts_ provides a "backup" system for filling in information missing from the object passed back from the matching service. This system fills in the following based on the trial's NctId:
 - Inclusion/Exclusion Criteria
 - Phase 
 - Study Type 
