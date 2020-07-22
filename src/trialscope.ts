@@ -7,6 +7,7 @@ import { mapConditions } from './mapping';
 import { Bundle, Condition } from './bundle';
 import { IncomingMessage } from 'http';
 import Configuration from './env';
+import RequestError from './request-error';
 
 const environment = new Configuration().defaultEnvObject();
 
@@ -157,7 +158,7 @@ function parsePhase(phase: string): string | null {
   if (phase in TRIALSCOPE_PHASES) {
     return TRIALSCOPE_PHASES[phase];
   } else {
-    throw new Error(`Cannot parse phase: "${phase}"`);
+    throw new RequestError(`Cannot parse phase: "${phase}"`);
   }
 }
 
@@ -165,7 +166,7 @@ function parseRecruitmentStatus(status: string): string | null {
   if (status in TRIALSCOPE_STATUSES) {
     return TRIALSCOPE_STATUSES[status];
   } else {
-    throw new Error(`Cannot parse recruitment status: "${status}"`);
+    throw new RequestError(`Cannot parse recruitment status: "${status}"`);
   }
 }
 
@@ -285,6 +286,7 @@ export default runTrialScopeQuery;
 /**
  * Runs a TrialScope query.
  *
+ * @deprecated Will be merged in with #runTrialScopeQuery
  * @param {TrialScopeQuery|string} query the query to run
  */
 export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<TrialScopeResponse> {
