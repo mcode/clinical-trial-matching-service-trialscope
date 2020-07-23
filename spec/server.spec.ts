@@ -1,5 +1,5 @@
 import request from 'supertest';
-import server from '../../src/server';
+import server from '../src/server';
 
 describe("server tests", () => {
   it("responds to /", () => {

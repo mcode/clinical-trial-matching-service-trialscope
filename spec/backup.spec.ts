@@ -1,6 +1,6 @@
-import { TrialScopeTrial } from './../../src/trialscope';
-import { ResearchStudy } from './../../src/research-study';
-import data from './sample_trial.json'; //trial misssing summary, inclusion/exclusion criteria, phase and study type
+import { TrialScopeTrial } from '../src/trialscope';
+import { ResearchStudy } from '../src/research-study';
+import data from './data/sample_trial.json'; //trial misssing summary, inclusion/exclusion criteria, phase and study type
 
 
 

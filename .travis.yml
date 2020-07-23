@@ -16,4 +16,4 @@ script:
 before_install: 
   - mkdir src/AllPublicXML
   - mkdir src/AllPublicXML/NCT0358xxxx
-  - mv spec/support/NCT03587740.xml src/AllPublicXML/NCT0358xxxx
+  - mv spec/data/NCT03587740.xml src/AllPublicXML/NCT0358xxxx
