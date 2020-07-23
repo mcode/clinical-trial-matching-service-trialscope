@@ -16,5 +16,5 @@ script:
   - npm test
 
 before_install: 
-  - cd spec/tmp
+  - cd spec/data
   - curl https://storage.googleapis.com/ig-build/org.hl7.fhir.validator.jar  --output org.hl7.fhir.validator.jar
