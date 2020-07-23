@@ -16,7 +16,7 @@ describe("Fhir Validator jar", () => {
 
    beforeEach(function() {
        
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
     });
     afterEach(function(){
         jasmine.DEFAULT_TIMEOUT_INTERVAL=5000;
