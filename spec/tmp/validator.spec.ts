@@ -7,7 +7,6 @@ Download the fhir validator here: https://storage.googleapis.com/ig-build/org.hl
 Paste an example research study in the resource.json file before running the test
 
 */
-
 import { exec } from "child_process";
 import * as fs from 'fs';
 
@@ -15,7 +14,6 @@ import * as fs from 'fs';
 
 describe("Fhir Validator jar", () => {
 
-    
    beforeEach(function() {
        
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
@@ -32,8 +30,7 @@ describe("Fhir Validator jar", () => {
             }
             expect(error).toBeNull();
             done();
-            }); 
-       
+            });   
     });
     it("validates trialscope -> research study object", function(done){
 
@@ -51,7 +48,6 @@ describe("Fhir Validator jar", () => {
             fs.unlinkSync('./spec/tmp/converted.json');
             }); 
      
-
     });
 
 });
