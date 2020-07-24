@@ -3,10 +3,12 @@
  */
 
 import https from 'https';
+import http from 'http';
 import { mapConditions } from './mapping';
 import { Bundle, Condition } from './bundle';
 import { IncomingMessage } from 'http';
 import Configuration from './env';
+import RequestError from './request-error';
 
 const environment = new Configuration().defaultEnvObject();
 
@@ -81,13 +83,17 @@ export interface TrialScopeResponse {
   };
 }
 
-function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
+export function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
   if (typeof o !== 'object') {
     return false;
   }
-  if ('data' in o) {
+  if ('data' in o && typeof o['data'] === 'object' && o['data'] !== null) {
     const possibleResponse = o as TrialScopeResponse;
-    return 'baseMatches' in possibleResponse.data;
+    return (
+      'baseMatches' in possibleResponse.data &&
+      typeof possibleResponse.data['baseMatches'] === 'object' &&
+      possibleResponse.data['baseMatches'] !== null
+    );
   } else {
     return false;
   }
@@ -107,7 +113,7 @@ export interface TrialScopeErrorResponse {
   errors: TrialScopeError[];
 }
 
-function isTrialScopeErrorResponse(o: unknown): o is TrialScopeErrorResponse {
+export function isTrialScopeErrorResponse(o: unknown): o is TrialScopeErrorResponse {
   if (typeof o !== 'object') {
     return false;
   }
@@ -161,7 +167,7 @@ function parsePhase(phase: string): string | null {
   if (phase in TRIALSCOPE_PHASES) {
     return TRIALSCOPE_PHASES[phase];
   } else {
-    throw new Error(`Cannot parse phase: "${phase}"`);
+    throw new RequestError(`Cannot parse phase: "${phase}"`);
   }
 }
 
@@ -169,7 +175,7 @@ function parseRecruitmentStatus(status: string): string | null {
   if (status in TRIALSCOPE_STATUSES) {
     return TRIALSCOPE_STATUSES[status];
   } else {
-    throw new Error(`Cannot parse recruitment status: "${status}"`);
+    throw new RequestError(`Cannot parse recruitment status: "${status}"`);
   }
 }
 
@@ -309,6 +315,7 @@ export default runTrialScopeQuery;
 /**
  * Runs a TrialScope query.
  *
+ * @deprecated Will be merged in with #runTrialScopeQuery
  * @param {TrialScopeQuery|string} query the query to run
  */
 export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<TrialScopeResponse> {
@@ -355,19 +362,39 @@ export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<
   }
 }
 
+type RequestGeneratorFunction = (
+  url: string | URL,
+  options: https.RequestOptions,
+  callback?: (res: IncomingMessage) => void
+) => http.ClientRequest;
+
+let generateRequest: RequestGeneratorFunction = https.request;
+
+/**
+ * Override the request generator used to generate HTTPS requests. This may be
+ * useful in some scenarios where the request needs to be modified. It's
+ * primarily intended to be used in tests.
+ *
+ * @param requestGenerator the request generator to use instead of https.request
+ */
+export function setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
+  generateRequest = requestGenerator ? requestGenerator : https.request;
+}
+
 function sendQuery(query: string): Promise<TrialScopeResponse> {
   return new Promise((resolve, reject) => {
     const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
     console.log('Running raw TrialScope query');
     console.log(query);
-    const request = https.request(
+    const request = generateRequest(
       environment.trialscope_endpoint,
       {
         method: 'POST',
+        // prettier-ignore
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Content-Length': body.byteLength.toString(),
-          Authorization: 'Bearer ' + environment.TRIALSCOPE_TOKEN
+          'Authorization': 'Bearer ' + environment.TRIALSCOPE_TOKEN
         }
       },
       (result) => {
@@ -387,7 +414,13 @@ function sendQuery(query: string): Promise<TrialScopeResponse> {
                 // TODO: Parse out errors?
                 reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
               } else {
-                reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
+                // Going to have to be rejected.
+                if (isTrialScopeErrorResponse(json)) {
+                  // TODO: Parse out errors?
+                  reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+                } else {
+                  reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
+                }
               }
             }
           } else {
