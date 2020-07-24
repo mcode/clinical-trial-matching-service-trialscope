@@ -9,6 +9,7 @@ describe('server', () => {
   // in one test)
   afterEach(() => { trialscope.setRequestGenerator(); });
   it('responds to /', () => {
+
     return request(server)
       .get('/')
       .set('Accept', 'application/json')
@@ -33,6 +34,7 @@ describe('server', () => {
   });
 
   it('responds to /getClinicalTrial with improper patient bundle', () => {
+
     return request(server)
       .post('/getClinicalTrial')
       .send({ patientData: {} })
@@ -41,6 +43,7 @@ describe('server', () => {
   });
 
   it('responds to /getClinicalTrial with no patientBundle param', () => {
+
     return request(server)
       .post('/getClinicalTrial')
       .send({})
@@ -62,6 +65,7 @@ describe('server', () => {
       .set('Accept', 'application/json')
       .expect(500);
   });
+
 });
 
 
