@@ -149,10 +149,10 @@ export class ResearchStudy {
     if (trial.overallContactName || trial.overallContactPhone || trial.overallContactEmail) {
       this.contact = this.setContact(trial.overallContactName, trial.overallContactPhone, trial.overallContactEmail);
     }
-    if (trial.keywords != '[]') {
+    if (trial.keywords && trial.keywords != '[]') {
       this.keyword = this.convertStringArrayToCodeableConcept(trial.keywords);
     }
-    if (trial.countries != '[]') {
+    if (trial.countries && trial.countries != '[]') {
       this.location = this.convertStringArrayToCodeableConcept(trial.countries);
     }
     if (trial.detailedDescription) {
