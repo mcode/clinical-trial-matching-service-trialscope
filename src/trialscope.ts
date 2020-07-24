@@ -34,25 +34,28 @@ const TRIALSCOPE_PHASES: Record<string, string | null> = {
   'phase-4': 'PHASE_4'
 };
 
+// Turn off prettier for the following block: it wants to remove quotes from
+// keys which are kept for consistency.
+// prettier-ignore
 const TRIALSCOPE_STATUSES: Record<string, string | null> = {
-  active: 'RECRUITING',
+  'active': 'RECRUITING',
   'administratively-completed': 'TERMINATED',
   // It's unclear if this mapping is correct
-  approved: 'RECRUITING',
+  'approved': 'RECRUITING',
   'closed-to-accrual': 'ACTIVE_NOT_RECRUITING',
   // both 'closed-to-accrual-and-intervention' and 'completed' have the same
   // description in FHIR 4 (shrug)
   'closed-to-accrual-and-intervention': 'COMPLETED',
-  completed: 'COMPLETED',
+  'completed': 'COMPLETED',
   // There doesn't appear to be a corresponding mapping, TrialScope may simply
   // not return disapproved clinical trials
-  disapproved: null,
+  'disapproved': null,
   // Unclear if this is a good mapping
   'in-review': 'NOT_YET_RECRUITING',
   // It's unclear if this mapping is correct
   'temporarily-closed-to-accrual': 'ACTIVE_NOT_RECRUITING',
   'temporarily-closed-to-accrual-and-intervention': 'SUSPENDED',
-  withdrawn: 'WITHDRAWN'
+  'withdrawn': 'WITHDRAWN'
   // NOT MAPPED:
   // ENROLLING_BY_INVITATION
   // TERMINATED
