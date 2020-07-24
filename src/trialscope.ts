@@ -253,9 +253,10 @@ export class TrialScopeQuery {
    * @return {string} the TrialScope GraphQL query
    */
   toQuery(): string {
-    let baseMatches = `conditions:[${Array.from(this.getTrialScopeConditions()).join(
-      ', '
-    )}], baseFilters: { zipCode: "${this.zipCode}"`;
+    let baseMatches =
+      'conditions:[' +
+      Array.from(this.getTrialScopeConditions()).join(', ') +
+      `], baseFilters: { zipCode: "${this.zipCode}"`;
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
       baseMatches += ',travelRadius: ' + this.travelRadius.toString();
