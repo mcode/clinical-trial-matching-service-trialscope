@@ -19,17 +19,14 @@ export class SearchSet {
   entry: SearchBundleEntry[] = [];
 
   constructor(trials: TrialScopeResponse) {
-
     this.total = trials.data.baseMatches.totalCount;
     let index = 0;
 
     for (const node of trials.data.baseMatches.edges) {
       const trial: TrialScopeTrial = node.node;
-      const study = new ResearchStudy(trial, index)
-      this.entry.push({resource: study});
+      const study = new ResearchStudy(trial, index);
+      this.entry.push({ resource: study });
       index++;
     }
-
   }
-
 }

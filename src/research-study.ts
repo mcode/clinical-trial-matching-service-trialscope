@@ -2,34 +2,34 @@ import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
 import * as trialbackup from './trialbackup';
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([
-  ["Early Phase 1", "early-phase-1"],
-  ["N/A", "n-a"],
-  ["Phase 1", "phase-1"],
-  ["Phase 1/Phase 2", "phase-1-phase-2"],
-  ["Phase 2", "phase-2"],
-  ["Phase 2/Phase 3", "phase-2-phase-3"],
-  ["Phase 3", "phase-3"],
-  ["Phase 4", "phase-4"],
+  ['Early Phase 1', 'early-phase-1'],
+  ['N/A', 'n-a'],
+  ['Phase 1', 'phase-1'],
+  ['Phase 1/Phase 2', 'phase-1-phase-2'],
+  ['Phase 2', 'phase-2'],
+  ['Phase 2/Phase 3', 'phase-2-phase-3'],
+  ['Phase 3', 'phase-3'],
+  ['Phase 4', 'phase-4']
 ]);
 
 const statusMap = new Map<string, string>([
-  ["Active, not recruiting", "closed-to-accrual"],
-  ["Approved for marketing", "approved"],
-  ["Available", "active"],
-  ["Enrolling by invitation", "active"],
-  ["Not yet recruiting", "approved"],
-  ["Recruiting", "active"],
+  ['Active, not recruiting', 'closed-to-accrual'],
+  ['Approved for marketing', 'approved'],
+  ['Available', 'active'],
+  ['Enrolling by invitation', 'active'],
+  ['Not yet recruiting', 'approved'],
+  ['Recruiting', 'active']
 ]);
 
 // FHIR data types supporting ResearchStudy
-export interface Identifier{
+export interface Identifier {
   use?: string;
   system?: string;
   value?: string;
 }
 
 export interface CodeableConcept {
-  coding?: {system?: string; code?: string; display?: string;}[]
+  coding?: { system?: string; code?: string; display?: string }[];
   text?: string;
 }
 
@@ -63,28 +63,28 @@ export interface Reference {
 
 // FHIR resources contained within ResearchStudy
 export interface Group {
-  resourceType?: string
+  resourceType?: string;
   id?: string;
   type?: string;
   actual?: boolean;
 }
 
 export interface Location {
-  resourceType?: string
+  resourceType?: string;
   id?: string;
   name?: string;
   telecom?: Telecom[];
-  position?: {longitude?: number; latitude?: number};
+  position?: { longitude?: number; latitude?: number };
 }
 
 export interface Organization {
-  resourceType?: string
+  resourceType?: string;
   id?: string;
   name?: string;
 }
 
 export interface Practitioner {
-  resourceType?: string
+  resourceType?: string;
   id?: string;
   name?: HumanName[];
 }
@@ -94,7 +94,6 @@ export interface HumanName {
   use?: string;
   text: string;
 }
-
 
 // ResearchStudy implementation
 export class ResearchStudy {
@@ -121,7 +120,7 @@ export class ResearchStudy {
   constructor(trial: TrialScopeTrial, id: number) {
     this.id = String(id);
     if (trial.nctId) {
-      this.identifier = [{use: "official", system: "http://clinicaltrials.gov", value: trial.nctId}];
+      this.identifier = [{ use: 'official', system: 'http://clinicaltrials.gov', value: trial.nctId }];
     }
     if (trial.title) {
       this.title = trial.title;
@@ -130,78 +129,98 @@ export class ResearchStudy {
       this.status = this.convertStatus(trial.overallStatus);
     }
     if (trial.phase) {
-      this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(trial.phase), display: trial.phase}], text: trial.phase};
+      this.phase = {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/research-study-phase',
+            code: this.convertPhaseCode(trial.phase),
+            display: trial.phase
+          }
+        ],
+        text: trial.phase
+      };
     }
     if (trial.studyType) {
-      this.category = [{text: trial.studyType}];
+      this.category = [{ text: trial.studyType }];
     }
-    if (trial.conditions != "[]") {
+    if (trial.conditions != '[]') {
       this.condition = this.convertStringArrayToCodeableConcept(trial.conditions);
     }
     if (trial.overallContactName || trial.overallContactPhone || trial.overallContactEmail) {
       this.contact = this.setContact(trial.overallContactName, trial.overallContactPhone, trial.overallContactEmail);
     }
-    if (trial.keywords && trial.keywords != "[]") {
+    if (trial.keywords && trial.keywords != '[]') {
       this.keyword = this.convertStringArrayToCodeableConcept(trial.keywords);
     }
-    if (trial.countries && trial.countries != "[]") {
+    if (trial.countries && trial.countries != '[]') {
       this.location = this.convertStringArrayToCodeableConcept(trial.countries);
     }
     if (trial.detailedDescription) {
       this.description = trial.detailedDescription;
     }
-    if (typeof trial.armGroups[Symbol.iterator] === 'function') { // ts returns {} when empty, which is not iterable
+    if (typeof trial.armGroups[Symbol.iterator] === 'function') {
+      // ts returns {} when empty, which is not iterable
       this.arm = this.setArm(trial.armGroups);
     }
     if (trial.officialTitle) {
-      this.objective = [{name: trial.officialTitle}];
+      this.objective = [{ name: trial.officialTitle }];
     }
     if (trial.criteria) {
-      this.enrollment = [{reference: "#group" + this.id, type: "Group", display: trial.criteria}];
+      this.enrollment = [{ reference: '#group' + this.id, type: 'Group', display: trial.criteria }];
     }
     if (trial.sponsor) {
-      this.sponsor = {reference: "#org" + this.id, type: "Organization"};
+      this.sponsor = { reference: '#org' + this.id, type: 'Organization' };
     }
     if (trial.overallOfficialName) {
-      this.principalInvestigator = {reference: "#practitioner" + this.id, type: "Practitioner"};
+      this.principalInvestigator = { reference: '#practitioner' + this.id, type: 'Practitioner' };
     }
     if (trial.sites != []) {
       this.site = this.setSiteReferences(trial.sites);
     }
-    //Checks if research study contains enrollment criteria 
+    //Checks if research study contains enrollment criteria
 
     const nctId = this.identifier[0].value;
     const backup = trialbackup.getBackupTrial(nctId);
-    
-    if(!trial.criteria){
-    
-      this.enrollment = [{ reference: `#group${this.id}`, type: "Group", display:  trialbackup.getBackupCriteria(backup) }];
-     
-    }
-    if(!trial.detailedDescription){
-      this.description=  trialbackup.getBackupSummary(backup);
 
+    if (!trial.criteria) {
+      this.enrollment = [
+        { reference: `#group${this.id}`, type: 'Group', display: trialbackup.getBackupCriteria(backup) }
+      ];
     }
-    if(!trial.phase){
-      this.phase = {coding: [{system: "http://terminology.hl7.org/CodeSystem/research-study-phase", code: this.convertPhaseCode(trialbackup.getBackupPhase(backup)), display: trialbackup.getBackupPhase(backup)}], text: trialbackup.getBackupPhase(backup)};
-     
+    if (!trial.detailedDescription) {
+      this.description = trialbackup.getBackupSummary(backup);
     }
-    if(!trial.studyType){
-      this.category = [{text: trialbackup.getBackupStudyType(backup)}]; 
-      
+    if (!trial.phase) {
+      this.phase = {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/research-study-phase',
+            code: this.convertPhaseCode(trialbackup.getBackupPhase(backup)),
+            display: trialbackup.getBackupPhase(backup)
+          }
+        ],
+        text: trialbackup.getBackupPhase(backup)
+      };
+    }
+    if (!trial.studyType) {
+      this.category = [{ text: trialbackup.getBackupStudyType(backup) }];
     }
 
     if (this.enrollment || this.site || this.sponsor || this.principalInvestigator) {
       this.contained = [];
     }
     if (this.enrollment) {
-      this.contained.push({resourceType: "Group", id: "group" + this.id, type: "person", actual: false});
+      this.contained.push({ resourceType: 'Group', id: 'group' + this.id, type: 'person', actual: false });
     }
     if (this.sponsor) {
-      this.contained.push({resourceType: "Organization", id: "org" + this.id, name: trial.sponsor});
+      this.contained.push({ resourceType: 'Organization', id: 'org' + this.id, name: trial.sponsor });
     }
     if (this.principalInvestigator) {
-      this.contained.push({resourceType: "Practitioner", id: "practitioner" + this.id, name: [{use: "official", text: trial.overallOfficialName}]});
+      this.contained.push({
+        resourceType: 'Practitioner',
+        id: 'practitioner' + this.id,
+        name: [{ use: 'official', text: trial.overallOfficialName }]
+      });
     }
     if (this.site) {
       this.addSitesToContained(trial.sites);
@@ -222,7 +241,7 @@ export class ResearchStudy {
     const jsonConditions: string[] = JSON.parse(tsConditions) as string[];
     const fhirConditions: CodeableConcept[] = [];
     for (const condition of jsonConditions) {
-      fhirConditions.push({text: condition});
+      fhirConditions.push({ text: condition });
     }
     return fhirConditions;
   }
@@ -235,10 +254,10 @@ export class ResearchStudy {
     if (phone || email) {
       const telecoms: Telecom[] = [];
       if (phone) {
-        telecoms.push({system: "phone", value: phone, use: "work"});
+        telecoms.push({ system: 'phone', value: phone, use: 'work' });
       }
       if (email) {
-        telecoms.push({system: "email", value: email, use: "work"});
+        telecoms.push({ system: 'email', value: email, use: 'work' });
       }
       contact.telecom = telecoms;
     }
@@ -248,26 +267,26 @@ export class ResearchStudy {
   setArm(armGroups: ArmGroup[]): Arm[] {
     const arms: Arm[] = [];
     for (const armgroup of armGroups) {
-      const singleArm : Arm = {};
+      const singleArm: Arm = {};
       if (armgroup.arm_group_label) {
         singleArm.name = armgroup.arm_group_label;
       }
       if (armgroup.arm_group_type) {
-        singleArm.type = {text: armgroup.arm_group_type};
+        singleArm.type = { text: armgroup.arm_group_type };
       }
       if (armgroup.description) {
         singleArm.description = armgroup.description;
       }
       arms.push(singleArm);
     }
-     return arms;
+    return arms;
   }
 
   setSiteReferences(sites: Site[]): Reference[] {
     const siteReferences: Reference[] = [];
     let siteIndex = 0;
     for (const site of sites) {
-      siteReferences.push({reference: "#location" + this.id + "-" + String(siteIndex), type: "Location"});
+      siteReferences.push({ reference: '#location' + this.id + '-' + String(siteIndex), type: 'Location' });
       siteIndex++;
     }
     return siteReferences;
@@ -277,29 +296,26 @@ export class ResearchStudy {
     let locationIndex = 0;
     for (const location of sites) {
       const local: Location = {};
-      local.resourceType = "Location";
-      local.id = "location" + this.id + "-" + String(locationIndex);
+      local.resourceType = 'Location';
+      local.id = 'location' + this.id + '-' + String(locationIndex);
       if (location.facility) {
         local.name = location.facility;
       }
       if (location.contactEmail || location.contactPhone) {
         const localTelecom: Telecom[] = [];
         if (location.contactEmail) {
-          localTelecom.push({system: "email", value: location.contactEmail, use: "work"});
+          localTelecom.push({ system: 'email', value: location.contactEmail, use: 'work' });
         }
         if (location.contactPhone) {
-          localTelecom.push({system: "phone", value: location.contactPhone, use: "work"});
+          localTelecom.push({ system: 'phone', value: location.contactPhone, use: 'work' });
         }
         local.telecom = localTelecom;
       }
       if (location.latitude && location.longitude) {
-        local.position = {latitude: location.latitude, longitude: location.longitude};
+        local.position = { latitude: location.latitude, longitude: location.longitude };
       }
       this.contained.push(local);
       locationIndex++;
     }
   }
-
 }
-
-

@@ -13,7 +13,9 @@ import RequestError from './request-error';
 const environment = new Configuration().defaultEnvObject();
 
 if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
-  throw new Error('TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.');
+  throw new Error(
+    'TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.'
+  );
 }
 
 /**
@@ -52,7 +54,7 @@ const TRIALSCOPE_STATUSES: Record<string, string | null> = {
   // It's unclear if this mapping is correct
   'temporarily-closed-to-accrual': 'ACTIVE_NOT_RECRUITING',
   'temporarily-closed-to-accrual-and-intervention': 'SUSPENDED',
-  'withdrawn': 'WITHDRAWN',
+  'withdrawn': 'WITHDRAWN'
   // NOT MAPPED:
   // ENROLLING_BY_INVITATION
   // TERMINATED
@@ -69,13 +71,13 @@ export interface TrialScopeResponse {
   data: {
     baseMatches: {
       totalCount: number;
-      edges: { node: TrialScopeTrial, cursor: string }[];
+      edges: { node: TrialScopeTrial; cursor: string }[];
       pageInfo: {
         endCursor: string;
         hasNextPage: boolean;
-      }
-    }
-  }
+      };
+    };
+  };
 }
 
 export function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
@@ -84,9 +86,11 @@ export function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
   }
   if ('data' in o && typeof o['data'] === 'object' && o['data'] !== null) {
     const possibleResponse = o as TrialScopeResponse;
-    return 'baseMatches' in possibleResponse.data
-      && typeof possibleResponse.data['baseMatches'] === 'object'
-      && possibleResponse.data['baseMatches'] !== null;
+    return (
+      'baseMatches' in possibleResponse.data &&
+      typeof possibleResponse.data['baseMatches'] === 'object' &&
+      possibleResponse.data['baseMatches'] !== null
+    );
   } else {
     return false;
   }
@@ -96,7 +100,7 @@ export interface TrialScopeError {
   message: string;
   locations: {
     line: number;
-    column: number
+    column: number;
   }[];
   path: string[];
   extensions: { [key: string]: unknown };
@@ -112,9 +116,8 @@ export function isTrialScopeErrorResponse(o: unknown): o is TrialScopeErrorRespo
   }
   if ('errors' in o) {
     const possibleError = o as TrialScopeErrorResponse;
-    if (!Array.isArray(possibleError.errors))
-      return false;
-      // TODO (maybe): peak at the errors
+    if (!Array.isArray(possibleError.errors)) return false;
+    // TODO (maybe): peak at the errors
     return true;
   } else {
     return false;
@@ -189,11 +192,27 @@ export class TrialScopeQuery {
    * The fields that should be returned within the individual trial object.
    */
   trialFields = [
-    'nctId', 'title', 'officialTitle', 'conditions', 'keywords', 'gender',
-    'description', 'detailedDescription', 'criteria', 'sponsor',
-    'overallContactName', 'overallContactPhone', 'overallContactEmail',
-    'overallOfficialName', 'overallStatus', 'armGroups', 'phase', 'minimumAge',
-    'studyType', 'countries', 'maximumAge'
+    'nctId',
+    'title',
+    'officialTitle',
+    'conditions',
+    'keywords',
+    'gender',
+    'description',
+    'detailedDescription',
+    'criteria',
+    'sponsor',
+    'overallContactName',
+    'overallContactPhone',
+    'overallContactEmail',
+    'overallOfficialName',
+    'overallStatus',
+    'armGroups',
+    'phase',
+    'minimumAge',
+    'studyType',
+    'countries',
+    'maximumAge'
   ];
   constructor(patientBundle: Bundle) {
     for (const entry of patientBundle.entry) {
@@ -237,7 +256,10 @@ export class TrialScopeQuery {
    * @return {string} the TrialScope GraphQL query
    */
   toQuery(): string {
-    let baseMatches = `conditions:[${Array.from(this.getTrialScopeConditions()).join(', ')}], baseFilters: { zipCode: "${this.zipCode}"`;
+    let baseMatches =
+      'conditions:[' +
+      Array.from(this.getTrialScopeConditions()).join(', ') +
+      `], baseFilters: { zipCode: "${this.zipCode}"`;
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
       baseMatches += ',travelRadius: ' + this.travelRadius.toString();
@@ -260,6 +282,7 @@ export class TrialScopeQuery {
     if (this.after !== null) {
       baseMatches += ', after: ' + JSON.stringify(this.after);
     }
+    // prettier-ignore
     const query = `{ baseMatches(${baseMatches}) {` +
       'totalCount edges {' +
         'node {' + this.trialFields.join(' ') +
@@ -296,35 +319,39 @@ export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<
   if (typeof query === 'object' && typeof query.toQuery === 'function') {
     // If given an object, assume we're going to need to paginate and load everything
     return new Promise((resolve, reject) => {
-      sendQuery(query.toQuery()).then(result => {
-        // Result is a parsed JSON object. See if we need to load more pages.
-        const loadNextPage = (previousPage: TrialScopeResponse) => {
-          query.after = previousPage.data.baseMatches.pageInfo.endCursor;
-          sendQuery(query.toQuery()).then(nextPage => {
-            // Append results.
-            result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
-            if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
-              // Keep going
-              loadNextPage(nextPage);
-            } else {
-              resolve(result);
-            }
-          }).catch(reject);
-        };
-        if (!('data' in result)) {
-          console.error('Bad response from server. Got:');
-          console.error(result);
-          reject(new Error(`Missing "data" in results`));
-        }
-        if (result.data.baseMatches.pageInfo.hasNextPage) {
-          // Since this result object is the ultimate result, alter it to
-          // pretend it doesn't have a next page
-          result.data.baseMatches.pageInfo.hasNextPage = false;
-          loadNextPage(result);
-        } else {
-          resolve(result);
-        }
-      }).catch(reject);
+      sendQuery(query.toQuery())
+        .then((result) => {
+          // Result is a parsed JSON object. See if we need to load more pages.
+          const loadNextPage = (previousPage: TrialScopeResponse) => {
+            query.after = previousPage.data.baseMatches.pageInfo.endCursor;
+            sendQuery(query.toQuery())
+              .then((nextPage) => {
+                // Append results.
+                result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
+                if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
+                  // Keep going
+                  loadNextPage(nextPage);
+                } else {
+                  resolve(result);
+                }
+              })
+              .catch(reject);
+          };
+          if (!('data' in result)) {
+            console.error('Bad response from server. Got:');
+            console.error(result);
+            reject(new Error(`Missing "data" in results`));
+          }
+          if (result.data.baseMatches.pageInfo.hasNextPage) {
+            // Since this result object is the ultimate result, alter it to
+            // pretend it doesn't have a next page
+            result.data.baseMatches.pageInfo.hasNextPage = false;
+            loadNextPage(result);
+          } else {
+            resolve(result);
+          }
+        })
+        .catch(reject);
     });
   } else if (typeof query === 'string') {
     // Run directly
@@ -332,7 +359,11 @@ export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<
   }
 }
 
-type RequestGeneratorFunction = (url: string | URL, options: https.RequestOptions, callback?: (res: IncomingMessage) => void) => http.ClientRequest;
+type RequestGeneratorFunction = (
+  url: string | URL,
+  options: https.RequestOptions,
+  callback?: (res: IncomingMessage) => void
+) => http.ClientRequest;
 
 let generateRequest: RequestGeneratorFunction = https.request;
 
@@ -352,40 +383,56 @@ function sendQuery(query: string): Promise<TrialScopeResponse> {
     const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
     console.log('Running raw TrialScope query');
     console.log(query);
-    const request = generateRequest(environment.trialscope_endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Content-Length': body.byteLength.toString(),
-        'Authorization': 'Bearer ' + environment.TRIALSCOPE_TOKEN
-      }
-    }, result => {
-      let responseBody = '';
-      result.on('data', chunk => {
-        responseBody += chunk;
-      });
-      result.on('end', () => {
-        console.log('Complete');
-        if (result.statusCode === 200) {
-          const json = JSON.parse(responseBody) as unknown;
-          if (isTrialScopeResponse(json)) {
-            resolve(json);
-          } else {
-            // Going to have to be rejected.
-            if (isTrialScopeErrorResponse(json)) {
-              // TODO: Parse out errors?
-              reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
-            } else {
-              reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
-            }
-          }
-        } else {
-          reject(new TrialScopeServerError(`Server returned ${result.statusCode} ${result.statusMessage}`, result, responseBody));
+    const request = generateRequest(
+      environment.trialscope_endpoint,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Content-Length': body.byteLength.toString(),
+          'Authorization': 'Bearer ' + environment.TRIALSCOPE_TOKEN
         }
-      });
-    });
+      },
+      (result) => {
+        let responseBody = '';
+        result.on('data', (chunk) => {
+          responseBody += chunk;
+        });
+        result.on('end', () => {
+          console.log('Complete');
+          if (result.statusCode === 200) {
+            const json = JSON.parse(responseBody) as unknown;
+            if (isTrialScopeResponse(json)) {
+              resolve(json);
+            } else {
+              // Going to have to be rejected.
+              if (isTrialScopeErrorResponse(json)) {
+                // TODO: Parse out errors?
+                reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+              } else {
+                // Going to have to be rejected.
+                if (isTrialScopeErrorResponse(json)) {
+                  // TODO: Parse out errors?
+                  reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+                } else {
+                  reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
+                }
+              }
+            }
+          } else {
+            reject(
+              new TrialScopeServerError(
+                `Server returned ${result.statusCode} ${result.statusMessage}`,
+                result,
+                responseBody
+              )
+            );
+          }
+        });
+      }
+    );
 
-    request.on('error', error => reject(error));
+    request.on('error', (error) => reject(error));
 
     request.write(body);
     request.end();

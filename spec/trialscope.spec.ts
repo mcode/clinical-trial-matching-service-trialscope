@@ -14,8 +14,7 @@ describe('isTrialScopeErrorResponse', () => {
     expect(isTrialScopeErrorResponse({ errors: null })).toBe(false);
   });
   it('requires errors be an array', () => {
-    expect(isTrialScopeErrorResponse({ errors: [ ] })).toBe(true);
+    expect(isTrialScopeErrorResponse({ errors: [] })).toBe(true);
     expect(isTrialScopeErrorResponse({ errors: 5 })).toBe(false);
-  })
+  });
 });
-

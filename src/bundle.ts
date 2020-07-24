@@ -27,19 +27,18 @@ export interface Bundle extends BaseResource {
 }
 
 export function isBundle(o: unknown): o is Bundle {
-  if (typeof o !== 'object')
-    return false;
+  if (typeof o !== 'object') return false;
   const other = o as Bundle;
   return other.resourceType === 'Bundle' && other.type === 'collection' && Array.isArray(other.entry);
 }
 
 export interface Parameters extends BaseResource {
   resourceType: 'Parameters';
-  parameter: { name: string; valueString: string; }[];
+  parameter: { name: string; valueString: string }[];
 }
 
 export interface Code {
-  coding: { system: URLString, code: string, display?: string }[];
+  coding: { system: URLString; code: string; display?: string }[];
   text?: string;
 }
 

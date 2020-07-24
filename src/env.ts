@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const defaults: {[key: string]: string | null} = {
+const defaults: { [key: string]: string | null } = {
   TRIALSCOPE_ENDPOINT: 'https://clinicaltrialconnect.dev/graphql',
   PORT: '3000',
   TRIALSCOPE_TOKEN: null
@@ -16,13 +16,14 @@ try {
   for (const line of envLocal.split(/\r?[\r\n]/)) {
     const m = /^\s*(\w+)\s*=\s*(.*)\s*$/.exec(line);
     if (m) {
-      const k = m[1], value = m[2];
+      const k = m[1],
+        value = m[2];
       if (k in defaults) {
         defaults[k] = value;
       }
     }
   }
-} catch(ex) {
+} catch (ex) {
   const e: NodeJS.ErrnoException = ex as NodeJS.ErrnoException;
   // Ignore ENOENT, it means the file doesn't exist, which is fine
   if (e.code !== 'ENOENT') {
@@ -51,7 +52,7 @@ export default class configuration {
   /**
    * @return Configuration information
    */
-  defaultEnvObject(): {port: number, TRIALSCOPE_TOKEN: string, trialscope_endpoint: string} {
+  defaultEnvObject(): { port: number; TRIALSCOPE_TOKEN: string; trialscope_endpoint: string } {
     return {
       port: this.PORT,
       TRIALSCOPE_TOKEN: this.TRIALSCOPE_TOKEN,

@@ -11,10 +11,12 @@ const app = express();
 
 const environment = new Configuration().defaultEnvObject();
 
-app.use(bodyParser.json({
-  // Need to increase the payload limit to receive patient bundles
-  limit: "10MB"
-}));
+app.use(
+  bodyParser.json({
+    // Need to increase the payload limit to receive patient bundles
+    limit: '10MB'
+  })
+);
 
 app.use(function (_req, res, next) {
   // Website you wish to allow to connect
@@ -24,7 +26,10 @@ app.use(function (_req, res, next) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
   // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With, WU-Api-Key, WU-Api-Secret');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With, WU-Api-Key, WU-Api-Secret'
+  );
 
   next();
 });
@@ -48,21 +53,27 @@ app.post('/getConditions', function (req, res) {
 app.post('/getClinicalTrial', function (req, res) {
   const postBody = req.body as Record<string, unknown>;
   if ('patientData' in postBody) {
-    const patientBundle = (typeof postBody.patientData === 'string' ? JSON.parse(postBody.patientData) : postBody.patientData) as Record<string, unknown>;
+    const patientBundle = (typeof postBody.patientData === 'string'
+      ? JSON.parse(postBody.patientData)
+      : postBody.patientData) as Record<string, unknown>;
     if (isBundle(patientBundle)) {
       try {
-        runTrialScopeQuery(patientBundle).then(result => {
-          const fhirResult = new SearchSet(result);
-          // For debugging: dump the result out
-          // console.log(JSON.stringify(fhirResult, null, 2));
-          res.status(200).send(JSON.stringify(fhirResult));
-        }).catch(error => {
-          console.error(error);
-          res.status(500).send({ error: 'Error from server', exception: Object.prototype.toString.call(error) as string });
-        });
+        runTrialScopeQuery(patientBundle)
+          .then((result) => {
+            const fhirResult = new SearchSet(result);
+            // For debugging: dump the result out
+            // console.log(JSON.stringify(fhirResult, null, 2));
+            res.status(200).send(JSON.stringify(fhirResult));
+          })
+          .catch((error) => {
+            console.error(error);
+            res
+              .status(500)
+              .send({ error: 'Error from server', exception: Object.prototype.toString.call(error) as string });
+          });
       } catch (ex) {
         if (ex instanceof RequestError) {
-          res.status(ex.httpStatus).send({ error: ex.message })
+          res.status(ex.httpStatus).send({ error: ex.message });
         } else {
           res.status(500).send({ error: 'Internal server error' });
         }

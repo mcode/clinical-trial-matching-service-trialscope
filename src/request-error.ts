@@ -13,5 +13,7 @@ export default class RequestError extends Error {
     this._httpStatus = Math.floor(httpStatus);
   }
 
-  get httpStatus(): number { return this._httpStatus; }
+  get httpStatus(): number {
+    return this._httpStatus;
+  }
 }
