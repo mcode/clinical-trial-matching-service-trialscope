@@ -11,9 +11,14 @@ node_js:
 cache: npm
 
 script:
+  - npm install 
   - npm run lint
   - npm test
+
 before_install: 
   - mkdir src/AllPublicXML
   - mkdir src/AllPublicXML/NCT0358xxxx
-  - mv spec/data/NCT03587740.xml src/AllPublicXML/NCT0358xxxx
+  - mv spec/data/NCT03587740.xml src/AllPublicXML/NCT0358xxxx 
+  - cd spec/data
+  - curl https://storage.googleapis.com/ig-build/org.hl7.fhir.validator.jar  --output org.hl7.fhir.validator.jar
+

@@ -6,6 +6,8 @@
 /src/AllPublicXML
 # Ignore installed modules
 /node_modules
+spec/data/org.hl7.fhir.validator.jar
+/src/AllPublicXML
 
 # System Files
 .DS_Store
