@@ -1,10 +1,11 @@
 import express from 'express';
-import { runTrialScopeQuery, runRawTrialScopeQuery } from './trialscope';
+import { runTrialScopeQuery } from './trialscope';
 import * as mapping from './mapping';
 import bodyParser from 'body-parser';
 import Configuration from './env';
 import { isBundle } from './bundle';
 import { SearchSet } from './searchset';
+import RequestError from './request-error';
 
 const app = express();
 
@@ -49,27 +50,26 @@ app.post('/getClinicalTrial', function (req, res) {
   if ('patientData' in postBody) {
     const patientBundle = (typeof postBody.patientData === 'string' ? JSON.parse(postBody.patientData) : postBody.patientData) as Record<string, unknown>;
     if (isBundle(patientBundle)) {
-      runTrialScopeQuery(patientBundle).then(result => {
-        const fhirResult = new SearchSet(result);
-        // For debugging: dump the result out
-        // console.log(JSON.stringify(fhirResult, null, 2));
-        res.status(200).send(JSON.stringify(fhirResult));
-      }).catch(error => {
-        console.error(error);
-        res.status(500).send({ error: 'Error from server', exception: Object.prototype.toString.call(error) as string });
-      });
+      try {
+        runTrialScopeQuery(patientBundle).then(result => {
+          const fhirResult = new SearchSet(result);
+          // For debugging: dump the result out
+          // console.log(JSON.stringify(fhirResult, null, 2));
+          res.status(200).send(JSON.stringify(fhirResult));
+        }).catch(error => {
+          console.error(error);
+          res.status(500).send({ error: 'Error from server', exception: Object.prototype.toString.call(error) as string });
+        });
+      } catch (ex) {
+        if (ex instanceof RequestError) {
+          res.status(ex.httpStatus).send({ error: ex.message })
+        } else {
+          res.status(500).send({ error: 'Internal server error' });
+        }
+      }
     } else {
       res.status(400).send({ error: 'Invalid patientBundle' });
     }
-  } else if ('inputParam' in postBody) {
-    // Backwards-compat: if there is no patient body, just run the query directly
-    runRawTrialScopeQuery(postBody.inputParam as string).then(result => {
-      res.status(200).send(result);
-    }).catch(error => {
-      console.error(error);
-      res.status(400).send({ error: (error as Error).toString() });
-    });
-    return;
   } else {
     // request missing json fields
     res.status(400).send({ error: 'Request missing required fields' });
