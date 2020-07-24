@@ -1,6 +1,8 @@
 import request from 'supertest';
-import server from '../../src/server';
-import * as trialscope from '../../src/trialscope';
+
+import server from '../src/server';
+import * as trialscope from '../src/trialscope';
+
 
 describe('server', () => {
   // Reset the request generator after each test (currently gets modified only
