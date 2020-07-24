@@ -1,0 +1,145 @@
+{
+    "nctId": "NCT03587740",
+    "title": "ATOP TRIAL: T-DM1 in HER2 Positive Breast Cancer",
+    "conditions": "[\"Breast Cancer\"]",
+    "gender": "All",
+    "description": "\n      This research study is studying an investigational drug as a possible treatment for breast\n      cancer that is positive for the protein Human Epidermal Growth Factor Receptor 2, also known\n      as HER2-positive breast cancer.\n\n      The drug involved in this study is:\n\n      -ado-trastuzumab emtansine (T-DM1)\n    ",
+    
+    "sponsor": "Dana-Farber Cancer Institute",
+    "overallContactPhone": "617-632-4587",
+    "overallContactEmail": "rafreedman@partners.org",
+    "overallStatus": "Recruiting",
+    "armGroups": [
+        {
+            "description": "T-DM1 will be administered every 3 weeks intravenously, with 21 consecutive days defined as a treatment.",
+            "arm_group_type": "Experimental",
+            "arm_group_label": "T-DM1"
+        }
+    ],
+
+    "minimumAge": 60,
+    
+    "maximumAge": 120,
+    "sites": [
+        {
+            "facility": "City of Hope Comprehensive Cancer Center",
+            "contactName": "Mina Sedrak, M",
+            "contactEmail": "msedrak@coh.org",
+            "contactPhone": "",
+            "latitude": 34.1579788,
+            "longitude": -117.9424743
+        },
+        {
+            "facility": "The Stamford Hospital",
+            "contactName": "K.M. Steve Lo, MD",
+            "contactEmail": "SLo@stamhealth.org",
+            "contactPhone": "",
+            "latitude": 41.05,
+            "longitude": -73.53999999999999
+        },
+        {
+            "facility": "Eastern Maine Medical Center",
+            "contactName": "Laurie Lewis",
+            "contactEmail": "llewis@northernlight.org",
+            "contactPhone": "207-973-4249",
+            "latitude": 44.7767302,
+            "longitude": -68.7321679
+        },
+        {
+            "facility": "Dana Farber Cancer Institute",
+            "contactName": "Rachel Freedman, MD MPH",
+            "contactEmail": "rafreedman@partners.org",
+            "contactPhone": "617-632-4587",
+            "latitude": 42.3476181,
+            "longitude": -71.1002881
+        },
+        {
+            "facility": "Massachusetts General Hospital",
+            "contactName": "Laura Spring, MD",
+            "contactEmail": "Lspring2@partners.org",
+            "contactPhone": "617-724-4000",
+            "latitude": 42.3476181,
+            "longitude": -71.1002881
+        },
+        {
+            "facility": "Dana-Farber Cancer Institute at St. Elizabeth's Medical Center",
+            "contactName": "Caroline Block, MD",
+            "contactEmail": "Caroline_Block@DFCI.HARVARD.EDU",
+            "contactPhone": "",
+            "latitude": 42.3463503,
+            "longitude": -71.1626756
+        },
+        {
+            "facility": "Dana-Farber/Brigham and Women's Cancer Center at Milford Regional Medical Center",
+            "contactName": "Natalie Sinclair, MD",
+            "contactEmail": "NSINCLAIR1@PARTNERS.ORG",
+            "contactPhone": "",
+            "latitude": 42.141566,
+            "longitude": -71.5192361
+        },
+        {
+            "facility": "Dana-Farber/Brigham and Women's Cancer Center in clinical affiliation with South Shore Hospital",
+            "contactName": "Meredith Faggen, MD",
+            "contactEmail": "",
+            "contactPhone": "",
+            "latitude": 42.1751002,
+            "longitude": -70.9494899
+        },
+        {
+            "facility": "Mayo Clinic",
+            "contactName": "Kathryn Ruddy, MD",
+            "contactEmail": "ruddy.kathryn@mayo.edu",
+            "contactPhone": "",
+            "latitude": 44.0557303,
+            "longitude": -92.5253639
+        },
+        {
+            "facility": "Dana-Farber/New Hampshire Oncology-Hematology",
+            "contactName": "Frederick Briccetti, MD",
+            "contactEmail": "Fred_Briccetti@DFCI.HARVARD.EDU",
+            "contactPhone": "",
+            "latitude": 42.8680259,
+            "longitude": -71.37569119999999
+        },
+        {
+            "facility": "Memorial Sloan Kettering Cancer Center",
+            "contactName": "Chau Dang, MD",
+            "contactEmail": "dangc@mskcc.org",
+            "contactPhone": "",
+            "latitude": 40.7645239,
+            "longitude": -73.96243270000001
+        },
+        {
+            "facility": "University of North Carolina",
+            "contactName": "Trevor Jolly, MD",
+            "contactEmail": "trevor_jolly@med.unc.edu",
+            "contactPhone": "",
+            "latitude": 35.905249,
+            "longitude": -79.0581498
+        },
+        {
+            "facility": "Rex Cancer Center",
+            "contactName": "Florence Whatley",
+            "contactEmail": "florence.whatley@unchealth.unc.edu",
+            "contactPhone": "",
+            "latitude": 35.8019142,
+            "longitude": -78.6875364
+        },
+        {
+            "facility": "Lifespan Cancer Institute",
+            "contactName": "Mary A Fenton, MD",
+            "contactEmail": "MFenton@Lifespan.org",
+            "contactPhone": "",
+            "latitude": 41.816736,
+            "longitude": -71.40915629999999
+        },
+        {
+            "facility": "Sarah Cannon Research Institute",
+            "contactName": "Erika Hamilton, MD",
+            "contactEmail": "ehamilton@tnonc.com",
+            "contactPhone": "",
+            "latitude": 36.1523805,
+            "longitude": -86.7893889
+        }
+    ]
+}

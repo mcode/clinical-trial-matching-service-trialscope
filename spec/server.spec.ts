@@ -28,6 +28,7 @@ describe('server', () => {
   });
 
   it('responds to /getClinicalTrial with improper patient bundle', () => {
+
     return request(server)
       .post('/getClinicalTrial')
       .send({ patientData: {} })
@@ -53,4 +54,5 @@ describe('server', () => {
       .set('Accept', 'application/json')
       .expect(500);
   });
+
 });
