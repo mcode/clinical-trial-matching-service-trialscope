@@ -36,9 +36,6 @@ const TRIALSCOPE_PHASES: Record<string, string | null> = {
   'phase-4': 'PHASE_4'
 };
 
-// Turn off prettier for the following block: it wants to remove quotes from
-// keys which are kept for consistency.
-// prettier-ignore
 const TRIALSCOPE_STATUSES: Record<string, string | null> = {
   'active': 'RECRUITING',
   'administratively-completed': 'TERMINATED',
@@ -390,7 +387,6 @@ function sendQuery(query: string): Promise<TrialScopeResponse> {
       environment.trialscope_endpoint,
       {
         method: 'POST',
-        // prettier-ignore
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Content-Length': body.byteLength.toString(),
