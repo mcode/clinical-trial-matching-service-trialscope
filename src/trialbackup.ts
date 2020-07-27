@@ -76,22 +76,22 @@ export function getBackupTrial(nctId: string): TrialBackup {
   return json;
 }
 
-export function getBackupCriteria(trial: TrialBackup) {
+export function getBackupCriteria(trial: TrialBackup): string {
   const criteria: string = trial.clinical_study.eligibility.criteria.textblock;
   return criteria;
 }
 
-export function getBackupSummary(trial: TrialBackup) {
+export function getBackupSummary(trial: TrialBackup): string {
   const summary: string = trial.clinical_study.brief_summary.textblock;
   return summary;
 }
 
-export function getBackupPhase(trial: TrialBackup) {
+export function getBackupPhase(trial: TrialBackup): string {
   const phase: string = trial.clinical_study.phase;
   return phase;
 }
 
-export function getBackupStudyType(trial: TrialBackup) {
+export function getBackupStudyType(trial: TrialBackup): string {
   const studytype: string = trial.clinical_study.study_type;
   return studytype;
 }

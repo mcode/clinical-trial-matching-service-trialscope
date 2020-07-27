@@ -5,10 +5,10 @@
 import https from 'https';
 import http from 'http';
 import { mapConditions } from './mapping';
-import { Bundle, Condition } from './bundle';
 import { IncomingMessage } from 'http';
 import Configuration from './env';
-import RequestError from './request-error';
+import { convertTrialScopeToResearchStudy } from './research-study-mapping';
+import { Bundle, Condition, RequestError, ResearchStudy, SearchSet } from 'clinical-trial-matching-service';
 
 const environment = new Configuration().defaultEnvObject();
 
@@ -303,61 +303,57 @@ export class TrialScopeQuery {
   }
 }
 
-export function runTrialScopeQuery(patientBundle: Bundle): Promise<TrialScopeResponse> {
-  return runRawTrialScopeQuery(new TrialScopeQuery(patientBundle));
+export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
+  return new Promise<TrialScopeResponse>((resolve, reject) => {
+    const query = new TrialScopeQuery(patientBundle);
+    sendQuery(query.toQuery())
+      .then((result) => {
+        // Result is a parsed JSON object. See if we need to load more pages.
+        const loadNextPage = (previousPage: TrialScopeResponse) => {
+          query.after = previousPage.data.baseMatches.pageInfo.endCursor;
+          sendQuery(query.toQuery())
+            .then((nextPage) => {
+              // Append results.
+              result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
+              if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
+                // Keep going
+                loadNextPage(nextPage);
+              } else {
+                resolve(result);
+              }
+            })
+            .catch(reject);
+        };
+        if (!('data' in result)) {
+          console.error('Bad response from server. Got:');
+          console.error(result);
+          reject(new Error(`Missing "data" in results`));
+        }
+        if (result.data.baseMatches.pageInfo.hasNextPage) {
+          // Since this result object is the ultimate result, alter it to
+          // pretend it doesn't have a next page
+          result.data.baseMatches.pageInfo.hasNextPage = false;
+          loadNextPage(result);
+        } else {
+          resolve(result);
+        }
+      })
+      .catch(reject);
+  }).then<SearchSet>((trialscopeResponse) => {
+    // Convert to SearchSet
+    const studies: ResearchStudy[] = [];
+    let index = 0;
+
+    for (const node of trialscopeResponse.data.baseMatches.edges) {
+      const trial: TrialScopeTrial = node.node;
+      studies.push(convertTrialScopeToResearchStudy(trial, index));
+      index++;
+    }
+    return new SearchSet(studies);
+  });
 }
 
 export default runTrialScopeQuery;
-
-/**
- * Runs a TrialScope query.
- *
- * @deprecated Will be merged in with #runTrialScopeQuery
- * @param {TrialScopeQuery|string} query the query to run
- */
-export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<TrialScopeResponse> {
-  if (typeof query === 'object' && typeof query.toQuery === 'function') {
-    // If given an object, assume we're going to need to paginate and load everything
-    return new Promise((resolve, reject) => {
-      sendQuery(query.toQuery())
-        .then((result) => {
-          // Result is a parsed JSON object. See if we need to load more pages.
-          const loadNextPage = (previousPage: TrialScopeResponse) => {
-            query.after = previousPage.data.baseMatches.pageInfo.endCursor;
-            sendQuery(query.toQuery())
-              .then((nextPage) => {
-                // Append results.
-                result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
-                if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
-                  // Keep going
-                  loadNextPage(nextPage);
-                } else {
-                  resolve(result);
-                }
-              })
-              .catch(reject);
-          };
-          if (!('data' in result)) {
-            console.error('Bad response from server. Got:');
-            console.error(result);
-            reject(new Error(`Missing "data" in results`));
-          }
-          if (result.data.baseMatches.pageInfo.hasNextPage) {
-            // Since this result object is the ultimate result, alter it to
-            // pretend it doesn't have a next page
-            result.data.baseMatches.pageInfo.hasNextPage = false;
-            loadNextPage(result);
-          } else {
-            resolve(result);
-          }
-        })
-        .catch(reject);
-    });
-  } else if (typeof query === 'string') {
-    // Run directly
-    return sendQuery(query);
-  }
-}
 
 type RequestGeneratorFunction = (
   url: string | URL,
