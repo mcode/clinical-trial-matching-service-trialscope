@@ -12,6 +12,7 @@ cache: npm
 
 script:
   - npm install 
+  - npm install codecov -g
   - npm run lint
   - npm test
 
@@ -22,3 +23,5 @@ before_install:
   - cd spec/data
   - curl https://storage.googleapis.com/ig-build/org.hl7.fhir.validator.jar  --output org.hl7.fhir.validator.jar
 
+after_success:
+  - codecov
