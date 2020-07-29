@@ -4,11 +4,11 @@ import * as mapping from './mapping';
 
 import { Bundle, ClinicalTrialMatchingService } from 'clinical-trial-matching-service';
 
-class TrialScopeService extends ClinicalTrialMatchingService {
-  constructor() {
+export class TrialScopeService extends ClinicalTrialMatchingService {
+  constructor(config?: Record<string, string | number>) {
     super((patientBundle: Bundle) => {
       return runTrialScopeQuery(patientBundle);
-    });
+    }, config);
 
     // Add our customizations
 
@@ -24,9 +24,6 @@ class TrialScopeService extends ClinicalTrialMatchingService {
   }
 }
 
-export const server = new TrialScopeService();
-export default server;
-
 if (module.parent === null) {
-  server.listen();
+  new TrialScopeService().listen();
 }

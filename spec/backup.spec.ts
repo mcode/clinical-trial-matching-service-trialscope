@@ -1,11 +1,11 @@
 import { TrialScopeTrial } from '../src/trialscope';
-import { ResearchStudy } from '../src/research-study';
+import { convertTrialScopeToResearchStudy } from '../src/research-study-mapping';
 import data from './data/sample_trial.json'; //trial missing summary, inclusion/exclusion criteria, phase and study type
 
 describe('backup tests', () => {
   const trial: TrialScopeTrial = data as TrialScopeTrial;
   //convert trialscope object to research study
-  const study = new ResearchStudy(trial, 1);
+  const study = convertTrialScopeToResearchStudy(trial, 1);
 
   it('fills in inclusion criteria ', () => {
     expect(study.enrollment[0].display).toBeDefined();

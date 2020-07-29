@@ -1,4 +1,4 @@
-import { ResearchStudy } from '../src/research-study';
+import { convertTrialScopeToResearchStudy } from '../src/research-study-mapping';
 import { TrialScopeTrial } from '../src/trialscope';
 /*
  * Use the FHIR validator jar to check the ResearchStudy bundle being sent to
@@ -47,7 +47,7 @@ describe('FHIR Validator jar', () => {
   it('validates matching service results -> research study object', function (done) {
     const data = fs.readFileSync('./spec/data/trialscope_trial.json', { encoding: 'utf8' });
     const json: TrialScopeTrial = JSON.parse(data) as TrialScopeTrial;
-    const study = new ResearchStudy(json, 1);
+    const study = convertTrialScopeToResearchStudy(json, 1);
     fs.writeFileSync('./spec/data/converted.json', JSON.stringify(study));
     exec('java -jar ./spec/data/org.hl7.fhir.validator.jar ./spec/data/converted.json', function (
       error,
