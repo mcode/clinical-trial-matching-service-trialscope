@@ -6,10 +6,14 @@
   "scripts": {
     "build": "npm run build-ts",
     "build-ts": "tsc",
+    "build:tests": "tsc --build tsconfig.test.json",
+    "coverage": "npm run-script build:tests && nyc --require ts-node/register --reporter=lcovonly jasmine",
+    "coverage:html": "npm run-script build:tests && nyc --require ts-node/register --reporter=html jasmine",
     "lint": "eslint . --ext .js,.ts",
     "serve": "node dist/server.js",
     "start": "npm run serve",
-    "test": "ts-node node_modules/jasmine/bin/jasmine"
+    "test": "npm run-script build:tests && npm run-script test:run",
+    "test:run": "jasmine"
   },
   "author": "",
   "license": "Apache-2.0",
