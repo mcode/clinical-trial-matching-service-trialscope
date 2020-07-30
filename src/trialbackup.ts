@@ -1,5 +1,6 @@
 import fs from 'fs';
 import * as parser from 'xml2json';
+import got from 'got';
 
 /*
 This file contains a backup system for finding necessary trial information if your matching service does not provide it:
@@ -74,6 +75,17 @@ export function getBackupTrial(nctId: string): TrialBackup {
   const data = fs.readFileSync(filePath, { encoding: 'utf8' });
   const json: TrialBackup = JSON.parse(parser.toJson(data)) as TrialBackup;
   return json;
+}
+
+export async function getRemoteBackupTrial(nctId: string) {
+  const url = `https://clinicaltrials.gov/ct2/show/${nctId}?displayxml=true`;
+ // const response = await got(url);
+  const response = await got(url);
+  const json  = JSON.parse(parser.toJson(response.body));
+  return json;
+ 
+ 
+
 }
 
 export function getBackupCriteria(trial: TrialBackup) {

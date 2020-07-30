@@ -180,7 +180,7 @@ export class ResearchStudy {
     //Checks if research study contains enrollment criteria
 
     const nctId = this.identifier[0].value;
-    const backup = trialbackup.getBackupTrial(nctId);
+    const backup = trialbackup.getRemoteBackupTrial(nctId);
 
     if (!trial.criteria) {
       this.enrollment = [
