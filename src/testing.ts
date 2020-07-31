@@ -8,7 +8,7 @@ export async function getRemoteBackupTrial(nctId: string) {
    // const response = await got(url);
     const response = await got(url);
     const json  = JSON.parse(parser.toJson(response.body));
-    console.log(json);
+  //  console.log(json);
    
 
   }

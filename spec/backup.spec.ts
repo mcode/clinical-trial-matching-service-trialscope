@@ -4,9 +4,10 @@ import data from './data/sample_trial.json'; //trial missing summary, inclusion/
 
 describe('backup tests', () => {
   const trial: TrialScopeTrial = data as TrialScopeTrial;
+  //console.log(data);
   //convert trialscope object to research study
   const study = new ResearchStudy(trial, 1);
-
+  console.log(study);
   it('fills in inclusion criteria ', () => {
     expect(study.enrollment[0].display).toBeDefined();
   });

@@ -180,31 +180,31 @@ export class ResearchStudy {
     //Checks if research study contains enrollment criteria
 
     const nctId = this.identifier[0].value;
-    const backup = trialbackup.getRemoteBackupTrial(nctId);
-
-    if (!trial.criteria) {
-      this.enrollment = [
-        { reference: `#group${this.id}`, type: 'Group', display: trialbackup.getBackupCriteria(backup) }
-      ];
-    }
-    if (!trial.detailedDescription) {
-      this.description = trialbackup.getBackupSummary(backup);
-    }
-    if (!trial.phase) {
-      this.phase = {
-        coding: [
-          {
-            system: 'http://terminology.hl7.org/CodeSystem/research-study-phase',
-            code: this.convertPhaseCode(trialbackup.getBackupPhase(backup)),
-            display: trialbackup.getBackupPhase(backup)
-          }
-        ],
-        text: trialbackup.getBackupPhase(backup)
-      };
-    }
-    if (!trial.studyType) {
-      this.category = [{ text: trialbackup.getBackupStudyType(backup) }];
-    }
+    trialbackup.getRemoteBackupTrial(nctId).then((backup) => {
+    
+      if (!trial.criteria) {
+        this.enrollment = [
+          { reference: `#group${this.id}`, type: 'Group', display: trialbackup.getBackupCriteria(backup)}];
+      }
+      if (!trial.detailedDescription) {
+        this.description = trialbackup.getBackupSummary(backup);
+      }
+      if (!trial.phase) {
+        this.phase = {
+          coding: [
+            {
+              system: 'http://terminology.hl7.org/CodeSystem/research-study-phase',
+              code: this.convertPhaseCode(trialbackup.getBackupPhase(backup)),
+              display: trialbackup.getBackupPhase(backup)
+            }
+          ],
+          text: trialbackup.getBackupPhase(backup)
+        };
+      }
+      if (!trial.studyType) {
+        this.category = [{ text: trialbackup.getBackupStudyType(backup)}];
+      }
+   
 
     if (this.enrollment || this.site || this.sponsor || this.principalInvestigator) {
       this.contained = [];
@@ -225,6 +225,8 @@ export class ResearchStudy {
     if (this.site) {
       this.addSitesToContained(trial.sites);
     }
+    console.log(this)
+  });
   }
 
   convertStatus(tsStatus: string): string {

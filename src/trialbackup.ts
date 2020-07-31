@@ -81,7 +81,7 @@ export async function getRemoteBackupTrial(nctId: string) {
   const url = `https://clinicaltrials.gov/ct2/show/${nctId}?displayxml=true`;
  // const response = await got(url);
   const response = await got(url);
-  const json  = JSON.parse(parser.toJson(response.body));
+  const json  = JSON.parse(parser.toJson(response.body)) as TrialBackup;
   return json;
  
  
