@@ -9,6 +9,7 @@ import { IncomingMessage } from 'http';
 import Configuration from './env';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { Bundle, Condition, RequestError, ResearchStudy, SearchSet } from 'clinical-trial-matching-service';
+import { exec } from 'child_process';
 
 const environment = new Configuration().defaultEnvObject();
 
@@ -343,12 +344,18 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
     // Convert to SearchSet
     const studies: ResearchStudy[] = [];
     let index = 0;
-
+    let backupIds = [];
     for (const node of trialscopeResponse.data.baseMatches.edges) {
       const trial: TrialScopeTrial = node.node;
-      studies.push(convertTrialScopeToResearchStudy(trial, index));
+      let study = convertTrialScopeToResearchStudy(trial, index)
+      if(!study.description || !study.enrollment || !study.phase || !study.category){
+        backupIds.push(trial.nctId);
+      }
+      studies.push(study);
+      
       index++;
     }
+    
     return new SearchSet(studies);
   });
 }
