@@ -17,14 +17,13 @@ function downloadRemoteBackups(ids) {
     var file = fs.createWriteStream("backup.zip");
     var request = https.get(url, function (response) {
         response.pipe(file);
-        child_process_1.exec('unzip ./backup -d ./backup/', function (error, stdout, stderr) {
-            console.log('hi');
+        child_process_1.exec('unzip ./backup -d ./backups/', function (error, stdout, stderr) {
+            console.log(error);
         });
     });
-    /* exec(`curl ${url} --output spec/data/backup.zip && unzip spec/data/backup.zip`, function () {
-      
-      
-     }); */
 }
 exports.downloadRemoteBackups = downloadRemoteBackups;
+/* exec(`curl ${url} --output spec/data/backup.zip && unzip spec/data/backup.zip`, function () {
+   
+ }); */
 downloadRemoteBackups(['NCT03587740', 'NCT02513394']);

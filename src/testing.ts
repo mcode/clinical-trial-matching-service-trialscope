@@ -12,19 +12,21 @@ export function downloadRemoteBackups(ids: string []){
     url=url.slice(0,-4);
     console.log(url);
     const file = fs.createWriteStream("backup.zip");
+   
+      
     const request = https.get(url, function(response) {
         response.pipe(file);
-        exec('unzip ./backup -d ./backup/', function(error,stdout, stderr){
-            console.log('hi');
+        exec('unzip ./backup -d ./backups/', function(error,stdout, stderr){
+            console.log(error);
+            
         });
-
     });
+
+}
     
    /* exec(`curl ${url} --output spec/data/backup.zip && unzip spec/data/backup.zip`, function () {
-     
-     
+      
     }); */
-  
-  
-  }
+   
+
 downloadRemoteBackups(['NCT03587740','NCT02513394']);

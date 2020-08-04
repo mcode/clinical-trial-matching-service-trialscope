@@ -78,7 +78,7 @@ export function getBackupTrial(nctId: string): TrialBackup {
   return json;
 }
 //export function getDownloadedTrial(nctId)
-export function downloadRemoteBackups(ids: string []){
+export async function downloadRemoteBackups(ids: string []){
   let url = 'https://clinicaltrials.gov/ct2/download_studies?term=';
   for ( const id of ids){
     url +=`${id}+OR+`;
