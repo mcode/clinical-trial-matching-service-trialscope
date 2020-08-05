@@ -1,8 +1,10 @@
 import * as https  from 'https';
 import * as fs from 'fs';
-//import {downloadRemoteBackups} from './trialbackup';
+//import { downloadRemoteBackups, TrialBackup } from './trialbackup';
 import { exec } from 'child_process';
-import { unzip } from 'zlib';
+import * as parser from 'xml2json';
+import { resolve } from 'dns';
+
 export function downloadRemoteBackups(ids: string []){
     let url = 'https://clinicaltrials.gov/ct2/download_studies?term=';
     for ( const id of ids){
@@ -13,15 +15,28 @@ export function downloadRemoteBackups(ids: string []){
     console.log(url);
     const file = fs.createWriteStream("backup.zip");
    
-      
-    const request = https.get(url, function(response) {
-        response.pipe(file);
-        exec('unzip ./backup -d ./backups/', function(error,stdout, stderr){
-            console.log(error);
+    return new Promise<void>((resolve, reject) => {
+        try {
+            const request =  https.get(url, function(response) {
+                console.log('begin');
+                response.pipe(file).on('close', () => {
+                
+                    exec('unzip ./backup -d ./backups/', (error, stdout, stderr) => {
+                    console.log('no');
+                    resolve();
+                    });
+                });
+            });
             
-        });
+        }      
+        catch(err) {
+            reject(err);
+        }
+        
+    
+        console.log('yes');
     });
-
+    
 }
     
    /* exec(`curl ${url} --output spec/data/backup.zip && unzip spec/data/backup.zip`, function () {
@@ -29,4 +44,14 @@ export function downloadRemoteBackups(ids: string []){
     }); */
    
 
-downloadRemoteBackups(['NCT03587740','NCT02513394']);
+downloadRemoteBackups(['NCT03587740','NCT02513394']).then(() => {
+ //   console.log(res);
+    
+   
+    const filePath = `./backups/NCT02513394.xml`;
+    const data = fs.readFileSync(filePath, { encoding: 'utf8' });
+    const json = JSON.parse(parser.toJson(data));
+    console.log(json);
+    
+});
+
