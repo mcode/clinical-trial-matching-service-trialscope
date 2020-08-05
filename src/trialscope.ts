@@ -1,15 +1,16 @@
+
 /**
  * Module for running queries via TrialScope
  */
-
+import * as trialbackup from './trialbackup';
 import https from 'https';
 import http from 'http';
 import { mapConditions } from './mapping';
 import { IncomingMessage } from 'http';
 import Configuration from './env';
-import { convertTrialScopeToResearchStudy } from './research-study-mapping';
+import { convertTrialScopeToResearchStudy, updateTrial } from './research-study-mapping';
 import { Bundle, Condition, RequestError, ResearchStudy, SearchSet } from 'clinical-trial-matching-service';
-import { exec } from 'child_process';
+import * as fs from 'fs';
 
 const environment = new Configuration().defaultEnvObject();
 
@@ -355,8 +356,22 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
       
       index++;
     }
+    return trialbackup.downloadRemoteBackups(backupIds).then(() => {
+      for (let study of studies){
+        if(study.identifier[0].value in backupIds){
+          study = updateTrial(study);
+        }
+      }
+      fs.unlink("./backup.zip", err => { 
+        if (err) console.log(err); 
+      }); 
+      fs.rmdir("./backups/", {recursive: true}, err => { 
+        if (err) console.log(err); 
+      }); 
+
+      return new SearchSet(studies);
+    });    
     
-    return new SearchSet(studies);
   });
 }
 

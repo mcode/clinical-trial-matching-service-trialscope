@@ -18,23 +18,16 @@ export function downloadRemoteBackups(ids: string []){
     return new Promise<void>((resolve, reject) => {
         try {
             const request =  https.get(url, function(response) {
-                console.log('begin');
                 response.pipe(file).on('close', () => {
-                
                     exec('unzip ./backup -d ./backups/', (error, stdout, stderr) => {
-                    console.log('no');
-                    resolve();
+                        resolve();
                     });
                 });
-            });
-            
+            });    
         }      
         catch(err) {
             reject(err);
         }
-        
-    
-        console.log('yes');
     });
     
 }
@@ -51,7 +44,12 @@ downloadRemoteBackups(['NCT03587740','NCT02513394']).then(() => {
     const filePath = `./backups/NCT02513394.xml`;
     const data = fs.readFileSync(filePath, { encoding: 'utf8' });
     const json = JSON.parse(parser.toJson(data));
-    console.log(json);
-    
+    console.log(json.clinical_study.eligibility.criteria.textblock);
+    fs.unlink("./backup.zip", err => { 
+        if (err) console.log(err); 
+      }); 
+    fs.rmdir("./backups/", {recursive: true}, err => { 
+        if (err) console.log(err); 
+      }); 
 });
 

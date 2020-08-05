@@ -119,21 +119,25 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
     });
   }
 
-  // Checks if research study contains enrollment criteria
-  const nctId = result.identifier[0].value;
-  /*
-  This does not work at present, it attempts to load data from a local file
-  const backup = trialbackup.getBackupTrial(nctId);
 
-  if (!trial.criteria) {
+
+  return result;
+}
+
+// Checks if research study contains enrollment criteria
+
+export function updateTrial(result: ResearchStudy){
+  const backup = trialbackup.getDownloadedTrial(result.identifier[0].value)
+  if(!result.enrollment){
     result.enrollment = [
       { reference: `#group${result.id}`, type: 'Group', display: trialbackup.getBackupCriteria(backup) }
     ];
   }
-  if (!trial.detailedDescription) {
+
+  if(!result.description){
     result.description = trialbackup.getBackupSummary(backup);
   }
-  if (!trial.phase) {
+  if(!result.phase){
     result.phase = {
       coding: [
         {
@@ -145,12 +149,15 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
       text: trialbackup.getBackupPhase(backup)
     };
   }
-  if (!trial.studyType) {
+  if(!result.category){
     result.category = [{ text: trialbackup.getBackupStudyType(backup) }];
   }
-  */
+ 
   return result;
+
 }
+
+
 
 function createArm(armGroups: ArmGroup[]): Arm[] {
   const arms: Arm[] = [];

@@ -19,10 +19,8 @@ function downloadRemoteBackups(ids) {
     return new Promise(function (resolve, reject) {
         try {
             var request = https.get(url, function (response) {
-                console.log('begin');
                 response.pipe(file).on('close', function () {
                     child_process_1.exec('unzip ./backup -d ./backups/', function (error, stdout, stderr) {
-                        console.log('no');
                         resolve();
                     });
                 });
@@ -31,7 +29,6 @@ function downloadRemoteBackups(ids) {
         catch (err) {
             reject(err);
         }
-        console.log('yes');
     });
 }
 exports.downloadRemoteBackups = downloadRemoteBackups;
@@ -43,5 +40,13 @@ downloadRemoteBackups(['NCT03587740', 'NCT02513394']).then(function () {
     var filePath = "./backups/NCT02513394.xml";
     var data = fs.readFileSync(filePath, { encoding: 'utf8' });
     var json = JSON.parse(parser.toJson(data));
-    console.log(json);
+    console.log(json.clinical_study.eligibility.criteria.textblock);
+    fs.unlink("./backup.zip", function (err) {
+        if (err)
+            console.log(err);
+    });
+    fs.rmdir("./backups/", { recursive: true }, function (err) {
+        if (err)
+            console.log(err);
+    });
 });
