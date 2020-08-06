@@ -4,10 +4,15 @@
 /dist
 /dist-spec
 /src/AllPublicXML
+
 # Ignore installed modules
 /node_modules
 spec/data/org.hl7.fhir.validator.jar
 /src/AllPublicXML
+
+# Ignore Instanbul coverage files
+/.nyc_output
+/coverage
 
 # System Files
 .DS_Store

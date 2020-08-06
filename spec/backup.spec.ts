@@ -1,9 +1,10 @@
 import { TrialScopeTrial } from '../src/trialscope';
 import { ResearchStudy } from '../src/research-study';
-import data from './data/sample_trial.json'; //trial missing summary, inclusion/exclusion criteria, phase and study type
+// trial missing summary, inclusion/exclusion criteria, phase and study type
+import testData from './data/sample_trial.json';
 
 describe('backup tests', () => {
-  const trial: TrialScopeTrial = data as TrialScopeTrial;
+  const trial: TrialScopeTrial = testData as TrialScopeTrial;
   //convert trialscope object to research study
   const study = new ResearchStudy(trial, 1);
 

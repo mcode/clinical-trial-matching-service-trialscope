@@ -1,15 +1,19 @@
 {
-  "name": "clinicaltrialconnectapi",
+  "name": "clinical-trial-matching-service-trialscope",
   "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "description": "Matching service wrapper that works with TrialScope",
+  "main": "dist/server.js",
   "scripts": {
     "build": "npm run build-ts",
     "build-ts": "tsc",
+    "build:tests": "tsc --build tsconfig.test.json",
+    "coverage": "npm run-script build:tests && nyc --require ts-node/register --reporter=lcovonly jasmine",
+    "coverage:html": "npm run-script build:tests && nyc --require ts-node/register --reporter=html jasmine",
     "lint": "eslint . --ext .js,.ts",
     "serve": "node dist/server.js",
     "start": "npm run serve",
-    "test": "ts-node node_modules/jasmine/bin/jasmine"
+    "test": "npm run-script build:tests && npm run-script test:run",
+    "test:run": "jasmine"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -32,6 +36,7 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "nyc": "^15.1.0",
     "prettier": "2.0.5",
     "supertest": "^4.0.2",
     "ts-node": "^8.10.2",
