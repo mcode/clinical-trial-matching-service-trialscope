@@ -367,14 +367,14 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
             study = updateTrial(study);
           }
         }
-        /*
-        fs.unlink("./backup.zip", err => { 
+        
+        fs.unlink("src/backup.zip", err => { 
           if (err) console.log(err); 
         }); 
-        fs.rmdir("./backups/", {recursive: true}, err => { 
+        fs.rmdir("src/backups/", {recursive: true}, err => { 
           if (err) console.log(err); 
         }); 
-        */
+        
         return new SearchSet(studies);
       });    
     }
