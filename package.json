@@ -1,8 +1,12 @@
 {
-  "name": "clinicaltrialconnectapi",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "name": "clinical-trial-matching-service-trialscope",
+  "version": "0.0.1",
+  "description": "TrialScope matching service",
+  "main": "dist/server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcode/clinical-trial-matching-service-trialscope.git"
+  },
   "scripts": {
     "build": "npm run build-ts",
     "build-ts": "tsc",
@@ -15,7 +19,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "clinical-trial-matching-service": "github:mcode/clinical-trial-matching-service#initial-implementation",
+    "clinical-trial-matching-service": "github:mcode/clinical-trial-matching-service",
     "express": "^4.17.1",
     "xml2json": "^0.12.0"
   },
