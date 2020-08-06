@@ -93,13 +93,14 @@ export function downloadRemoteBackups(ids: string []){
   //remove trailing +OR+
   url=url.slice(0,-4);
   console.log(url);
-  const file = fs.createWriteStream("backup.zip");
+  const file = fs.createWriteStream("src/backup.zip");
  
   return new Promise<void>((resolve, reject) => {
       try {
           const request =  https.get(url, function(response) {
               response.pipe(file).on('close', () => {
-                  exec('unzip ./backup -d ./backups/', (error, stdout, stderr) => {
+                  exec('unzip src/backup -d src/backups/', (error, stdout, stderr) => {
+                    console.log(error);
                       resolve();
                   });
               });

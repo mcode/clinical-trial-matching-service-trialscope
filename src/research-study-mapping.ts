@@ -152,7 +152,7 @@ export function updateTrial(result: ResearchStudy){
   if(!result.category){
     result.category = [{ text: trialbackup.getBackupStudyType(backup) }];
   }
- 
+  console.log(result);
   return result;
 
 }
