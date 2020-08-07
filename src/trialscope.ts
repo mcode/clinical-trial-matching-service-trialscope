@@ -187,9 +187,36 @@ export interface Coding {
   display?: string;
 }
 
+export interface Quantity {
+  value?: number;
+  comparator?: string;
+  unit?: string;
+  system?: string;
+  code?: string;
+}
+
+export interface Ratio {
+  numerator?: Quantity;
+  denominator?: Quantity;
+}
+
 // extracted MCODE info?? WIP
 export class extractedMCODE {
-  PrimaryCancerCondition?: {clinicalStatus?: Coding[], coding?: Coding[]}[]
+  primaryCancerCondition?: { clinicalStatus?: Coding[]; coding?: Coding[]; histologyMorphologyBehavior?: Coding[] }[]; // wava has 1 resource - need histology extension
+  TNMClinicalStageGroup?: Coding[]; // wava has 1 resource
+  TNMPathologicalStageGroup?: Coding[]; // wava has 0 resources
+  secondaryCancerCondition?: { clinicalStatus?: Coding[]; coding?: Coding[]; bodySite?: Coding[] }[]; // wava has 0 resources
+  birthDate?: string;
+  tumorMarker?: {
+    code?: Coding[];
+    valueQuantity?: Quantity[];
+    valueRatio?: Ratio[];
+    valueCodeableConcept?: Coding[];
+    interpretation?: Coding[];
+  }[];
+  cancerRelatedRadiationProcedure?: Coding[]; // can this be a set - wava has 34 of these put they're all the same
+  cancerRelatedSurgicalProcedure?: Coding[]; // would also be better as a set
+  cancerRelatedMedicationStatement?: Coding[]; // this too
 
   constructor(patientBundle: Bundle) {
     for (const entry of patientBundle.entry) {
@@ -199,36 +226,189 @@ export class extractedMCODE {
       }
       const resource = entry.resource;
 
-      if (resource.resourceType === 'Condition' && this.resourceProfile(this.lookup(resource, "meta.profile"), "mcode-primary-cancer-condition")) {
-        const tempPrimaryCancerCondition: {clinicalStatus?: Coding[], coding?: Coding[]} = {};
-        if (this.lookup(resource, "code.coding")) {
-          tempPrimaryCancerCondition.coding = this.lookup(resource, "code.coding");
+      if (
+        resource.resourceType === 'Condition' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-primary-cancer-condition')
+      ) {
+        const tempPrimaryCancerCondition: {
+          clinicalStatus?: Coding[];
+          coding?: Coding[];
+          histologyMorphologyBehavior?: Coding[];
+        } = {};
+        if (this.lookup(resource, 'code.coding')) {
+          tempPrimaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
         }
-        if (this.lookup(resource, "clinicalStatus.coding")) {
-          tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, "clinicalStatus.coding");
+        if (this.lookup(resource, 'clinicalStatus.coding')) {
+          tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
         }
-        if(this.PrimaryCancerCondition) {
-          this.PrimaryCancerCondition.push(tempPrimaryCancerCondition);
+        if (this.lookup(resource, 'extension')) {
+          let count = 0;
+          for (const extension of this.lookup(resource, 'extension')) {
+            // yeah really not sure you can even do this
+            if (this.lookup(resource, `extension[${count}].url`).includes('mcode-histology-morphology-behavior')) {
+              tempPrimaryCancerCondition.histologyMorphologyBehavior = this.lookup(
+                resource,
+                `extension[${count}].valueCodeableConcept.coding`
+              ) as Coding[];
+            }
+            count++;
+          }
+        }
+
+        if (this.primaryCancerCondition) {
+          this.primaryCancerCondition.push(tempPrimaryCancerCondition);
         } else {
-          this.PrimaryCancerCondition = [tempPrimaryCancerCondition];
+          this.primaryCancerCondition = [tempPrimaryCancerCondition];
         }
       }
 
+      if (
+        resource.resourceType === 'Observation' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tnm-clinical-stage-group')
+      ) {
+        if (this.TNMClinicalStageGroup) {
+          this.TNMClinicalStageGroup = this.TNMClinicalStageGroup.concat(
+            this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
+          );
+        } else {
+          this.TNMClinicalStageGroup = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+        }
+      }
+
+      if (
+        resource.resourceType === 'Observation' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tnm-pathological-stage-group')
+      ) {
+        if (this.TNMPathologicalStageGroup) {
+          this.TNMPathologicalStageGroup = this.TNMPathologicalStageGroup.concat(
+            this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
+          );
+        } else {
+          this.TNMPathologicalStageGroup = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+        }
+      }
+
+      if (
+        resource.resourceType === 'Condition' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-secondary-cancer-condition')
+      ) {
+        const tempSecondaryCancerCondition: { clinicalStatus?: Coding[]; coding?: Coding[]; bodySite?: Coding[] } = {};
+        if (this.lookup(resource, 'code.coding')) {
+          tempSecondaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
+        }
+        if (this.lookup(resource, 'clinicalStatus.coding')) {
+          tempSecondaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
+        }
+        if (this.lookup(resource, 'bodySite.coding')) {
+          tempSecondaryCancerCondition.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
+        }
+        if (this.secondaryCancerCondition) {
+          this.secondaryCancerCondition.push(tempSecondaryCancerCondition);
+        } else {
+          this.secondaryCancerCondition = [tempSecondaryCancerCondition];
+        }
+      }
+
+      if (
+        resource.resourceType === 'Patient' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-patient')
+      ) {
+        if (this.lookup(resource, 'birthDate')) {
+          this.birthDate = this.lookup(resource, 'birthDate')[0] as string;
+        }
+      }
+
+      if (
+        resource.resourceType === 'Observation' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tumor-marker')
+      ) {
+        const tempTumorMarker: {
+          code?: Coding[];
+          valueQuantity?: Quantity[];
+          valueRatio?: Ratio[];
+          valueCodeableConcept?: Coding[];
+          interpretation?: Coding[];
+        } = {};
+        if (this.lookup(resource, 'code.coding')) {
+          tempTumorMarker.code = this.lookup(resource, 'code.coding') as Coding[];
+        }
+        if (this.lookup(resource, 'valueQuantity')) {
+          tempTumorMarker.valueQuantity = this.lookup(resource, 'valueQuantity') as Quantity[];
+        }
+        if (this.lookup(resource, 'valueRatio')) {
+          tempTumorMarker.valueRatio = this.lookup(resource, 'valueRatio') as Ratio[];
+        }
+        if (this.lookup(resource, 'valueCodeableConcept.coding')) {
+          tempTumorMarker.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+        }
+        if (this.lookup(resource, 'interpretation.coding')) {
+          tempTumorMarker.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
+        }
+        if (this.tumorMarker) {
+          this.tumorMarker.push(tempTumorMarker);
+        } else {
+          this.tumorMarker = [tempTumorMarker];
+        }
+      }
+
+      if (
+        resource.resourceType === 'Procedure' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
+      ) {
+        if (this.cancerRelatedRadiationProcedure) {
+          this.cancerRelatedRadiationProcedure = this.cancerRelatedRadiationProcedure.concat(
+            this.lookup(resource, 'code.coding') as Coding[]
+          );
+        } else {
+          this.cancerRelatedRadiationProcedure = this.lookup(resource, 'code.coding') as Coding[];
+        }
+      }
+
+      if (
+        resource.resourceType === 'Procedure' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-surgical-procedure')
+      ) {
+        if (this.cancerRelatedSurgicalProcedure) {
+          this.cancerRelatedSurgicalProcedure = this.cancerRelatedSurgicalProcedure.concat(
+            this.lookup(resource, 'code.coding') as Coding[]
+          );
+        } else {
+          this.cancerRelatedSurgicalProcedure = this.lookup(resource, 'code.coding') as Coding[];
+        }
+      }
+
+      if (
+        resource.resourceType === 'MedicationStatement' &&
+        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-medication-statement')
+      ) {
+        if (this.cancerRelatedMedicationStatement) {
+          this.cancerRelatedMedicationStatement = this.cancerRelatedMedicationStatement.concat(
+            this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[]
+          );
+        } else {
+          this.cancerRelatedMedicationStatement = this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[];
+        }
+      }
     }
+
+    console.log(this);
   }
 
-  lookup(resource: fhirclient.FHIR.Resource, path: FHIRPath, environment?: { [key: string]: string }): fhirpath.PathLookupResult[] {
+  lookup(
+    resource: fhirclient.FHIR.Resource,
+    path: FHIRPath,
+    environment?: { [key: string]: string }
+  ): fhirpath.PathLookupResult[] {
     return fhirpath.evaluate(resource, path, environment);
   }
-  resourceProfile(profiles: string[], key: string): boolean {
+  resourceProfile(profiles: fhirpath.PathLookupResult[], key: string): boolean {
     for (const profile of profiles) {
-      if (profile.includes(key)) {
+      if ((profile as string).includes(key)) {
         return true;
       }
     }
     return false;
   }
-
 }
 
 /**
@@ -253,7 +433,7 @@ export class TrialScopeQuery {
     radiationProcedure?: string;
     surgicalProcedure?: string;
     medicationStatement?: string;
-  }
+  };
   /**
    * The fields that should be returned within the individual trial object.
    */
