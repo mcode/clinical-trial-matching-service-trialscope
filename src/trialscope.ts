@@ -10,6 +10,11 @@ import { IncomingMessage } from 'http';
 import Configuration from './env';
 import RequestError from './request-error';
 
+import { fhirclient } from 'fhirclient/lib/types';
+import * as fhirpath from 'fhirpath';
+
+export type FHIRPath = string;
+
 const environment = new Configuration().defaultEnvObject();
 
 if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
@@ -176,6 +181,56 @@ function parseRecruitmentStatus(status: string): string | null {
   }
 }
 
+export interface Coding {
+  system?: string;
+  code?: string;
+  display?: string;
+}
+
+// extracted MCODE info?? WIP
+export class extractedMCODE {
+  PrimaryCancerCondition?: {clinicalStatus?: Coding[], coding?: Coding[]}[]
+
+  constructor(patientBundle: Bundle) {
+    for (const entry of patientBundle.entry) {
+      if (!('resource' in entry)) {
+        // Skip bad entries
+        continue;
+      }
+      const resource = entry.resource;
+
+      if (resource.resourceType === 'Condition' && this.resourceProfile(this.lookup(resource, "meta.profile"), "mcode-primary-cancer-condition")) {
+        const tempPrimaryCancerCondition: {clinicalStatus?: Coding[], coding?: Coding[]} = {};
+        if (this.lookup(resource, "code.coding")) {
+          tempPrimaryCancerCondition.coding = this.lookup(resource, "code.coding");
+        }
+        if (this.lookup(resource, "clinicalStatus.coding")) {
+          tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, "clinicalStatus.coding");
+        }
+        if(this.PrimaryCancerCondition) {
+          this.PrimaryCancerCondition.push(tempPrimaryCancerCondition);
+        } else {
+          this.PrimaryCancerCondition = [tempPrimaryCancerCondition];
+        }
+      }
+
+    }
+  }
+
+  lookup(resource: fhirclient.FHIR.Resource, path: FHIRPath, environment?: { [key: string]: string }): fhirpath.PathLookupResult[] {
+    return fhirpath.evaluate(resource, path, environment);
+  }
+  resourceProfile(profiles: string[], key: string): boolean {
+    for (const profile of profiles) {
+      if (profile.includes(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+}
+
 /**
  * Object for storing the various parameters necessary for the TrialScope query
  * based on a patient bundle.
@@ -188,6 +243,17 @@ export class TrialScopeQuery {
   recruitmentStatus: string | string[] | null = null;
   after?: string = null;
   first = 30;
+  mcode?: {
+    primaryCancer?: string;
+    secondaryCancer?: string;
+    histologyMorphology?: string;
+    stage?: string;
+    age?: string;
+    tumorMarker?: string;
+    radiationProcedure?: string;
+    surgicalProcedure?: string;
+    medicationStatement?: string;
+  }
   /**
    * The fields that should be returned within the individual trial object.
    */
@@ -215,13 +281,14 @@ export class TrialScopeQuery {
     'maximumAge'
   ];
   constructor(patientBundle: Bundle) {
+    const test = new extractedMCODE(patientBundle);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
         continue;
       }
       const resource = entry.resource;
-      console.log(`Checking resource ${resource.resourceType}`);
+      //console.log(`Checking resource ${resource.resourceType}`);
       if (resource.resourceType === 'Parameters') {
         for (const parameter of resource.parameter) {
           console.log(` - Setting parameter ${parameter.name} to ${parameter.valueString}`);
