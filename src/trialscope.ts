@@ -1,4 +1,3 @@
-
 /**
  * Module for running queries via TrialScope
  */
@@ -353,7 +352,6 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
         backupIds.push(trial.nctId);
       }
       studies.push(study);
-      
       index++;
     }
     if (backupIds.length == 0) {
