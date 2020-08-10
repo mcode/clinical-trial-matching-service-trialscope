@@ -15,7 +15,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "clinical-trial-matching-service": "github:mcode/clinical-trial-matching-service#initial-implementation",
+    "clinical-trial-matching-service": "github:mcode/clinical-trial-matching-service#master",
     "express": "^4.17.1",
     "request": "^2.88.2",
     "xml2json": "^0.12.0"
