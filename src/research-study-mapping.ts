@@ -119,25 +119,23 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
     });
   }
 
-
-
   return result;
 }
 
 // Checks if research study contains enrollment criteria
 
-export function updateTrial(result: ResearchStudy){
-  const backup = trialbackup.getDownloadedTrial(result.identifier[0].value)
-  if(!result.enrollment){
+export function updateTrial(result: ResearchStudy) {
+  const backup = trialbackup.getDownloadedTrial(result.identifier[0].value);
+  if (!result.enrollment) {
     result.enrollment = [
       { reference: `#group${result.id}`, type: 'Group', display: trialbackup.getBackupCriteria(backup) }
     ];
   }
 
-  if(!result.description){
+  if (!result.description) {
     result.description = trialbackup.getBackupSummary(backup);
   }
-  if(!result.phase){
+  if (!result.phase) {
     result.phase = {
       coding: [
         {
@@ -149,15 +147,12 @@ export function updateTrial(result: ResearchStudy){
       text: trialbackup.getBackupPhase(backup)
     };
   }
-  if(!result.category){
+  if (!result.category) {
     result.category = [{ text: trialbackup.getBackupStudyType(backup) }];
   }
-  console.log(result);
+  //console.log(result);
   return result;
-
 }
-
-
 
 function createArm(armGroups: ArmGroup[]): Arm[] {
   const arms: Arm[] = [];

@@ -1,4 +1,3 @@
-
 /**
  * Module for running queries via TrialScope
  */
@@ -345,42 +344,39 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
     // Convert to SearchSet
     const studies: ResearchStudy[] = [];
     let index = 0;
-    let backupIds : string []= [];
+    const backupIds: string[] = [];
     for (const node of trialscopeResponse.data.baseMatches.edges) {
       const trial: TrialScopeTrial = node.node;
-      let study = convertTrialScopeToResearchStudy(trial, index)
-      if(!study.description || !study.enrollment || !study.phase || !study.category){
+      const study = convertTrialScopeToResearchStudy(trial, index);
+      if (!study.description || !study.enrollment || !study.phase || !study.category) {
         backupIds.push(trial.nctId);
       }
       studies.push(study);
-      
+
       index++;
     }
-    if(backupIds.length==0){
-      return new SearchSet(studies); 
-    }
-    else{
+    if (backupIds.length == 0) {
+      return new SearchSet(studies);
+    } else {
       return trialbackup.downloadRemoteBackups(backupIds).then(() => {
-        for (let study of studies){
-         // console.log(study.identifier[0].value);
-          if(backupIds.includes(study.identifier[0].value)){
+        for (let study of studies) {
+          // console.log(study.identifier[0].value);
+          if (backupIds.includes(study.identifier[0].value)) {
             study = updateTrial(study);
           }
         }
-        
-        fs.unlink("src/backup.zip", err => { 
-          if (err) console.log(err); 
-        }); 
-        fs.rmdir("src/backups/", {recursive: true}, err => { 
-          if (err) console.log(err); 
-        }); 
-        
+
+        fs.unlink('src/backup.zip', (err) => {
+          if (err) console.log(err);
+        });
+        fs.rmdir('src/backups/', { recursive: true }, (err) => {
+          if (err) console.log(err);
+        });
+
         return new SearchSet(studies);
-      });    
+      });
     }
-      
   });
-  
 }
 
 export default runTrialScopeQuery;
