@@ -1,7 +1,7 @@
 import { TrialScopeTrial } from '../src/trialscope';
 import { convertTrialScopeToResearchStudy, updateTrial } from '../src/research-study-mapping';
 import data from './data/sample_trial.json'; //trial missing summary, inclusion/exclusion criteria, phase and study type
-import * as trialbackup from '../src/trialbackup';
+import * as trialbackup from 'clinical-trial-matching-service/dist/trialbackup';
 import * as fs from 'fs';
 describe('backup tests', () => {
   const trial: TrialScopeTrial = data as TrialScopeTrial;

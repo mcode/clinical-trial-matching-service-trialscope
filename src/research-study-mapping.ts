@@ -1,6 +1,6 @@
 import { ResearchStudy, Arm, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
 import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
-import * as trialbackup from './trialbackup';
+import * as trialbackup from 'clinical-trial-matching-service/dist/trialbackup';
 
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([

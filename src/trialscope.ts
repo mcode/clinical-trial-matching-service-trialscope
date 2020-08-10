@@ -1,7 +1,8 @@
+
 /**
  * Module for running queries via TrialScope
  */
-import * as trialbackup from './trialbackup';
+import * as trialbackup from 'clinical-trial-matching-service/dist/trialbackup';
 import https from 'https';
 import http from 'http';
 import { mapConditions } from './mapping';
@@ -352,7 +353,7 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
         backupIds.push(trial.nctId);
       }
       studies.push(study);
-
+      
       index++;
     }
     if (backupIds.length == 0) {
