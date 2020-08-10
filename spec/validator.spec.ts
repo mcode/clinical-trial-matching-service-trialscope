@@ -6,7 +6,7 @@ import path from 'path';
 // The 'fhir' module is missing types for some reason, despite being written in TypeScript
 import { Fhir } from 'fhir/fhir';
 
-describe('FHIR Validator jar', () => {
+describe('FHIR Validation', () => {
   const fhir = new Fhir();
   let sampleData: Record<string, unknown>;
   beforeAll(() => {
