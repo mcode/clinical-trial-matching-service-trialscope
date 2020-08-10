@@ -2,7 +2,7 @@
   "name": "clinical-trial-matching-service-trialscope",
   "version": "1.0.0",
   "description": "Matching service wrapper that works with TrialScope",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "build": "npm run build-ts",
     "build-ts": "tsc",
@@ -10,7 +10,7 @@
     "coverage": "npm run-script build:tests && nyc --require ts-node/register --reporter=lcovonly jasmine",
     "coverage:html": "npm run-script build:tests && nyc --require ts-node/register --reporter=html jasmine",
     "lint": "eslint . --ext .js,.ts",
-    "serve": "node dist/server.js",
+    "serve": "node dist/src/server.js",
     "start": "npm run serve",
     "test": "npm run-script build:tests && npm run-script test:run",
     "test:run": "jasmine"
@@ -36,6 +36,7 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "fhir": "^4.7.9",
     "nyc": "^15.1.0",
     "prettier": "2.0.5",
     "supertest": "^4.0.2",
