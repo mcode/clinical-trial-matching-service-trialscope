@@ -1,4 +1,4 @@
-# clinical-trial-matching-service
+# clinical-trial-matching-service-trialscope
 
 Backend service that calls [TrialScope's](https://www.trialscope.com/) APIs for the front-end clinical-trial-matching-engine.
 
@@ -15,21 +15,21 @@ For more information on the architecture and data schemas of the clinical trial 
 
 # Requirements
 
-The ResearchStudy object passed back by this server must be [FHIR-compliant] (https://www.hl7.org/fhir/researchstudy.html) and satisfy several requirements. 
-Study must contain: 
-- Title 
-- Summary 
+The ResearchStudy object passed back by this server must be [FHIR-compliant] (https://www.hl7.org/fhir/researchstudy.html) and satisfy several requirements.
+Study must contain:
+- Title
+- Summary
 - Site location
-- Phase 
+- Phase
 - Contact Information i.e. sponsor email, phone number
-- Study Type 
+- Study Type
 - Inclusion/ Exclusion criteria
 
 Note: _trialbackup.ts_ provides a "backup" system for filling in information missing from the object passed back from the matching service. This system fills in the following based on the trial's NctId:
 - Inclusion/Exclusion Criteria
-- Phase 
-- Study Type 
-- Trial Summary 
+- Phase
+- Study Type
+- Trial Summary
 
 
 # Lint and tests
