@@ -124,7 +124,7 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
 
 // Checks if research study contains enrollment criteria
 
-export function updateTrial(result: ResearchStudy) {
+export function updateTrial(result: ResearchStudy): ResearchStudy {
   const backup = trialbackup.getDownloadedTrial(result.identifier[0].value);
   if (!result.enrollment) {
     result.enrollment = [

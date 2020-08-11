@@ -39,10 +39,15 @@ describe('backup tests', () => {
 
   afterAll(function (done) {
     fs.unlink('src/backup.zip', (err) => {
-      if (err) console.log(err);
+      if (err) {
+        console.log(err);
+      }
     });
+
     fs.rmdir('src/backups/', { recursive: true }, (err) => {
-      if (err) console.log(err);
+      if (err) {
+        console.log(err);
+      }
     });
     done();
   });
