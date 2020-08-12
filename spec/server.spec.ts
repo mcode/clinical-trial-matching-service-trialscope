@@ -1,20 +1,17 @@
 import request from 'supertest';
 
 import { TrialScopeService } from '../src/server';
-import * as trialscope from '../src/trialscope';
 import http from 'http';
 
 describe('server', () => {
   let service: TrialScopeService;
   let server: http.Server;
   beforeAll(() => {
-    service = new TrialScopeService({ port: 0 });
+    service = new TrialScopeService({ endpoint: 'http://localhost/', token: 'ignored', port: 0 });
     server = service.listen();
   });
-  // Reset the request generator after each test (currently gets modified only
-  // in one test)
-  afterEach(() => {
-    trialscope.setRequestGenerator();
+  afterAll(() => {
+    service.close();
   });
   it('responds to /', () => {
     return request(server).get('/').set('Accept', 'application/json').expect(200);
