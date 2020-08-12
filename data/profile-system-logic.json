@@ -1,0 +1,994 @@
+{
+  "Secondary Cancer" : {
+    "types" : [ {
+      "type" : "Brain metastasis",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"SecondaryCancerCondition code = any code on sheet \"\"Metastasis-Brain\"\" and clinicalStatus = \"\"active\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Invasive Breast Cancer and Metastatic ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " mcode-histology-morphology-behavior.value[X] = any code on \"\"Morphology-Invasive\"\" "
+            }, {
+              "condition" : " PrimaryCancerCondition code = any code on sheet \"\"Cancer-Invasive Breast\"\" "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"PrimaryCancerCondition code = any code on sheet \"\"Cancer-Breast\"\" "
+          } ]
+        }, {
+          "operatorType" : "OR",
+          "conditions" : [ {
+            "condition" : " SecondaryCancerCondition code = any code "
+          }, {
+            "condition" : " TNMClinicalStageGroup value[x] = any on sheet \"\"Stage-4\"\" "
+          }, {
+            "condition" : " TNMPathologicalStageGroup value[x] = any on sheet \"\"Stage-4\"\"\""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Leptomeningeal metastatic disease",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "SecondaryCancerCondition bodySite = SNOMED#8935007"
+        } ]
+      }
+    }, {
+      "type" : "Metastatic ",
+      "operation" : {
+        "operatorType" : "OR",
+        "conditions" : [ {
+          "condition" : "\"SecondaryCancerCondition code = any code "
+        }, {
+          "condition" : " TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-4\"\" "
+        }, {
+          "condition" : " TNMPathologicalStageGroup value[x] = any code on sheet \"\"Stage-4\"\"\""
+        } ]
+      }
+    } ]
+  },
+  "Filter" : {
+    "types" : [ {
+      "type" : "String (Type)",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "Logic (Operator and Condition)"
+        } ]
+      }
+    } ]
+  },
+  "Histology Morphology " : {
+    "types" : [ {
+      "type" : "Invasive carcinoma ",
+      "operation" : {
+        "operatorType" : "OR",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "conditions" : [ {
+            "condition" : "\"PrimaryCancerCondition code = any code on sheet \"\"Cancer-Breast\"\" "
+          }, {
+            "condition" : " mcode-histology-morphology-behavior.value[X] = any code on \"\"Morphology-Invasive Carcinoma\"\" "
+          } ]
+        }, {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : " PrimaryCancerCondition code = any code on sheet \"\"Cancer-Invasive Carcinoma\"\"\"\"\""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Invasive Breast Cancer",
+      "operation" : {
+        "operatorType" : "OR",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "conditions" : [ {
+            "condition" : "\"PrimaryCancerCondition code = any code on sheet \"\"Cancer-Breast\"\" "
+          }, {
+            "condition" : " mcode-histology-morphology-behavior.value[X] = any code on \"\"Morphology-Invasive\"\" "
+          } ]
+        }, {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : " PrimaryCancerCondition code = any code on sheet \"\"Cancer-Invasive Breast\"\"\""
+          } ]
+        } ]
+      }
+    } ]
+  },
+  "Medication Statement " : {
+    "types" : [ {
+      "type" : "T-DM1 ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-T-DM1\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "CDK4/6 inhibitor ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-CDK4 6 Inhibtor\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Poly ICLC ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "CancerRelatedMedicationStatement medication[x] = NIH code #C1198"
+        } ]
+      }
+    }, {
+      "type" : "DrugCombo-1",
+      "operation" : {
+        "operatorType" : "AND",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-Trastuzamab\"\" "
+        }, {
+          "condition" : " \"\"Treatment-Pertuzumab\"\" "
+        }, {
+          "condition" : " \"\"Treatment-T-DM1\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Pembrolizumab",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-Pembrolizumab\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "mTOR inhibitor ",
+      "operation" : {
+        "operatorType" : "OR",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-mT"
+        }, {
+          "condition" : " Inhibtor\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Concurrent Endocrine Therapy ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-Endocrine Therapy\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Anti-androgen ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-anti-Androgen\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "anti-HER2",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-anti-HER2\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Tyrosine Kinase Inhibitor",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet  \"\"Treatment-Tyrosine Kinase Inhib\"\" \""
+        } ]
+      }
+    }, {
+      "type" : "P13K inhibitor ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-P13K Inhibitor\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "anti-PD ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-anti-PD1* PDL1* PDL2\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "CDK4/6-mTOR and Endocrine ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "OR",
+          "conditions" : [ {
+            "condition" : "\"CancerRelatedMedicationStatement medication[x] = any code on sheet (\"\"Treatment-CDK46 Inhibitor\"\" "
+          }, {
+            "condition" : " \"\"mT"
+          }, {
+            "condition" : " Inhibitor\"\") "
+          } ]
+        } ],
+        "conditions" : [ {
+          "condition" : " (\"\"Treatment-Endocrine Therapy\"\") \""
+        } ]
+      }
+    } ]
+  },
+  "Radiation Procedure " : {
+    "types" : [ {
+      "type" : "WBRT",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "OR",
+          "conditions" : [ {
+            "condition" : " bodySite = (SNOMED#12738006 "
+          }, {
+            "condition" : " SNOMED#119235005)"
+          } ]
+        } ],
+        "conditions" : [ {
+          "condition" : "CancerRelatedRadiationProcedure code = SNOMED#108290001 "
+        } ]
+      }
+    }, {
+      "type" : "Radiation Therapy ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "CancerRelatedRadiationProcedure code = any code"
+        } ]
+      }
+    } ]
+  },
+  "Primary Cancer" : {
+    "types" : [ {
+      "type" : "Breast Cancer",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"PrimaryCancerCondition code = any code on sheet \"\"Cancer-Breast\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Concomitant invasive malignancies",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "conditions" : [ {
+            "condition" : "\"PrimaryCancerCondition code = any code NOT on sheet \"\"Cancer-Breast\"\" "
+          }, {
+            "condition" : " clinicalStatus = \"\"current\"\"  "
+          } ]
+        }, {
+          "operatorType" : "OR",
+          "conditions" : [ {
+            "condition" : " TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-1* Stage-2* Stage-3* Stage-4\"\" "
+          }, {
+            "condition" : " TNMPathologicalStageGroup value[x] = any code on sheet \"\"Stage-1* Stage-2* Stage-3* Stage-4\"\" \""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Invasive Breast Cancer and Recurrent",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " mcode-histology-morphology-behavior.value[X] = any code on \"\"Morphology-Invasive\"\" "
+            }, {
+              "condition" : " PrimaryCancerCondition code = any code on sheet \"\"Cancer-Invasive Breast\"\" "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"PrimaryCancerCondition code = any code on sheet \"\"Cancer-Breast\"\" "
+          } ]
+        }, {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : " PrimaryCancerCondition clinicalStatus = Recurrent \""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Locally Recurrent",
+      "operation" : {
+        "operatorType" : "AND",
+        "conditions" : [ {
+          "condition" : "\"PrimaryCancerCondition code = (any code on sheet \"\"Cancer-Breast\"\") "
+        }, {
+          "condition" : " (clinicalStatus = Recurrent) \""
+        } ]
+      }
+    }, {
+      "type" : "Other malignancy - except skin or cervical ",
+      "operation" : {
+        "operatorType" : "OR",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "conditions" : [ {
+            "condition" : "\"PrimaryCancerCondition code = any code NOT on sheet (\"\"Cancer-Breast\"\" or \"\"Cancer-Skin\"\") "
+          }, {
+            "condition" : " clinicalStatus = \"\"current\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (TNMClinicalStageGroup "
+            }, {
+              "condition" : " TNMPathologicalStageGroup = any code on sheet \"\"Stage-0\"\") \""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " PrimaryCancerCondition code = any code NOT on sheet (\"\"Cancer-Cervical\"\") "
+          }, {
+            "condition" : " clinicalStatus = \"\"current\"\" "
+          } ]
+        } ]
+      }
+    } ]
+  },
+  "Stage" : {
+    "types" : [ {
+      "type" : "Invasive Breast Cancer and Locally Advanced",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " mcode-histology-morphology-behavior.value[X] = any code on \"\"Morphology-Invasive\"\" "
+            }, {
+              "condition" : " PrimaryCancerCondition code = any code on sheet \"\"Cancer-Invasive Breast\"\" "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"PrimaryCancerCondition code = any code on sheet \"\"Cancer-Breast\"\" "
+          } ]
+        }, {
+          "operatorType" : "OR",
+          "conditions" : [ {
+            "condition" : " TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-3\"\" or \"\"Stage-4\"\" "
+          }, {
+            "condition" : " TNMPathologicalStageGroup = any code on sheet \"\"Stage-3\"\" or \"\"Stage-4\"\"\""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Non-invasive",
+      "operation" : {
+        "operatorType" : "OR",
+        "operations" : [ {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : "\"TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-0\"\" "
+          } ]
+        }, {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : " TNMPathologicalStageGroup = any code on sheet \"\"Stage-0\"\"\""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Locally advanced",
+      "operation" : {
+        "operatorType" : "OR",
+        "operations" : [ {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : "\"TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-3\"\" "
+          } ]
+        }, {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : " TNMPathologicalStageGroup = any code on sheet \"\"Stage-3\"\"\""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Stage 0",
+      "operation" : {
+        "operatorType" : "OR",
+        "conditions" : [ {
+          "condition" : "\"TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-0\"\" "
+        }, {
+          "condition" : " TNMPathologicalStageGroup value[x] = any code on sheet \"\"Stage-0\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Stage 1",
+      "operation" : {
+        "operatorType" : "OR",
+        "conditions" : [ {
+          "condition" : "\"TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-1\"\" "
+        }, {
+          "condition" : " TNMPathologicalStageGroup value [x]= any code on sheet \"\"Stage-1\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Stage 2 ",
+      "operation" : {
+        "operatorType" : "OR",
+        "conditions" : [ {
+          "condition" : "\"TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-2\"\" "
+        }, {
+          "condition" : " TNMPathologicalStageGroup value[x] = any code on sheet \"\"Stage-2\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Stage 3",
+      "operation" : {
+        "operatorType" : "OR",
+        "conditions" : [ {
+          "condition" : "\"TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-3\"\" "
+        }, {
+          "condition" : " TNMPathologicalStageGroup value[x] = any code on sheet \"\"Stage-3\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Stage 4",
+      "operation" : {
+        "operatorType" : "OR",
+        "conditions" : [ {
+          "condition" : "\"TNMClinicalStageGroup value[x] = any code on sheet \"\"Stage-4\"\" "
+        }, {
+          "condition" : " TNMPathologicalStageGroup value[x] = any code on sheet \"\"Stage-4\"\"\""
+        } ]
+      }
+    } ]
+  },
+  "Radiation Procedure" : {
+    "types" : [ {
+      "type" : "SRS",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedRadiationProcedure code = any code on sheet \"\"Treatment-SRS-Brain\"\"\""
+        } ]
+      }
+    } ]
+  },
+  "Tumor Marker" : {
+    "types" : [ {
+      "type" : "HER2 + ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "NONE",
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "OR",
+          "conditions" : [ {
+            "condition" : " (valueQuantity/valueRatio = 3* 3+) "
+          }, {
+            "condition" : " (valueCodeableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+          }, {
+            "condition" : " (interpretation = POS * DET* H)\""
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "HER2+ and ER+ ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity = 3* 3+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#10828004 \"\"Positive (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = POS * DET* H) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=10%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = POS * DET* H))\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-ER\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "HER2+ and PR+ ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity = 3* 3+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#10828004 \"\"Positive (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = POS * DET* H) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=10%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = POS * DET* H))\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-PR\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "ER+ and HER2- ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H))\"\"\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "TumorMarker code = any code on sheet \"\"Biomarker-ER\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "PR+ and HER2- ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H))\"\"\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-PR\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "ER+ and HER2- and FGFR amplifications",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H)) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-PR\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : "  ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H))\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-FGFR\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "PR+ and HER2- and FGFR amplifications ",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H)) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-ER\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : "  ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H))\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-FGFR\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "ER+ PR+ HER2-",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H)) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-PR\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " ((valueQuantity/valueRatio = >/=1%) "
+            }, {
+              "condition" : " (valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+            }, {
+              "condition" : " (interpretation = POS * DET* H))\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-ER\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Triple negative",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* <1%) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-PR\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* <1%) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND)\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-ER\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Triple negative-10",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 1+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* <10%) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-PR\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* <10%) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND)\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-ER\"\" "
+          } ]
+        } ]
+      }
+    }, {
+      "type" : "Triple negative and RB Positive",
+      "operation" : {
+        "operatorType" : "AND",
+        "operations" : [ {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : "\"TumorMarker code = any code on sheet \"\"Biomarker-HER2\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* <1%) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-PR\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = 0* <1%) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#260385009 \"\"Negative (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = L* N* NEG* ND) "
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-ER\"\" "
+          } ]
+        }, {
+          "operatorType" : "AND",
+          "operations" : [ {
+            "operatorType" : "OR",
+            "conditions" : [ {
+              "condition" : " (valueQuantity/valueRatio = >50%) "
+            }, {
+              "condition" : " (valueCodeableConcept = SNOMED#10828004 \"\"Positive (qualifier value))\"\" "
+            }, {
+              "condition" : " (interpretation = POS * DET* H)\""
+            } ]
+          } ],
+          "conditions" : [ {
+            "condition" : " TumorMarker code = any code on sheet \"\"Biomarker-RB\"\" "
+          } ]
+        } ]
+      }
+    } ]
+  },
+  "Surgical Procedure" : {
+    "types" : [ {
+      "type" : "Resection ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedSurgicalProcedure code = any code on sheet \"\"Treatment-Resection-Brain\"\"\""
+        } ]
+      }
+    }, {
+      "type" : "Splenectomy ",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "\"CancerRelatedSurgicalProcedure code = any code on sheet \"\"Treatement-Splenectomy\"\"\"\"\""
+        } ]
+      }
+    } ]
+  },
+  "Age" : {
+    "types" : [ {
+      "type" : " At least 18",
+      "operation" : {
+        "operatorType" : "NONE",
+        "conditions" : [ {
+          "condition" : "CancerPatient birthDate = [data searched] - [birthdate] = >/= 18"
+        } ]
+      }
+    } ]
+  }
+}

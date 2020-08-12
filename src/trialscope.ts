@@ -13,6 +13,12 @@ import RequestError from './request-error';
 import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
 
+import * as profile_system_codes from '../data/profile-system-codes.json';
+import * as profile_system_logic from '../data/profile-system-logic.json';
+
+
+//import * as data from './data/profile-system-codes.json';
+
 export type FHIRPath = string;
 
 const environment = new Configuration().defaultEnvObject();
@@ -468,7 +474,7 @@ export class TrialScopeQuery {
         continue;
       }
       const resource = entry.resource;
-      //console.log(`Checking resource ${resource.resourceType}`);
+      console.log(`Checking resource ${resource.resourceType}`);
       if (resource.resourceType === 'Parameters') {
         for (const parameter of resource.parameter) {
           console.log(` - Setting parameter ${parameter.name} to ${parameter.valueString}`);
@@ -487,6 +493,23 @@ export class TrialScopeQuery {
         this.addCondition(resource);
       }
     }
+    var primaryCancerString:string = this.getFilterType('Primary Cancer');
+  }
+  getFilterType(filter:string): string {
+    // Parse through the logic JSON and check if certain conditions are met to return the corresponding string.
+
+    // console.log(profile_system_codes["Cancer-Skin"]["ICD-10"]);
+
+    var typesList:string[] = profile_system_logic[filter].types;
+
+    for( var type in typesList){
+      console.log(type);
+    }
+
+    // 2. Import the JSON logic data.
+    // 3. Check the conditions to get the string.
+
+    return 'bruh'
   }
   addCondition(condition: Condition): void {
     // Should have a code
