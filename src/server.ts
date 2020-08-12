@@ -32,7 +32,7 @@ export class TrialScopeService extends ClinicalTrialMatchingService {
   }
 }
 
-if (module.parent === null) {
+export function start(): TrialScopeService {
   // Use dotenv-flow to load local configuration from .env files
   dotenv.config({
     // The environment variable to use to set the environment
@@ -40,5 +40,12 @@ if (module.parent === null) {
     // The default environment to use if none is set
     default_node_env: 'development'
   });
-  new TrialScopeService(configFromEnv('TRIALSCOPE_')).listen();
+  const service = new TrialScopeService(configFromEnv('TRIALSCOPE_'));
+  service.listen();
+  return service;
+}
+
+/* istanbul ignore next: can't exactly load this directly via test case */
+if (module.parent === null) {
+  start();
 }
