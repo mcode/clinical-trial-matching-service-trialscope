@@ -355,39 +355,21 @@ export class extractedMCODE {
         resource.resourceType === 'Procedure' &&
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
       ) {
-        if (this.cancerRelatedRadiationProcedure) {
-          this.cancerRelatedRadiationProcedure = this.cancerRelatedRadiationProcedure.concat(
-            this.lookup(resource, 'code.coding') as Coding[]
-          );
-        } else {
-          this.cancerRelatedRadiationProcedure = this.lookup(resource, 'code.coding') as Coding[];
-        }
+        this.cancerRelatedRadiationProcedure = this.addCoding(this.cancerRelatedRadiationProcedure, this.lookup(resource, 'code.coding') as Coding[]);
       }
 
       if (
         resource.resourceType === 'Procedure' &&
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-surgical-procedure')
       ) {
-        if (this.cancerRelatedSurgicalProcedure) {
-          this.cancerRelatedSurgicalProcedure = this.cancerRelatedSurgicalProcedure.concat(
-            this.lookup(resource, 'code.coding') as Coding[]
-          );
-        } else {
-          this.cancerRelatedSurgicalProcedure = this.lookup(resource, 'code.coding') as Coding[];
-        }
+        this.cancerRelatedSurgicalProcedure = this.addCoding(this.cancerRelatedSurgicalProcedure, this.lookup(resource, 'code.coding') as Coding[]);
       }
 
       if (
         resource.resourceType === 'MedicationStatement' &&
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-medication-statement')
       ) {
-        if (this.cancerRelatedMedicationStatement) {
-          this.cancerRelatedMedicationStatement = this.cancerRelatedMedicationStatement.concat(
-            this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[]
-          );
-        } else {
-          this.cancerRelatedMedicationStatement = this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[];
-        }
+        this.cancerRelatedMedicationStatement = this.addCoding(this.cancerRelatedMedicationStatement, this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[]);
       }
     }
 
@@ -402,12 +384,28 @@ export class extractedMCODE {
     return fhirpath.evaluate(resource, path, environment);
   }
   resourceProfile(profiles: fhirpath.PathLookupResult[], key: string): boolean {
+    //console.log(profiles);
     for (const profile of profiles) {
       if ((profile as string).includes(key)) {
         return true;
       }
     }
     return false;
+  }
+  contains(coding_list: Coding[], coding: Coding): boolean { // system code
+    return coding_list.some(list_coding => list_coding.system === coding.system && list_coding.code === coding.code);
+  }
+  addCoding(code_list: Coding[], codes: Coding[]): Coding[] {
+    if (code_list) {
+      for (const code of codes) {
+        if (!this.contains(code_list, code)) {
+          code_list.push(code);
+        }
+      }
+      return code_list;
+    } else {
+      return codes;
+    }
   }
 }
 
@@ -462,6 +460,7 @@ export class TrialScopeQuery {
   ];
   constructor(patientBundle: Bundle) {
     const test = new extractedMCODE(patientBundle);
+    //console.log(test);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
