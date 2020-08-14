@@ -122,8 +122,6 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
   return result;
 }
 
-
-
 function createArm(armGroups: ArmGroup[]): fhir.Arm[] {
   const arms: fhir.Arm[] = [];
   for (const armgroup of armGroups) {

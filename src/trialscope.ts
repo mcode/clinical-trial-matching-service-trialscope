@@ -1,4 +1,3 @@
-
 /**
  * Module for running queries via TrialScope
  */
@@ -305,7 +304,7 @@ export class TrialScopeQuery {
   }
 }
 
-export function runTrialScopeQuery(patientBundle: fhir.Bundle ): Promise<SearchSet> {
+export function runTrialScopeQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
   return new Promise<TrialScopeResponse>((resolve, reject) => {
     const query = new TrialScopeQuery(patientBundle);
     sendQuery(query.toQuery())
@@ -343,7 +342,7 @@ export function runTrialScopeQuery(patientBundle: fhir.Bundle ): Promise<SearchS
       .catch(reject);
   }).then<SearchSet>((trialscopeResponse) => {
     // Convert to SearchSet
-    const studies: fhir.ResearchStudy [] = [];
+    const studies: fhir.ResearchStudy[] = [];
     let index = 0;
     const backupIds: string[] = [];
     for (const node of trialscopeResponse.data.baseMatches.edges) {
@@ -356,7 +355,7 @@ export function runTrialScopeQuery(patientBundle: fhir.Bundle ): Promise<SearchS
       index++;
     }
     const filepath = 'src';
-    const downloader =  new trialbackup.ClinicalTrialGov(filepath);
+    const downloader = new trialbackup.ClinicalTrialGov(filepath);
     const backup = new trialbackup.BackupSystem(filepath);
     if (backupIds.length == 0) {
       return new SearchSet(studies);

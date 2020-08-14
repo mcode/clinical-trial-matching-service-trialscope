@@ -19,7 +19,7 @@ describe('backup tests', () => {
   });
   const filepath = 'src';
   beforeAll(async function () {
-    const downloader = new trialbackup.ClinicalTrialGov(filepath)
+    const downloader = new trialbackup.ClinicalTrialGov(filepath);
     await downloader.downloadRemoteBackups(nctIds);
     const backup = new trialbackup.BackupSystem(filepath);
     study = backup.updateTrial(study);
