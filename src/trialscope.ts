@@ -1,3 +1,4 @@
+
 /**
  * Module for running queries via TrialScope
  */
@@ -7,10 +8,10 @@ import http from 'http';
 import { mapConditions } from './mapping';
 import { IncomingMessage } from 'http';
 import Configuration from './env';
-import { convertTrialScopeToResearchStudy, updateTrial } from './research-study-mapping';
-import { Bundle, Condition, RequestError, ResearchStudy, SearchSet } from 'clinical-trial-matching-service';
+import { convertTrialScopeToResearchStudy } from './research-study-mapping';
+import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
 import * as fs from 'fs';
-
+import path from 'path';
 const environment = new Configuration().defaultEnvObject();
 
 if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
@@ -215,7 +216,7 @@ export class TrialScopeQuery {
     'countries',
     'maximumAge'
   ];
-  constructor(patientBundle: Bundle) {
+  constructor(patientBundle: fhir.Bundle) {
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
@@ -242,7 +243,7 @@ export class TrialScopeQuery {
       }
     }
   }
-  addCondition(condition: Condition): void {
+  addCondition(condition: fhir.Condition): void {
     // Should have a code
     // TODO: Limit to specific coding systems (maybe)
     for (const code of condition.code.coding) {
@@ -304,7 +305,7 @@ export class TrialScopeQuery {
   }
 }
 
-export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
+export function runTrialScopeQuery(patientBundle: fhir.Bundle ): Promise<SearchSet> {
   return new Promise<TrialScopeResponse>((resolve, reject) => {
     const query = new TrialScopeQuery(patientBundle);
     sendQuery(query.toQuery())
@@ -342,7 +343,7 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
       .catch(reject);
   }).then<SearchSet>((trialscopeResponse) => {
     // Convert to SearchSet
-    const studies: ResearchStudy[] = [];
+    const studies: fhir.ResearchStudy [] = [];
     let index = 0;
     const backupIds: string[] = [];
     for (const node of trialscopeResponse.data.baseMatches.edges) {
@@ -354,21 +355,24 @@ export function runTrialScopeQuery(patientBundle: Bundle): Promise<SearchSet> {
       studies.push(study);
       index++;
     }
+    const filepath = 'src';
+    const downloader =  new trialbackup.ClinicalTrialGov(filepath);
+    const backup = new trialbackup.BackupSystem(filepath);
     if (backupIds.length == 0) {
       return new SearchSet(studies);
     } else {
-      return trialbackup.downloadRemoteBackups(backupIds).then(() => {
+      return downloader.downloadRemoteBackups(backupIds).then(() => {
         for (let study of studies) {
           // console.log(study.identifier[0].value);
           if (backupIds.includes(study.identifier[0].value)) {
-            study = updateTrial(study);
+            study = backup.updateTrial(study);
           }
         }
 
         fs.unlink('src/backup.zip', (err) => {
           if (err) console.log(err);
         });
-        fs.rmdir('src/backups/', { recursive: true }, (err) => {
+        fs.rmdir(path.resolve('src/backups/'), { recursive: true }, (err) => {
           if (err) console.log(err);
         });
 

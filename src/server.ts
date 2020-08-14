@@ -2,11 +2,11 @@ import express from 'express';
 import { runTrialScopeQuery } from './trialscope';
 import * as mapping from './mapping';
 
-import { Bundle, ClinicalTrialMatchingService } from 'clinical-trial-matching-service';
+import { fhir, ClinicalTrialMatchingService } from 'clinical-trial-matching-service';
 
 export class TrialScopeService extends ClinicalTrialMatchingService {
   constructor(config?: Record<string, string | number>) {
-    super((patientBundle: Bundle) => {
+    super((patientBundle: fhir.Bundle) => {
       return runTrialScopeQuery(patientBundle);
     }, config);
 

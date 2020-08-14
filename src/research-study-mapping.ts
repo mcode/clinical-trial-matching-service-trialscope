@@ -1,4 +1,4 @@
-import { ResearchStudy, Arm, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
+import { ResearchStudy, fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
 import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
 import * as trialbackup from 'clinical-trial-matching-service/dist/trialbackup';
 
@@ -122,42 +122,12 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
   return result;
 }
 
-// Checks if research study contains enrollment criteria
 
-export function updateTrial(result: ResearchStudy): ResearchStudy {
-  const backup = trialbackup.getDownloadedTrial(result.identifier[0].value);
-  if (!result.enrollment) {
-    result.enrollment = [
-      { reference: `#group${result.id}`, type: 'Group', display: trialbackup.getBackupCriteria(backup) }
-    ];
-  }
 
-  if (!result.description) {
-    result.description = trialbackup.getBackupSummary(backup);
-  }
-  if (!result.phase) {
-    result.phase = {
-      coding: [
-        {
-          system: 'http://terminology.hl7.org/CodeSystem/research-study-phase',
-          code: convertPhaseCode(trialbackup.getBackupPhase(backup)),
-          display: trialbackup.getBackupPhase(backup)
-        }
-      ],
-      text: trialbackup.getBackupPhase(backup)
-    };
-  }
-  if (!result.category) {
-    result.category = [{ text: trialbackup.getBackupStudyType(backup) }];
-  }
-  //console.log(result);
-  return result;
-}
-
-function createArm(armGroups: ArmGroup[]): Arm[] {
-  const arms: Arm[] = [];
+function createArm(armGroups: ArmGroup[]): fhir.Arm[] {
+  const arms: fhir.Arm[] = [];
   for (const armgroup of armGroups) {
-    const singleArm: Arm = {};
+    const singleArm: fhir.Arm = {};
     if (armgroup.arm_group_label) {
       singleArm.name = armgroup.arm_group_label;
     }
