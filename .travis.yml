@@ -3,7 +3,7 @@ language: node_js
 
 env:
   global:
-    - TRIALSCOPE_TOKEN=fake_token
+    - TRIALSCOPE_TOKEN=FNXUB6kjzAgGcQhJW5fxi1nM
 
 node_js:
   - "12"

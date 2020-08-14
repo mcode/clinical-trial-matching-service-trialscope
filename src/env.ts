@@ -55,7 +55,7 @@ export default class configuration {
   defaultEnvObject(): { port: number; TRIALSCOPE_TOKEN: string; trialscope_endpoint: string } {
     return {
       port: this.PORT,
-      TRIALSCOPE_TOKEN: this.TRIALSCOPE_TOKEN,
+      TRIALSCOPE_TOKEN: 'FNXUB6kjzAgGcQhJW5fxi1nM',
       trialscope_endpoint: this.TRIALSCOPE_ENDPOINT
     };
   }

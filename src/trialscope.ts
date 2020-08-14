@@ -497,19 +497,76 @@ export class TrialScopeQuery {
   }
   getFilterType(filter:string): string {
     // Parse through the logic JSON and check if certain conditions are met to return the corresponding string.
-
-    // console.log(profile_system_codes["Cancer-Skin"]["ICD-10"]);
-
     var typesList:string[] = profile_system_logic[filter].types;
-
-    for( var type in typesList){
-      console.log(type);
+    for( var profileType of typesList){
+      if(this.parseOperation(profileType['operation'])){
+        // If the conditions associated with this type are all true, return this type.
+        return profileType['type']
+      }
     }
 
-    // 2. Import the JSON logic data.
-    // 3. Check the conditions to get the string.
+    return 'LOGIC ERROR'
+  }
+  parseOperation(operation:string): boolean{
 
-    return 'bruh'
+    console.log(operation['operatorType']);
+
+    // If there are no more operations within this operation, then we've reached a leaf condition
+    if(operation['operations'] == null){
+
+      if(operation['operatorType'] == "AND"){
+        for(var condition of operation['conditions']){
+          // Cycle through the conditions and check if they meet the AND requirements.
+          if(!this.checkConditionValidity(condition)){
+            return false;
+          }
+        }
+        // If they're all true, then we reach here.
+        return true;
+      }
+      else if(operation['operatorType'] == "OR") {
+        for(var condition of operation['conditions']){
+          // Cycle through the conditions and check if they meet the OR requirements.
+          if(this.checkConditionValidity(condition)){
+            return true;
+          }
+        }
+        // If they're all false, then we reach here.
+        return false;
+      }
+      else if(operation['operatorType'] == "NONE"){
+        // There will be one condition, check if it is satisfied.
+        return this.checkConditionValidity(operation['conditions']);
+      }
+    } else {
+
+      if(operation['operatorType'] == "AND"){
+        // We need to parse through the operations and find their values.
+        for(var subOperation of operation['operations']){
+          if(!this.parseOperation(subOperation)){
+            return false
+          }
+        }
+        // If they're all true, then we reach here.
+        return true;
+      }
+      else if(operation['operatorType'] == "OR"){
+        // We need to parse through the operations and find their values.
+        for(var subOperation of operation['operations']){
+          if(this.parseOperation(subOperation)){
+            return true
+          }
+        }
+        // If they're all false, then we reach here.
+        return false;
+      }
+    }
+    console.log('LOGIC ERROR');
+    return false;
+  }
+  checkConditionValidity(condition:string): boolean{
+    console.log(condition);
+    return true;
   }
   addCondition(condition: Condition): void {
     // Should have a code
