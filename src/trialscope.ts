@@ -566,6 +566,17 @@ export class TrialScopeQuery {
   }
   checkConditionValidity(condition:string): boolean{
     console.log(condition);
+
+    var splitConditions:string[] = condition.split(' ');
+
+    if(splitConditions[1] == 'is-in'){
+      // This condition is based on whether a code is in a certain code system.
+      var neededCode:string = splitConditions[0];
+      var codesystem:string = splitConditions[2];
+
+
+    }
+
     return true;
   }
   addCondition(condition: Condition): void {
