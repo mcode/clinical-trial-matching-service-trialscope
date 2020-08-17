@@ -17,5 +17,4 @@ script:
   - npm run-script coverage
 
 
-after_success:
-  - codecov
+
