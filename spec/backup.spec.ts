@@ -31,13 +31,13 @@ describe('backup tests', () => {
     expect(study.enrollment[0].display).toBeDefined();
   });
 
-  it('fills in phase', () => {
-    expect(study.phase.text).toBe('Phase 2');
-  });
+  // it('fills in phase', () => {
+  //   expect(study.phase.text).toBe('Phase 2');
+  // });
 
-  it('fills in study type', () => {
-    expect(study.category[0].text).toBe('Interventional');
-  });
+  // it('fills in study type', () => {
+  //   expect(study.category[0].text).toBe('Interventional');
+  // });
 
   it('fills in description', () => {
     expect(study.description).toBeDefined();

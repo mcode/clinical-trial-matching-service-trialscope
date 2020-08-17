@@ -1,26 +1,37 @@
 {
-  "name": "clinicaltrialconnectapi",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "name": "clinical-trial-matching-service-trialscope",
+  "version": "0.0.1",
+  "description": "Matching service wrapper that works with TrialScope",
+  "main": "dist/src/server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcode/clinical-trial-matching-service-trialscope.git"
+  },
   "scripts": {
     "build": "npm run build-ts",
     "build-ts": "tsc",
+    "build:tests": "tsc --build tsconfig.test.json",
+    "coverage": "npm run-script build:tests && nyc --require ts-node/register --reporter=lcovonly jasmine",
+    "coverage:html": "npm run-script build:tests && nyc --require ts-node/register --reporter=html jasmine",
     "lint": "eslint . --ext .js,.ts",
-    "serve": "npm run build && node dist/server.js",
+    "serve": "npm run build && node dist/src/server.js",
     "start": "npm run serve",
-    "test": "ts-node node_modules/jasmine/bin/jasmine"
+    "test": "npm run-script build:tests && npm run-script test:run",
+    "test:run": "jasmine"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
     "body-parser": "^1.19.0",
     "clinical-trial-matching-service": "github:mcode/clinical-trial-matching-service#backup",
+    "dotenv-flow": "^3.2.0",
     "express": "^4.17.1",
     "request": "^2.88.2",
     "xml2json": "^0.12.0"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@types/dotenv-flow": "^3.0.0",
     "@types/express": "^4.17.7",
     "@types/jasmine": "^3.5.10",
     "@types/node": "^14.0.27",
@@ -31,11 +42,12 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "fhir": "^4.7.9",
+    "jasmine": "^3.6.1",
     "nyc": "^15.1.0",
     "prettier": "2.0.5",
     "supertest": "^4.0.2",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7",
-    "jasmine": "^3.6.1"
+    "typescript": "^3.9.7"
   }
 }

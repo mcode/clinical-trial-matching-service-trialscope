@@ -6,18 +6,10 @@ import https from 'https';
 import http from 'http';
 import { mapConditions } from './mapping';
 import { IncomingMessage } from 'http';
-import Configuration from './env';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
 import * as fs from 'fs';
 import path from 'path';
-const environment = new Configuration().defaultEnvObject();
-
-if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
-  throw new Error(
-    'TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.'
-  );
-}
 
 /**
  * Maps FHIR phases to TrialScope phases.
@@ -304,161 +296,170 @@ export class TrialScopeQuery {
   }
 }
 
-export function runTrialScopeQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
-  return new Promise<TrialScopeResponse>((resolve, reject) => {
-    const query = new TrialScopeQuery(patientBundle);
-    sendQuery(query.toQuery())
-      .then((result) => {
-        // Result is a parsed JSON object. See if we need to load more pages.
-        const loadNextPage = (previousPage: TrialScopeResponse) => {
-          query.after = previousPage.data.baseMatches.pageInfo.endCursor;
-          sendQuery(query.toQuery())
-            .then((nextPage) => {
-              // Append results.
-              result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
-              if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
-                // Keep going
-                loadNextPage(nextPage);
-              } else {
-                resolve(result);
-              }
-            })
-            .catch(reject);
-        };
-        if (!('data' in result)) {
-          console.error('Bad response from server. Got:');
-          console.error(result);
-          reject(new Error(`Missing "data" in results`));
-        }
-        if (result.data.baseMatches.pageInfo.hasNextPage) {
-          // Since this result object is the ultimate result, alter it to
-          // pretend it doesn't have a next page
-          result.data.baseMatches.pageInfo.hasNextPage = false;
-          loadNextPage(result);
-        } else {
-          resolve(result);
-        }
-      })
-      .catch(reject);
-  }).then<SearchSet>((trialscopeResponse) => {
-    // Convert to SearchSet
-    const studies: fhir.ResearchStudy[] = [];
-    let index = 0;
-    const backupIds: string[] = [];
-    for (const node of trialscopeResponse.data.baseMatches.edges) {
-      const trial: TrialScopeTrial = node.node;
-      const study = convertTrialScopeToResearchStudy(trial, index);
-      if (!study.description || !study.enrollment || !study.phase || !study.category) {
-        backupIds.push(trial.nctId);
-      }
-      studies.push(study);
-      index++;
-    }
-    const filepath = 'src';
-    const downloader = new trialbackup.ClinicalTrialGov(filepath);
-    const backup = new trialbackup.BackupSystem(filepath);
-    if (backupIds.length == 0) {
-      return new SearchSet(studies);
-    } else {
-      return downloader.downloadRemoteBackups(backupIds).then(() => {
-        for (let study of studies) {
-          // console.log(study.identifier[0].value);
-          if (backupIds.includes(study.identifier[0].value)) {
-            study = backup.updateTrial(study);
-          }
-        }
-
-        fs.unlink('src/backup.zip', (err) => {
-          if (err) console.log(err);
-        });
-        fs.rmdir(path.resolve('src/backups/'), { recursive: true }, (err) => {
-          if (err) console.log(err);
-        });
-
-        return new SearchSet(studies);
-      });
-    }
-  });
-}
-
-export default runTrialScopeQuery;
-
 type RequestGeneratorFunction = (
   url: string | URL,
   options: https.RequestOptions,
   callback?: (res: IncomingMessage) => void
 ) => http.ClientRequest;
 
-let generateRequest: RequestGeneratorFunction = https.request;
+export class TrialScopeQueryRunner {
+  private generateRequest: RequestGeneratorFunction;
+  constructor(
+    public endpoint: string,
+    private token: string,
+    requestGenerator: RequestGeneratorFunction = https.request
+  ) {
+    this.generateRequest = requestGenerator;
+  }
 
-/**
- * Override the request generator used to generate HTTPS requests. This may be
- * useful in some scenarios where the request needs to be modified. It's
- * primarily intended to be used in tests.
- *
- * @param requestGenerator the request generator to use instead of https.request
- */
-export function setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
-  generateRequest = requestGenerator ? requestGenerator : https.request;
-}
-
-function sendQuery(query: string): Promise<TrialScopeResponse> {
-  return new Promise((resolve, reject) => {
-    const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
-    console.log('Running raw TrialScope query');
-    console.log(query);
-    const request = generateRequest(
-      environment.trialscope_endpoint,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Content-Length': body.byteLength.toString(),
-          'Authorization': 'Bearer ' + environment.TRIALSCOPE_TOKEN
+  runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
+    return new Promise<TrialScopeResponse>((resolve, reject) => {
+      const query = new TrialScopeQuery(patientBundle);
+      this.sendQuery(query.toQuery())
+        .then((result) => {
+          // Result is a parsed JSON object. See if we need to load more pages.
+          const loadNextPage = (previousPage: TrialScopeResponse) => {
+            query.after = previousPage.data.baseMatches.pageInfo.endCursor;
+            this.sendQuery(query.toQuery())
+              .then((nextPage) => {
+                // Append results.
+                result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
+                if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
+                  // Keep going
+                  loadNextPage(nextPage);
+                } else {
+                  resolve(result);
+                }
+              })
+              .catch(reject);
+          };
+          if (!('data' in result)) {
+            console.error('Bad response from server. Got:');
+            console.error(result);
+            reject(new Error(`Missing "data" in results`));
+          }
+          if (result.data.baseMatches.pageInfo.hasNextPage) {
+            // Since this result object is the ultimate result, alter it to
+            // pretend it doesn't have a next page
+            result.data.baseMatches.pageInfo.hasNextPage = false;
+            loadNextPage(result);
+          } else {
+            resolve(result);
+          }
+        })
+        .catch(reject);
+    }).then<SearchSet>((trialscopeResponse) => {
+      // Convert to SearchSet
+      const studies: fhir.ResearchStudy[] = [];
+      let index = 0;
+      const backupIds: string[] = [];
+      for (const node of trialscopeResponse.data.baseMatches.edges) {
+        const trial: TrialScopeTrial = node.node;
+        const study = convertTrialScopeToResearchStudy(trial, index);
+        if (!study.description || !study.enrollment || !study.phase || !study.category) {
+          backupIds.push(trial.nctId);
         }
-      },
-      (result) => {
-        let responseBody = '';
-        result.on('data', (chunk) => {
-          responseBody += chunk;
+        studies.push(study);
+        index++;
+      }
+      const filepath = 'src';
+      const downloader = new trialbackup.ClinicalTrialGov(filepath);
+      const backup = new trialbackup.BackupSystem(filepath);
+      if (backupIds.length == 0) {
+        return new SearchSet(studies);
+      } else {
+        return downloader.downloadRemoteBackups(backupIds).then(() => {
+          for (let study of studies) {
+            // console.log(study.identifier[0].value);
+            if (backupIds.includes(study.identifier[0].value)) {
+              study = backup.updateTrial(study);
+            }
+          }
+
+          fs.unlink('src/backup.zip', (err) => {
+            if (err) console.log(err);
+          });
+          fs.rmdir(path.resolve('src/backups/'), { recursive: true }, (err) => {
+            if (err) console.log(err);
+          });
+
+          return new SearchSet(studies);
         });
-        result.on('end', () => {
-          console.log('Complete');
-          if (result.statusCode === 200) {
-            const json = JSON.parse(responseBody) as unknown;
-            if (isTrialScopeResponse(json)) {
-              resolve(json);
-            } else {
-              // Going to have to be rejected.
-              if (isTrialScopeErrorResponse(json)) {
-                // TODO: Parse out errors?
-                reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+      }
+    });
+  }
+
+  sendQuery(query: string): Promise<TrialScopeResponse> {
+    return new Promise((resolve, reject) => {
+      const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
+      console.log('Running raw TrialScope query');
+      console.log(query);
+      const request = this.generateRequest(
+        this.endpoint,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Content-Length': body.byteLength.toString(),
+            'Authorization': 'Bearer ' + this.token
+          }
+        },
+        (result) => {
+          let responseBody = '';
+          result.on('data', (chunk) => {
+            responseBody += chunk;
+          });
+          result.on('end', () => {
+            console.log('Complete');
+            if (result.statusCode === 200) {
+              const json = JSON.parse(responseBody) as unknown;
+              if (isTrialScopeResponse(json)) {
+                resolve(json);
               } else {
                 // Going to have to be rejected.
                 if (isTrialScopeErrorResponse(json)) {
                   // TODO: Parse out errors?
                   reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
                 } else {
-                  reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
+                  // Going to have to be rejected.
+                  if (isTrialScopeErrorResponse(json)) {
+                    // TODO: Parse out errors?
+                    reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+                  } else {
+                    reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
+                  }
                 }
               }
+            } else {
+              reject(
+                new TrialScopeServerError(
+                  `Server returned ${result.statusCode} ${result.statusMessage}`,
+                  result,
+                  responseBody
+                )
+              );
             }
-          } else {
-            reject(
-              new TrialScopeServerError(
-                `Server returned ${result.statusCode} ${result.statusMessage}`,
-                result,
-                responseBody
-              )
-            );
-          }
-        });
-      }
-    );
+          });
+        }
+      );
 
-    request.on('error', (error) => reject(error));
+      request.on('error', (error) => reject(error));
 
-    request.write(body);
-    request.end();
-  });
+      request.write(body);
+      request.end();
+    });
+  }
+
+  /**
+   * Override the request generator used to generate HTTPS requests. This may be
+   * useful in some scenarios where the request needs to be modified. It's
+   * primarily intended to be used in tests.
+   *
+   * @param requestGenerator the request generator to use instead of https.request
+   */
+  setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
+    this.generateRequest = requestGenerator ? requestGenerator : https.request;
+  }
 }
+
+export default TrialScopeQueryRunner;

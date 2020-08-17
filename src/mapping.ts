@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const jsonMapping = require('../data/condition_snomed.json') as { [key: string]: string[] };
+import jsonMapping from '../data/condition_snomed.json';
 
 /**
  * Takes (str) list of snomed codes and returns (str)
@@ -23,8 +22,12 @@ export function mapConditions(codeList: string[]): Set<string> {
  */
 function codeToConditions(code: string): Set<string> {
   const conditions = new Set<string>();
-  for (const term in jsonMapping) {
-    if (jsonMapping[term].includes(code)) {
+  // This is necessary for eslint-typescript, NOT TypeScript - TypeScript
+  // synthesizes types for the JSON file, but eslint-typescript doesn't
+  // understand that and thinks (incorrectly) jsonMapping is any.
+  const mapping = jsonMapping as Record<string, string[]>;
+  for (const term in mapping) {
+    if (mapping[term].includes(code)) {
       conditions.add(term);
     }
   }
