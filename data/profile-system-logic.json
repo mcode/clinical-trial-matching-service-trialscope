@@ -5,7 +5,7 @@
       "operation" : {
         "operatorType" : "AND",
         "conditions" : [ {
-          "condition" : "SecondaryCancerCondition-code is-in Metastasis-Brain"
+          "condition" : "secondaryCancerCondition-code is-in Metastasis-Brain"
         }, {
           "condition" : "clinicalStatus = active"
         } ]
@@ -21,16 +21,16 @@
             "conditions" : [ {
               "condition" : "mcode-histology-morphology-behavior.value[X] is-in Morphology-Invasive"
             }, {
-              "condition" : "PrimaryCancerCondition-code is-in Cancer-Invasive-Breast"
+              "condition" : "primaryCancerCondition-code is-in Cancer-Invasive-Breast"
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
+            "condition" : "primaryCancerCondition-code is-in Cancer-Breast"
           } ]
         }, {
           "operatorType" : "OR",
           "conditions" : [ {
-            "condition" : "SecondaryCancerCondition-code is-any-code"
+            "condition" : "secondaryCancerCondition-code is-any-code"
           }, {
             "condition" : "TNMClinicalStageGroup-value[x] is-in Stage-4"
           }, {
@@ -51,7 +51,7 @@
       "operation" : {
         "operatorType" : "OR",
         "conditions" : [ {
-          "condition" : "SecondaryCancerCondition-code is-any-code"
+          "condition" : "secondaryCancerCondition-code is-any-code"
         }, {
           "condition" : "TNMClinicalStageGroup-value[x] is-in Stage-4"
         }, {
@@ -68,14 +68,14 @@
         "operations" : [ {
           "operatorType" : "AND",
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
+            "condition" : "primaryCancerCondition-code is-in Cancer-Breast"
           }, {
             "condition" : "mcode-histology-morphology-behavior.value[X] is-in Morphology-Invasive-Carcinoma"
           } ]
         }, {
           "operatorType" : "NONE",
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code is-in Cancer-Invasive Carcinoma"
+            "condition" : "primaryCancerCondition-code is-in Cancer-Invasive Carcinoma"
           } ]
         } ]
       }
@@ -86,14 +86,14 @@
         "operations" : [ {
           "operatorType" : "AND",
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
+            "condition" : "primaryCancerCondition-code is-in Cancer-Breast"
           }, {
             "condition" : "mcode-histology-morphology-behavior.value[X] is-in Morphology-Invasive"
           } ]
         }, {
           "operatorType" : "NONE",
           "conditions" : [ {
-            "condition" : " PrimaryCancerCondition-code is-in Cancer-Invasive-Breast"
+            "condition" : " primaryCancerCondition-code is-in Cancer-Invasive-Breast"
           } ]
         } ]
       }
@@ -236,7 +236,7 @@
           } ]
         } ],
         "conditions" : [ {
-          "condition" : "CancerRelatedRadiationProcedure-code = SNOMED#108290001"
+          "condition" : "cancerRelatedRadiationProcedure-code = SNOMED#108290001"
         } ]
       }
     }, {
@@ -244,7 +244,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "CancerRelatedRadiationProcedure-code is-any-code"
+          "condition" : "cancerRelatedRadiationProcedure-code is-any-code"
         } ]
       }
     } ]
@@ -255,7 +255,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
+          "condition" : "primaryCancerCondition-code is-in Cancer-Breast"
         } ]
       }
     }, {
@@ -265,7 +265,7 @@
         "operations" : [ {
           "operatorType" : "AND",
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code any-code-not-in Cancer-Breast"
+            "condition" : "primaryCancerCondition-code any-code-not-in Cancer-Breast"
           }, {
             "condition" : "clinicalStatus = current"
           } ]
@@ -289,11 +289,11 @@
             "conditions" : [ {
               "condition" : "mcode-histology-morphology-behavior.value[X] = is-in Morphology-Invasive"
             }, {
-              "condition" : "PrimaryCancerCondition-code is-in Cancer-Invasive Breast"
+              "condition" : "primaryCancerCondition-code is-in Cancer-Invasive Breast"
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
+            "condition" : "primaryCancerCondition-code is-in Cancer-Breast"
           } ]
         }, {
           "operatorType" : "NONE",
@@ -307,7 +307,7 @@
       "operation" : {
         "operatorType" : "AND",
         "conditions" : [ {
-          "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
+          "condition" : "primaryCancerCondition-code is-in Cancer-Breast"
         }, {
           "condition" : "clinicalStatus = Recurrent"
         } ]
@@ -319,7 +319,7 @@
         "operations" : [ {
           "operatorType" : "AND",
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code any-code-not-in Cancer-Breast*Cancer-Skin"
+            "condition" : "primaryCancerCondition-code any-code-not-in Cancer-Breast*Cancer-Skin"
           }, {
             "condition" : "clinicalStatus = current"
           } ]
@@ -334,7 +334,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code any-code-not-in Cancer-Cervical"
+            "condition" : "primaryCancerCondition-code any-code-not-in Cancer-Cervical"
           }, {
             "condition" : "clinicalStatus = current"
           } ]
@@ -354,11 +354,11 @@
             "conditions" : [ {
               "condition" : " mcode-histology-morphology-behavior.value[X] is-in Morphology-Invasive"
             }, {
-              "condition" : " PrimaryCancerCondition-code ia-in Cancer-Invasive Breast"
+              "condition" : " primaryCancerCondition-code ia-in Cancer-Invasive Breast"
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
+            "condition" : "primaryCancerCondition-code is-in Cancer-Breast"
           } ]
         }, {
           "operatorType" : "OR",
@@ -459,7 +459,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "CancerRelatedRadiationProcedure-code is-in Treatment-SRS-Brain"
+          "condition" : "cancerRelatedRadiationProcedure-code is-in Treatment-SRS-Brain"
         } ]
       }
     } ]
@@ -472,7 +472,7 @@
         "operations" : [ {
           "operatorType" : "NONE",
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-HER2"
+            "condition" : "tumorMarker-code is-in Biomarker-HER2"
           } ]
         }, {
           "operatorType" : "OR",
@@ -661,7 +661,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-PR"
+            "condition" : "tumorMarker-code is-in Biomarker-PR"
           } ]
         }, {
           "operatorType" : "AND",
@@ -676,7 +676,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-FGFR"
+            "condition" : "tumorMarker-code is-in Biomarker-FGFR"
           } ]
         } ]
       }
@@ -712,7 +712,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-ER"
+            "condition" : "tumorMarker-code is-in Biomarker-ER"
           } ]
         }, {
           "operatorType" : "AND",
@@ -727,7 +727,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-FGFR"
+            "condition" : "tumorMarker-code is-in Biomarker-FGFR"
           } ]
         } ]
       }
@@ -748,7 +748,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-HER2"
+            "condition" : "tumorMarker-code is-in Biomarker-HER2"
           } ]
         }, {
           "operatorType" : "AND",
@@ -763,7 +763,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-PR"
+            "condition" : "tumorMarker-code is-in Biomarker-PR"
           } ]
         }, {
           "operatorType" : "AND",
@@ -778,7 +778,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-ER"
+            "condition" : "tumorMarker-code is-in Biomarker-ER"
           } ]
         } ]
       }
@@ -799,7 +799,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-HER2"
+            "condition" : "tumorMarker-code is-in Biomarker-HER2"
           } ]
         }, {
           "operatorType" : "AND",
@@ -814,7 +814,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-PR"
+            "condition" : "tumorMarker-code is-in Biomarker-PR"
           } ]
         }, {
           "operatorType" : "AND",
@@ -829,7 +829,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-ER"
+            "condition" : "tumorMarker-code is-in Biomarker-ER"
           } ]
         } ]
       }
@@ -850,7 +850,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-HER2"
+            "condition" : "tumorMarker-code is-in Biomarker-HER2"
           } ]
         }, {
           "operatorType" : "AND",
@@ -865,7 +865,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-PR"
+            "condition" : "tumorMarker-code is-in Biomarker-PR"
           } ]
         }, {
           "operatorType" : "AND",
@@ -880,7 +880,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-ER"
+            "condition" : "tumorMarker-code is-in Biomarker-ER"
           } ]
         } ]
       }
@@ -916,7 +916,7 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker-code is-in Biomarker-PR"
+            "condition" : "tumorMarker-code is-in Biomarker-PR"
           } ]
         }, {
           "operatorType" : "AND",

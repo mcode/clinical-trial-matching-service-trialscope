@@ -347,78 +347,86 @@ export class TrialScopeQuery {
     // Each of these operator types are based on a code being in a profile.
     if (operator == 'is-in' || operator == 'is-any-code' || operator == 'any-code-not-in') {
 
-      var currentCode:string;
-      var currentCodeSystem:string;
-      var neededCode:string = splitConditions[0];
 
-      // Pull the correct code and code system from the extractedMCODE based on the condition.
-      if (neededCode == 'PrimaryCancerCondition-code') {
-        currentCode = extractedMCODE['primaryCancerCondition'][0]['coding'][0].code;
-        currentCodeSystem = extractedMCODE['primaryCancerCondition'][0]['coding'][0].system;
+      var neededCode:string = splitConditions[0];
+      var codesToCheck:string[] = new Array();
+      var systemsToCheck:string[] = new Array();
+      
+      console.log("jojo");
+
+      // Pull the correct code and code system from the extractedMCODE 
+      var codeType:string = neededCode.split("-code")[0];
+      for (var i in extractedMCODE[codeType]) {
+        codesToCheck[i] = extractedMCODE[codeType][i]['coding'][0].code;
+        systemsToCheck[i] = extractedMCODE[codeType][i]['coding'][0].system;
       }
-      else if (neededCode == 'SecondaryCancerCondition-code') {
-        currentCode = extractedMCODE['secondaryCancerCondition'][0]['coding'][0].code;
-        currentCodeSystem = extractedMCODE['secondaryCancerCondition'][0]['coding'][0].system;
-      }
-      else if (neededCode == 'CancerRelatedRadiationProcedure-code') {
-        currentCode = extractedMCODE['cancerRelatedRadiationProcedure'][0]['coding'][0].code;
-        currentCodeSystem = extractedMCODE['cancerRelatedRadiationProcedure'][0]['coding'][0].system;
-      }
-      else if (neededCode == 'TumorMarker-code') {
-        currentCode = extractedMCODE['tumorMarker'][0]['coding'][0].code;
-        currentCodeSystem = extractedMCODE['tumorMarker'][0]['coding'][0].system;
-      }
-      else {
+      // Make sure it was a valid code.
+      if (neededCode != 'primaryCancerCondition-code' && neededCode != 'secondaryCancerCondition-code'
+          && neededCode != 'cancerRelatedRadiationProcedure-code' && neededCode != 'tumorMarker-code') {
         console.log("CONDITION ERROR: INVALID CODE TYPE");
         return false;
       }
+      console.log("jojo");
 
-      // Normalize the code system. NEED TO ADD MORE STILL.
-      if(currentCodeSystem.includes("snomed")){
-        currentCodeSystem = "SNOMED";
-      } else if(currentCodeSystem.includes("rxnorm")){
-        currentCodeSystem = "RXNORM";
-      } else {
-        console.log("INVALID CODE SYSTEM ERROR");
-        console.log(currentCodeSystem);
-      }
+      // Cycle through the list of codes and check
 
-      console.log(splitConditions);
-      console.log(currentCode);
+      for(var currentIndex in codesToCheck){
+        var currentCode:string = codesToCheck[currentIndex];
+        var currentCodeSystem:string = systemsToCheck[currentIndex];
 
-      //This condition is based on whether a code is in a certain code system.
-      var profileList:string[];
-      var skipProfileList:string[];
-      if(operator == 'is-in'){
-        // Just pull the standard list of profiles to check in.
-        profileList = splitConditions[2].split("*");
-      }
-      else if(operator == 'is-any-code'){
-        // Pull the full list of profiles to check in.
-        profileList = Object.keys(profile_system_codes);
-      }
-      else if(operator == 'any-code-not-in'){
-        // Pull the full list of profiles to check in, list of profiles to NOT check in.
-        profileList = Object.keys(profile_system_codes);
-        skipProfileList = splitConditions[2].split("*");
-      }
-
-      console.log(profileList);
-
-      // Cycle through the list of profiles to check the conditions for all.
-      for(var profile of profileList){
-        // If the current profile is in the list of skipProfiles, skip it.
-        if(skipProfileList != undefined && skipProfileList.includes(profile)){
-          // THERE COULD BE SOME ISSUES HERE
-          continue;
+        // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
+        if(currentCodeSystem.includes("snomed")){
+          currentCodeSystem = "SNOMED";
+        } else if(currentCodeSystem.includes("rxnorm")){
+          currentCodeSystem = "RXNORM";
+        } else if(currentCodeSystem.includes("icd-10")){
+          currentCodeSystem = "ICD-10";
+        } else if(currentCodeSystem.includes("ajcc")){
+          currentCodeSystem = "AJCC";
+        } else if(currentCodeSystem.includes("loinc")){
+          currentCodeSystem = "LOINC";
+        }else {
+          console.log("INVALID CODE SYSTEM ERROR");
+          console.log(currentCodeSystem);
         }
-        // Check if the current profile contains the current code.
-        var codeSet = profile_system_codes[profile][currentCodeSystem];
-        for(var checkCode of codeSet){
-          console.log(checkCode);
-          if(checkCode['code'] == currentCode){
-            console.log("MATCH FOUND");
-            return true;
+
+        console.log(splitConditions);
+        console.log(currentCode);
+
+        //This condition is based on whether a code is in a certain code system.
+        var profileList:string[];
+        var skipProfileList:string[];
+        if(operator == 'is-in'){
+          // Just pull the standard list of profiles to check in.
+          profileList = splitConditions[2].split("*");
+        }
+        else if(operator == 'is-any-code'){
+          // Pull the full list of profiles to check in.
+          profileList = Object.keys(profile_system_codes);
+        }
+        else if(operator == 'any-code-not-in'){
+          // Pull the full list of profiles to check in, list of profiles to NOT check in.
+          profileList = Object.keys(profile_system_codes);
+          skipProfileList = splitConditions[2].split("*");
+        }
+
+        console.log(profileList);
+
+        // Cycle through the list of profiles to check the conditions for all.
+        for(var profile of profileList){
+          // If the current profile is in the list of skipProfiles, skip it.
+          if(skipProfileList != undefined && skipProfileList.includes(profile)){
+            // THERE COULD BE SOME ISSUES HERE
+            continue;
+          }
+          // Check if the current profile contains the current code.
+          var codeSet = profile_system_codes[profile][currentCodeSystem];
+          for(var checkCode of codeSet){
+            console.log(checkCode);
+            if(checkCode['code'] == currentCode){
+              console.log("MATCH FOUND");
+              return true;
+            }
           }
         }
       }
@@ -452,7 +460,7 @@ export class TrialScopeQuery {
       else if(neededRequirement == 'CancerRelatedMedicationStatement-medication[x]'){
         currentRequirement = extractedMCODE['cancerRelatedMedicationStatement'][0].code;
       }
-      else if(neededRequirement == 'CancerRelatedRadiationProcedure-code-medication[x]'){
+      else if(neededRequirement == 'cancerRelatedRadiationProcedure-code-medication[x]'){
         currentRequirement = extractedMCODE['cancerRelatedRadiationProcedure'][0].code;
       }
       else if(neededRequirement == 'bodySite'){
