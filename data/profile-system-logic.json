@@ -230,7 +230,7 @@
         "operations" : [ {
           "operatorType" : "OR",
           "conditions" : [ {
-            "condition" : "bodySite = SNOMED#12738006"
+            "condition" : "SecondaryCancerCondition-bodySite = SNOMED#12738006"
           }, {
             "condition" : "SNOMED#119235005)"
           } ]
