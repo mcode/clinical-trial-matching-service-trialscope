@@ -25,16 +25,16 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "\"PrimaryCancerCondition-code is-in Cancer-Breast"
+            "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
           } ]
         }, {
           "operatorType" : "OR",
           "conditions" : [ {
-            "condition" : " SecondaryCancerCondition-code is-in Any"
+            "condition" : "SecondaryCancerCondition-code is-any-code"
           }, {
-            "condition" : " TNMClinicalStageGroup-value[x] is-in Stage-4"
+            "condition" : "TNMClinicalStageGroup-value[x] is-in Stage-4"
           }, {
-            "condition" : " TNMPathologicalStageGroup-value[x] is-in Stage-4"
+            "condition" : "TNMPathologicalStageGroup-value[x] is-in Stage-4"
           } ]
         } ]
       }
@@ -43,7 +43,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "SecondaryCancerCondition-bodySite = \"SNOMED#8935007\""
+          "condition" : "SecondaryCancerCondition-bodySite = SNOMED#8935007"
         } ]
       }
     }, {
@@ -51,7 +51,7 @@
       "operation" : {
         "operatorType" : "OR",
         "conditions" : [ {
-          "condition" : "SecondaryCancerCondition-code is-in Any"
+          "condition" : "SecondaryCancerCondition-code is-any-code"
         }, {
           "condition" : "TNMClinicalStageGroup-value[x] is-in Stage-4"
         }, {
@@ -121,7 +121,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "CancerRelatedMedicationStatement medication[x] = NIH-code-#C1198"
+          "condition" : "CancerRelatedMedicationStatement-medication[x] = NIH-code-#C1198"
         } ]
       }
     }, {
@@ -141,7 +141,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "CancerRelatedMedicationStatement medication[x] = any code on sheet \"\"Treatment-Pembrolizumab\"\"\""
+          "condition" : "CancerRelatedMedicationStatement-medication[x] is-in Treatment-Pembrolizumab"
         } ]
       }
     }, {
@@ -149,7 +149,7 @@
       "operation" : {
         "operatorType" : "OR",
         "conditions" : [ {
-          "condition" : "CancerRelatedMedicationStatement medication[x] is-in Treatment-mT"
+          "condition" : "CancerRelatedMedicationStatement-medication[x] is-in Treatment-mT"
         }, {
           "condition" : "Inhibtor"
         } ]
@@ -209,7 +209,7 @@
         "operations" : [ {
           "operatorType" : "OR",
           "conditions" : [ {
-            "condition" : "CancerRelatedMedicationStatement medication[x] is-in Treatment-CDK46 Inhibitor"
+            "condition" : "CancerRelatedMedicationStatement-medication[x] is-in Treatment-CDK46 Inhibitor"
           }, {
             "condition" : "mT"
           }, {
@@ -244,7 +244,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "CancerRelatedRadiationProcedure-code = any-code"
+          "condition" : "CancerRelatedRadiationProcedure-code is-any-code"
         } ]
       }
     } ]
@@ -265,7 +265,7 @@
         "operations" : [ {
           "operatorType" : "AND",
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition-code = any-code not-in Cancer-Breast"
+            "condition" : "PrimaryCancerCondition-code any-code-not-in Cancer-Breast"
           }, {
             "condition" : "clinicalStatus = current"
           } ]
@@ -307,7 +307,7 @@
       "operation" : {
         "operatorType" : "AND",
         "conditions" : [ {
-          "condition" : "PrimaryCancerCondition code is-in Cancer-Breast"
+          "condition" : "PrimaryCancerCondition-code is-in Cancer-Breast"
         }, {
           "condition" : "clinicalStatus = Recurrent"
         } ]
@@ -319,7 +319,7 @@
         "operations" : [ {
           "operatorType" : "AND",
           "conditions" : [ {
-            "condition" : "PrimaryCancerCondition code = any-code not-in Cancer-Breast*Cancer-Skin"
+            "condition" : "PrimaryCancerCondition-code any-code-not-in Cancer-Breast*Cancer-Skin"
           }, {
             "condition" : "clinicalStatus = current"
           } ]
@@ -334,9 +334,9 @@
             } ]
           } ],
           "conditions" : [ {
-            "condition" : " PrimaryCancerCondition code = any-code not-in Cancer-Cervical"
+            "condition" : "PrimaryCancerCondition-code any-code-not-in Cancer-Cervical"
           }, {
-            "condition" : " clinicalStatus = current"
+            "condition" : "clinicalStatus = current"
           } ]
         } ]
       }
@@ -436,9 +436,9 @@
       "operation" : {
         "operatorType" : "OR",
         "conditions" : [ {
-          "condition" : "\"TNMClinicalStageGroup value[x] is-in Stage-3"
+          "condition" : "TNMClinicalStageGroup value[x] is-in Stage-3"
         }, {
-          "condition" : " TNMPathologicalStageGroup value[x] is-in Stage-3"
+          "condition" : "TNMPathologicalStageGroup value[x] is-in Stage-3"
         } ]
       }
     }, {
@@ -479,7 +479,7 @@
           "conditions" : [ {
             "condition" : "valueQuantity/valueRatio = 3*3+"
           }, {
-            "condition" : "valueCodeableConcept = SNOMED#10828004 Positive (qualifier value)"
+            "condition" : "valueCodeableConcept = SNOMED#10828004-Positive-(qualifier-value)"
           }, {
             "condition" : "interpretation = POS*DET*H)"
           } ]
@@ -494,9 +494,9 @@
           "operations" : [ {
             "operatorType" : "OR",
             "conditions" : [ {
-              "condition" : "valueQuantity = 3* 3+)"
+              "condition" : "valueQuantity = 3*3+)"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -511,7 +511,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=10%"
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -532,7 +532,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity = 3*3+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#10828004 Positive (qualifier value))"
+              "condition" : "valueCodeableConcept = SNOMED#10828004-Positive-(qualifier-value))"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -547,7 +547,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=10%"
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -568,7 +568,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0*1*2*1+*2+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -583,7 +583,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=1%"
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -604,7 +604,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0*1*2*1+*2+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -619,7 +619,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=1%"
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -638,9 +638,9 @@
           "operations" : [ {
             "operatorType" : "OR",
             "conditions" : [ {
-              "condition" : "valueQuantity/valueRatio = 0* 1* 2* 1+* 2+) "
+              "condition" : "valueQuantity/valueRatio = 0*1*2*1+*2+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -655,13 +655,13 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=1%) "
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 \"\"Positive (qualifier value)) "
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
-              "condition" : "interpretation = POS * DET* H)) "
+              "condition" : "interpretation = POS*DET*H"
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker code = any code on sheet Biomarker-PR"
+            "condition" : "TumorMarker-code is-in Biomarker-PR"
           } ]
         }, {
           "operatorType" : "AND",
@@ -670,13 +670,13 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=1%"
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
           } ],
           "conditions" : [ {
-            "condition" : "TumorMarker code is-in Biomarker-FGFR"
+            "condition" : "TumorMarker-code is-in Biomarker-FGFR"
           } ]
         } ]
       }
@@ -691,7 +691,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0*1*2*1+*2+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -706,7 +706,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=1%) "
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -721,7 +721,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=1%"
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -742,7 +742,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0*1*2*1+*2+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -757,7 +757,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >/=1%"
             }, {
-              "condition" : "valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -772,7 +772,7 @@
             "conditions" : [ {
               "condition" : " ((valueQuantity/valueRatio = >/=1%)"
             }, {
-              "condition" : " (valueCoedableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : " (valueCoedableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]
@@ -793,7 +793,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0*1*2*1+*2+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -808,7 +808,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0* <1%"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -823,7 +823,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0* <1%"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -844,7 +844,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0* 1* 1+) "
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -859,7 +859,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0* <10%"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -874,7 +874,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0* <10%"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -895,7 +895,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0*1*2*1+*2+"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -910,7 +910,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0* <1%"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -925,7 +925,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = 0* <1%"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#260385009 Negative (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
               "condition" : "interpretation = L*N*NEG*ND"
             } ]
@@ -940,7 +940,7 @@
             "conditions" : [ {
               "condition" : "valueQuantity/valueRatio = >50%"
             }, {
-              "condition" : "valueCodeableConcept = SNOMED#10828004 Positive (qualifier value)"
+              "condition" : "valueCodeableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
               "condition" : "interpretation = POS*DET*H"
             } ]

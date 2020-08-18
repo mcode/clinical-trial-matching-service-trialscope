@@ -235,8 +235,8 @@ export class TrialScopeQuery {
     'maximumAge'
   ];
   constructor(patientBundle: Bundle) {
-    const test = new mcode.extractedMCODE(patientBundle);
-    //console.log(test);
+    const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+    console.log(extractedMCODE);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
@@ -262,21 +262,24 @@ export class TrialScopeQuery {
         this.addCondition(resource);
       }
     }
-    var primaryCancerString:string = this.getFilterType('Primary Cancer');
+    var primaryCancerString:string = this.getFilterType('Primary Cancer', extractedMCODE);
+    console.log("Filter Result:");
+    console.log(primaryCancerString);
   }
-  getFilterType(filter:string): string {
+  // Return the filter type based on the input profile string.
+  getFilterType(filter:string, extractedMCODE:mcode.extractedMCODE): string {
     // Parse through the logic JSON and check if certain conditions are met to return the corresponding string.
-    var typesList:string[] = profile_system_logic[filter].types;
-    for( var profileType of typesList){
-      if(this.parseOperation(profileType['operation'])){
+    var typesList:String[] = profile_system_logic[filter].types;
+    for (var profileType of typesList) {
+      if (this.parseOperation(profileType['operation'], extractedMCODE)) {
         // If the conditions associated with this type are all true, return this type.
         return profileType['type']
       }
     }
-
     return 'LOGIC ERROR'
   }
-  parseOperation(operation:string): boolean{
+  // Parse an operation and return whether it returns TRUE or FALSE.
+  parseOperation(operation:String, extractedMCODE:mcode.extractedMCODE): boolean{
 
     console.log(operation['operatorType']);
 
@@ -286,7 +289,7 @@ export class TrialScopeQuery {
       if(operation['operatorType'] == "AND"){
         for(var condition of operation['conditions']){
           // Cycle through the conditions and check if they meet the AND requirements.
-          if(!this.checkConditionValidity(condition)){
+          if(!this.checkConditionValidity(condition, extractedMCODE)){
             return false;
           }
         }
@@ -296,7 +299,7 @@ export class TrialScopeQuery {
       else if(operation['operatorType'] == "OR") {
         for(var condition of operation['conditions']){
           // Cycle through the conditions and check if they meet the OR requirements.
-          if(this.checkConditionValidity(condition)){
+          if(this.checkConditionValidity(condition, extractedMCODE)){
             return true;
           }
         }
@@ -305,14 +308,14 @@ export class TrialScopeQuery {
       }
       else if(operation['operatorType'] == "NONE"){
         // There will be one condition, check if it is satisfied.
-        return this.checkConditionValidity(operation['conditions']);
+        return this.checkConditionValidity(operation['conditions'], extractedMCODE);
       }
     } else {
 
       if(operation['operatorType'] == "AND"){
         // We need to parse through the operations and find their values.
         for(var subOperation of operation['operations']){
-          if(!this.parseOperation(subOperation)){
+          if(!this.parseOperation(subOperation, extractedMCODE)){
             return false
           }
         }
@@ -322,7 +325,7 @@ export class TrialScopeQuery {
       else if(operation['operatorType'] == "OR"){
         // We need to parse through the operations and find their values.
         for(var subOperation of operation['operations']){
-          if(this.parseOperation(subOperation)){
+          if(this.parseOperation(subOperation, extractedMCODE)){
             return true
           }
         }
@@ -333,20 +336,135 @@ export class TrialScopeQuery {
     console.log('LOGIC ERROR');
     return false;
   }
-  checkConditionValidity(condition:string): boolean{
+  // Check whether the current condition is TRUE or FALSE
+  checkConditionValidity(condition:String, extractedMCODE:mcode.extractedMCODE): boolean{
+    
     console.log(condition);
+    var tempConditionString:String = new String(condition[0]['condition']);
+    var splitConditions = tempConditionString.split(" ");
+    var operator = splitConditions[1];
 
-    var splitConditions:string[] = condition.split(' ');
+    // Each of these operator types are based on a code being in a profile.
+    if (operator == 'is-in' || operator == 'is-any-code' || operator == 'any-code-not-in') {
 
-    if(splitConditions[1] == 'is-in'){
-      // This condition is based on whether a code is in a certain code system.
+      var currentCode:string;
+      var currentCodeSystem:string;
       var neededCode:string = splitConditions[0];
-      var codesystem:string = splitConditions[2];
 
+      // Pull the correct code and code system from the extractedMCODE based on the condition.
+      if (neededCode == 'PrimaryCancerCondition-code') {
+        currentCode = extractedMCODE['primaryCancerCondition'][0]['coding'][0].code;
+        currentCodeSystem = extractedMCODE['primaryCancerCondition'][0]['coding'][0].system;
+      }
+      else if (neededCode == 'SecondaryCancerCondition-code') {
+        currentCode = extractedMCODE['secondaryCancerCondition'][0]['coding'][0].code;
+        currentCodeSystem = extractedMCODE['secondaryCancerCondition'][0]['coding'][0].system;
+      }
+      else if (neededCode == 'CancerRelatedRadiationProcedure-code') {
+        currentCode = extractedMCODE['cancerRelatedRadiationProcedure'][0]['coding'][0].code;
+        currentCodeSystem = extractedMCODE['cancerRelatedRadiationProcedure'][0]['coding'][0].system;
+      }
+      else if (neededCode == 'TumorMarker-code') {
+        currentCode = extractedMCODE['tumorMarker'][0]['coding'][0].code;
+        currentCodeSystem = extractedMCODE['tumorMarker'][0]['coding'][0].system;
+      }
+      else {
+        console.log("CONDITION ERROR: INVALID CODE TYPE");
+        return false;
+      }
 
+      // Normalize the code system. NEED TO ADD MORE STILL.
+      if(currentCodeSystem.includes("snomed")){
+        currentCodeSystem = "SNOMED";
+      } else if(currentCodeSystem.includes("rxnorm")){
+        currentCodeSystem = "RXNORM";
+      } else {
+        console.log("INVALID CODE SYSTEM ERROR");
+        console.log(currentCodeSystem);
+      }
+
+      console.log(splitConditions);
+      console.log(currentCode);
+
+      //This condition is based on whether a code is in a certain code system.
+      var profileList:string[];
+      var skipProfileList:string[];
+      if(operator == 'is-in'){
+        // Just pull the standard list of profiles to check in.
+        profileList = splitConditions[2].split("*");
+      }
+      else if(operator == 'is-any-code'){
+        // Pull the full list of profiles to check in.
+        profileList = Object.keys(profile_system_codes);
+      }
+      else if(operator == 'any-code-not-in'){
+        // Pull the full list of profiles to check in, list of profiles to NOT check in.
+        profileList = Object.keys(profile_system_codes);
+        skipProfileList = splitConditions[2].split("*");
+      }
+
+      console.log(profileList);
+
+      // Cycle through the list of profiles to check the conditions for all.
+      for(var profile of profileList){
+        // If the current profile is in the list of skipProfiles, skip it.
+        if(skipProfileList != undefined && skipProfileList.includes(profile)){
+          // THERE COULD BE SOME ISSUES HERE
+          continue;
+        }
+        // Check if the current profile contains the current code.
+        var codeSet = profile_system_codes[profile][currentCodeSystem];
+        for(var checkCode of codeSet){
+          console.log(checkCode);
+          if(checkCode['code'] == currentCode){
+            console.log("MATCH FOUND");
+            return true;
+          }
+        }
+      }
     }
+    else if (operator == '='){
 
-    return true;
+      // Simple equality logic
+
+      var neededRequirement:string = splitConditions[0];
+      var currentRequirement:string;
+
+      if(neededRequirement == 'valueCodeableConcept'){
+        // PULL OUT VALUE CODABLE CONCEPT?
+      }
+      else if(neededRequirement == 'valueQuantity/valueRatio'){
+        // PULL OUT VALUEQUANTITY/VALUERATION?
+      }
+      else if(neededRequirement == 'interpretaion'){
+        // PULL OUT Interpretation?
+      }
+      else if(neededRequirement == 'interpretaion'){
+        // PULL OUT Interpretation?
+      }
+      else if(neededRequirement == 'clinicalstatus'){
+        currentRequirement = extractedMCODE['secondaryCancerCondition'][0]['clinicalstatus'][0].code;
+      }
+      else if(neededRequirement == 'SecondaryCancerCondition-bodySite'){
+        // PULL OUT SecondaryCancerCondition-bodySite?
+        currentRequirement = extractedMCODE['secondaryCancerCondition'][0]['clinicalstatus'][0].code;
+      }
+      else if(neededRequirement == 'CancerRelatedMedicationStatement-medication[x]'){
+        currentRequirement = extractedMCODE['cancerRelatedMedicationStatement'][0].code;
+      }
+      else if(neededRequirement == 'CancerRelatedRadiationProcedure-code-medication[x]'){
+        currentRequirement = extractedMCODE['cancerRelatedRadiationProcedure'][0].code;
+      }
+      else if(neededRequirement == 'bodySite'){
+        // Pull out bodysite?
+      }
+    }
+    else {
+      console.log("CONDITION ERROR: INVALID CONDITION TYPE");
+      return false;
+    }
+    // If we reach here, no conditions were satisfied, thus it is false.
+    return false;
   }
   addCondition(condition: Condition): void {
     // Should have a code
