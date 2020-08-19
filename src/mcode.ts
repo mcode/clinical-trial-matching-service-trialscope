@@ -432,7 +432,11 @@ export class extractedMCODE {
       }
     } else if (operator == '=') {
       // Simple equality logic
+
+      // The lefthand side of the '=' operator.
       const neededRequirement: string = splitConditions[0];
+      // The righthand side of the '=' operator.
+      const equalityValue: string = splitConditions[2];
       let currentRequirement: string;
 
       if (neededRequirement == 'valueCodeableConcept') {
@@ -450,8 +454,16 @@ export class extractedMCODE {
         currentRequirement = extractedMCODE.secondaryCancerCondition[0].clinicalStatus[0].code;
       } else if (neededRequirement == 'CancerRelatedMedicationStatement-medication[x]') {
         currentRequirement = extractedMCODE.cancerRelatedMedicationStatement[0].code;
+        // The code/string may need to be parsed for this correctly work. Haven't been able to test it.
+        if (currentRequirement == equalityValue) {
+          return true;
+        }
       } else if (neededRequirement == 'cancerRelatedRadiationProcedure-code-medication[x]') {
         currentRequirement = extractedMCODE.cancerRelatedRadiationProcedure[0].code;
+        // The code/string may need to be parsed for this correctly work. Haven't been able to test it.
+        if (currentRequirement == equalityValue) {
+          return true;
+        }
       }
     } else {
       console.log('CONDITION ERROR: INVALID CONDITION TYPE');
