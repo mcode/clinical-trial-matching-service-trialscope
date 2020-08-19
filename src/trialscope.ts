@@ -1,7 +1,7 @@
 /**
  * Module for running queries via TrialScope
  */
-import * as trialbackup from 'clinical-trial-matching-service/dist/trialbackup';
+import { ClinicalTrialGovService } from 'clinical-trial-matching-service';
 import https from 'https';
 import http from 'http';
 import { mapConditions } from './mapping';
@@ -363,19 +363,19 @@ export class TrialScopeQueryRunner {
         index++;
       }
       const filepath = 'src';
-      const downloader = new trialbackup.ClinicalTrialGov(filepath);
-      const backup = new trialbackup.BackupSystem(filepath);
+      const backupService = new ClinicalTrialGovService(filepath);
       if (backupIds.length == 0) {
         return new SearchSet(studies);
       } else {
-        return downloader.downloadRemoteBackups(backupIds).then(() => {
+        return backupService.downloadTrials(backupIds).then(() => {
           for (let study of studies) {
             // console.log(study.identifier[0].value);
             if (backupIds.includes(study.identifier[0].value)) {
-              study = backup.updateTrial(study);
+              study = backupService.updateTrial(study);
             }
           }
 
+          // FIXME: This should be handled by the service itself
           fs.unlink('src/backup.zip', (err) => {
             if (err) console.log(err);
           });
