@@ -1,20 +1,8 @@
-
-// export interface profileSystemLogic {
-//   PrimaryCancer: string;
-//   SecondaryCancer: string;
-//   HistologyMorphology: string;
-//   Stage: string;
-//   Age: string;
-//   TumorMarker: string;
-//   RadiationProcedure: string;
-//   SurgicalProcedure: string;
-//   MedicationStatement: string;
-// }
+import { Coding } from '../src/mcode';
 
 export interface ProfileType {
   types: string[];
 }
-
 export interface CodeProfile {
   SNOMED: string[];
   RXNORM: string[];
@@ -22,4 +10,7 @@ export interface CodeProfile {
   AJCC: string[];
   LOINC: string[];
 }
-
+export interface CodingProfile {
+  coding?: Coding[];
+  clinicalStatus?: Coding[];
+}

@@ -2,7 +2,7 @@ import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
 import { Bundle } from './bundle';
 
-import { ProfileType } from '../data/profileSystemLogic';
+import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
 import { CodeProfile } from '../data/profileSystemLogic';
 
 import profile_system_codes from '../data/profile-system-codes.json';
@@ -354,15 +354,15 @@ export class extractedMCODE {
     // Each of these operator types are based on a code being in a profile.
     if (operator == 'is-in' || operator == 'is-any-code' || operator == 'any-code-not-in') {
       const neededCode: string = splitConditions[0];
-      const codesToCheck: string[] = new Array(10) as string[];
+      const codesToCheck: CodingProfile[] = new Array(10) as CodingProfile[];
       const systemsToCheck: string[] = new Array(10) as string[];
 
       // Pull the correct code and code system from the extractedMCODE
       const codeType: string = neededCode.split('-code')[0];
       let i = 0;
       for (const currentCode of extractedMCODE[codeType]) {
-        codesToCheck[i] = currentCode as string;
-        systemsToCheck[i] = currentCode.coding[0].system as string;
+        codesToCheck[i] = currentCode as CodingProfile;
+        systemsToCheck[i] = codesToCheck[i]['coding'][0].system;
         i++;
       }
       // Make sure it was a valid code.
@@ -378,8 +378,7 @@ export class extractedMCODE {
 
       // Cycle through the list of codes and check
       let currentIndex = 0;
-      for (const tempvar of codesToCheck) {
-        const currentCode: string = codesToCheck[currentIndex];
+      for (const currentCode of codesToCheck) {
         let currentCodeSystem: string = systemsToCheck[currentIndex];
 
         // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
@@ -424,8 +423,8 @@ export class extractedMCODE {
             }
           }
           // If the code was never found in the list, and it wasn't supposed to, return true.
-          if(!anyCodeNotInOperation){
-            console.log("MATCH NOT FOUND FOR AN ANY-CODE-NOT-IN OPERATION");
+          if (!anyCodeNotInOperation) {
+            console.log('MATCH NOT FOUND FOR AN ANY-CODE-NOT-IN OPERATION');
             return true;
           }
         }
