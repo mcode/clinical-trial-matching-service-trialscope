@@ -234,6 +234,15 @@ export class TrialScopeQuery {
   constructor(patientBundle: Bundle) {
     const extractedMCODE = new mcode.extractedMCODE(patientBundle);
     console.log(extractedMCODE);
+    this.mcode = {};
+    this.mcode.primaryCancer = extractedMCODE.getPrimaryCancer();
+    this.mcode.secondaryCancer = extractedMCODE.getSecondaryCancer();
+    this.mcode.histologyMorphology = extractedMCODE.getHistologyMorphology();
+    this.mcode.stage = extractedMCODE.getStage();
+    this.mcode.tumorMarker = extractedMCODE.getTumorMarker();
+    this.mcode.radiationProcedure = extractedMCODE.getRadiationProcedure();
+    this.mcode.surgicalProcedure = extractedMCODE.getSurgicalProcedure();
+    this.mcode.medicationStatement = extractedMCODE.getMedicationStatement();
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries

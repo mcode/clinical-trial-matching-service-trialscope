@@ -273,7 +273,6 @@ export class extractedMCODE {
       return [condition];
     }
   }
-  */
   // Return the filter type based on the input profile string.
   public getFilterType(filter: string, extractedMCODE: extractedMCODE): string {
     // Parse through the logic JSON and check if certain conditions are met to return the corresponding string.
@@ -405,7 +404,7 @@ export class extractedMCODE {
           if (currentCode != undefined) {
             return true;
           }
-        } else if (operator == 'any-code-not-in') {
+        } else if (operator == 'any-code-not-in') { // what about the is-in operator?
           // Pull the list of profiles that it should NOT be in.
           anyCodeNotInOperation = false;
         }
@@ -472,4 +471,54 @@ export class extractedMCODE {
     // If we reach here, no conditions were satisfied, thus it is false.
     return false;
   }
+  */
+
+  getPrimaryCancerValues(): string {
+
+  }
+  getSecondaryCancerValues(): string {
+
+  }
+  getHistologyMorphologyValue(): string {
+
+  }
+  getStageValue(): string {
+
+  }
+  getAgeValue(): string {
+
+  }
+  getTumorMarkerValue(): string {
+
+  }
+  getRadiationProcedureValue(): string {
+
+  }
+  getSurgicalProcedureValue(): string {
+
+  }
+  getMedicationStatementValue(): string {
+
+  }
+
+  normalizeCodeSystem(codeSystem : string) : string {
+    // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
+
+    if (codeSystem.includes('snomed')) {
+      return 'SNOMED';
+    } else if (codeSystem.includes('rxnorm')) {
+      return 'RXNORM';
+    } else if (codeSystem.includes('icd-10')) {
+      return 'ICD10';
+    } else if (codeSystem.includes('ajcc')) {
+      return 'AJCC';
+    } else if (codeSystem.includes('loinc')) {
+      return 'LOINC';
+    } else {
+      console.log('INVALID CODE SYSTEM ERROR');
+      console.log(currentCodeSystem);
+      return '';
+    }
+  }
+
 }
