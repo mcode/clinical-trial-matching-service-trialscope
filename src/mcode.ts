@@ -476,7 +476,7 @@ export class extractedMCODE {
   getPrimaryCancerValues(extractedMCODE:extractedMCODE): string {
     // Cycle through each of the primary cancer objects and check that they satisfy different requirements.
     for (const primaryCancerCondtion of extractedMCODE.primaryCancerCondition){
-      
+
       // Cycle through each of the primary Cancer condition's codes independently due to code-dependent conditions
       for (const currentCoding of primaryCancerCondtion.coding){
 
@@ -514,7 +514,7 @@ export class extractedMCODE {
   getSecondaryCancerValues(extractedMCODE:extractedMCODE): string {
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of extractedMCODE.secondaryCancerCondition){
-          
+
       // Cycle through each of the secondary Cancer condition's codes independently due to code-dependent conditions
       for (const currentCoding of secondaryCancerCondition.coding){
 
@@ -549,7 +549,78 @@ export class extractedMCODE {
 
   }
   getMedicationStatementValue(): string {
+    if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Trastuzamab')) &&
+              this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Pertuzumab')) &&
+              this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-T-DM1')) ) {
 
+      return 'DrugCombo-1';
+
+    } else if ( (this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-CDK46 Inhibitor')) ||
+               this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'mTOR Inhibitor'))) &&
+               this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Endocrine Therapy')) ) {
+
+      return 'CDK4/6-mTOR and Endocrine ';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-T-DM1')) ) {
+
+      return 'T-DM1';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor')) ) {
+
+      return 'CDK4/6 inhibitor';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Pembrolizumab')) ) {
+
+      return 'Pembrolizumab';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => this.normalizeCodeSystem(coding.system) == 'NIH' &&
+                                                                      coding.code == '#C1198') ) {
+
+      return 'Poly ICLC';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-mTOR Inhibtor')) ) {
+
+      return 'mTOR inhibitor';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Endocrine Therapy')) ) {
+
+      return 'Concurrent Endocrine Therapy';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-anti-Androgen')) ) {
+
+      return 'Anti-androgen ';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-anti-HER2')) ) {
+
+      return 'anti-HER2';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Tyrosine Kinase Inhib')) ) {
+
+      return 'Tyrosine Kinase Inhibitor';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-P13K Inhibitor')) ) {
+
+      return 'P13K inhibitor';
+
+    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-anti-PD1, PDL1, PDL2')) ) {
+
+      return 'anti-PD';
+
+    }
+  }
+
+  codeIsInSheet(coding: Coding, sheetName: string): boolean {
+    const code = coding.code;
+    const system = this.normalizeCodeSystem(coding.system);
+    const codeSet: string[] = (profile_system_codes[sheetName] as CodeProfile)[system] as string[];
+    console.log(coding);
+    // Check that the current code matches the given code.
+    for (const currentCode: string of codeSet) {
+      if(coding.code == currentCode){
+        return true;
+      }
+    }
+    return false;
   }
 
   // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
@@ -564,6 +635,8 @@ export class extractedMCODE {
       return 'AJCC';
     } else if (codeSystem.includes('loinc')) {
       return 'LOINC';
+    } else if (codeSystem.includes('nih')) {
+          return 'NIH';
     } else {
       return '';
     }
