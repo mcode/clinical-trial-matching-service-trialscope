@@ -473,60 +473,94 @@ export class extractedMCODE {
   }
   */
 
-  getPrimaryCancerValues(extractedMCODE:extractedMCODE): string {
-    // Cycle through each of the primary cancer objects and check that they satisfy different requirements.
-    for (const primaryCancerCondtion of extractedMCODE.primaryCancerCondition){
-
+  // Primary Cancer Value
+  getPrimaryCancerValues(): string {
+     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+     for (const primaryCancerCondition of this.primaryCancerCondition){
       // Cycle through each of the primary Cancer condition's codes independently due to code-dependent conditions
-      for (const currentCoding of primaryCancerCondtion.coding){
-
-        // 1. Breast Cancer
-        if (this.profilesContainCode(currentCoding, 'Cancer-Breast')) {
-          return 'Breast Cancer';
-        }
-        // 2. Concomitant invasive malignancies
-        if (
-          ((this.profileDoesNotContainCode(currentCoding, 'Cancer-Breast')) && (primaryCancerCondtion.clinicalStatus[0].display == 'current'))
-          &&
-          ((this.profilesContainCode(extractedMCODE.TNMClinicalStageGroup[0], 'Stage-1','Stage-2','Stage-3','Stage-4')) || (this.profilesContainCode(extractedMCODE.TNMPathologicalStageGroup[0], 'Stage-1','Stage-2','Stage-3','Stage-4')))
-          ) {
-          return 'Concomitant invasive malignancies';
-        }
+      for (const currentCoding of primaryCancerCondition.coding){
         // 3. Invasive Breast Cancer and Recurrent
         if (
-          ((this.profilesContainCode(primaryCancerCondtion.histologyMorphologyBehavior[0], 'Morphology-Invasive') || this.profilesContainCode(currentCoding, 'Cancer-Invasive Breast'))
+          ((primaryCancerCondition.histologyMorphologyBehavior.some(coding => this.profilesContainCode(coding, 'Morphology-Invasive')) || this.profilesContainCode(currentCoding, 'Cancer-Invasive Breast'))
           &&
           (this.profilesContainCode(currentCoding, 'Cancer-Breast')))
           &&
-          (primaryCancerCondtion.clinicalStatus[0].display == 'current')
+          (primaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'current'))
           ) {
             return 'Invasive Breast Cancer and recurrent';
         }
-        // 4. Locally Recurrent
-        if (
-          (this.profilesContainCode(currentCoding, 'Cancer-Breast') && (primaryCancerCondtion.clinicalStatus[0].display == 'recurrent'))
-          ) {
-            return 'Locally Recurrent';
-        }
       }
     }
+    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      // 1. Breast Cancer
+      if (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))) {
+        return 'Breast Cancer';
+      }
+    }
+    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    for (const primaryCancerCondition of this.primaryCancerCondition){
+      // 2. Concomitant invasive malignancies
+      if (
+        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))) && (primaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'current')))
+        &&
+        ((this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-1','Stage-2','Stage-3','Stage-4'))) || (this.TNMPathologicalStageGroup.some(coding => this.profilesContainCode(coding, 'Stage-1','Stage-2','Stage-3','Stage-4'))))
+        ) {
+        return 'Concomitant invasive malignancies';
+      }
+    }
+    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    for (const primaryCancerCondition of this.primaryCancerCondition){
+      // 4. Locally Recurrent
+      if (
+        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))) && (primaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'current')))
+        ) {
+          return 'Locally Recurrent';
+      }
+    }
+    // None of the conditions satisfied.
+    return null;
   }
-  getSecondaryCancerValues(extractedMCODE:extractedMCODE): string {
+  // Secondary Cancer Value
+  getSecondaryCancerValues(): string {
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
-    for (const secondaryCancerCondition of extractedMCODE.secondaryCancerCondition){
-
-      // Cycle through each of the secondary Cancer condition's codes independently due to code-dependent conditions
-      for (const currentCoding of secondaryCancerCondition.coding){
-
-        // 1. Brain Metastasis
-        if (this.profilesContainCode(currentCoding, 'Metastasis-Brain') && secondaryCancerCondition.clinicalStatus[0].display == 'active') {
-          return 'Brain metastasis';
-        }
-        // 2. Invasive Breast Cancer and Metastatics
-        if (
-          ((this.profilesContainCode(extractedMCODE.primaryCancerCondition[0].histologyMorphologyBehavior[0], 'Morphology-Invasive') || this.profilesContainCode(extractedMCODE.primaryCancerCondition[0].coding[0], 'Cancer-Invasive Breast'))
-          &&
-
+    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+      // 1. Brain Metastasis
+      if (
+        (secondaryCancerCondition.coding.some(coding => this.profilesContainCode(coding, 'Metastasis-Brain')))
+        && (secondaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'active'))) {
+        return 'Brain metastasis';
+      }
+    }
+    // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
+    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+      // 2. Invasive Breast Cancer and Metastatics
+      if (
+        (((this.primaryCancerCondition.some(primCanCond => primCanCond.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))))
+        || (this.primaryCancerCondition.some(primCanCond => primCanCond.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Breast')))))
+        && (this.primaryCancerCondition.some(primCanCond => primCanCond.coding.some(code => this.profilesContainCode(code, 'Cancer Breast')))))
+        &&
+        (((secondaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'ANYCODE')))) || 
+        (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4'))) ||
+        (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4'))))) {
+          return 'Invasive Breast Cancer and Metastatic';
+      }
+    }
+    // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
+    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+      // 3. Leptomeningeal metastatic disease
+      if (secondaryCancerCondition.bodySite.some(bdySte => bdySte == 'SNOMED#8935007')) {
+        return 'Leptomeningeal metastatic disease';
+      }
+    }
+    // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
+    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+      // 4. Metastatic
+      if (
+        (secondaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'ANYCODE')))
+        || (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4')))
+        || (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4')))) {
+        return 'Metastatic';
       }
     }
   }
