@@ -473,11 +473,62 @@ export class extractedMCODE {
   }
   */
 
-  getPrimaryCancerValues(): string {
+  getPrimaryCancerValues(extractedMCODE:extractedMCODE): string {
+    // Cycle through each of the primary cancer objects and check that they satisfy different requirements.
+    for (const primaryCancerCondtion of extractedMCODE.primaryCancerCondition){
+      
+      // Cycle through each of the primary Cancer condition's codes independently due to code-dependent conditions
+      for (const currentCoding of primaryCancerCondtion.coding){
 
+        // 1. Breast Cancer
+        if (this.profilesContainCode(currentCoding, 'Cancer-Breast')) {
+          return 'Breast Cancer';
+        }
+        // 2. Concomitant invasive malignancies
+        if (
+          ((this.profileDoesNotContainCode(currentCoding, 'Cancer-Breast')) && (primaryCancerCondtion.clinicalStatus[0].display == 'current'))
+          &&
+          ((this.profilesContainCode(extractedMCODE.TNMClinicalStageGroup[0], 'Stage-1','Stage-2','Stage-3','Stage-4')) || (this.profilesContainCode(extractedMCODE.TNMPathologicalStageGroup[0], 'Stage-1','Stage-2','Stage-3','Stage-4')))
+          ) {
+          return 'Concomitant invasive malignancies';
+        }
+        // 3. Invasive Breast Cancer and Recurrent
+        if (
+          ((this.profilesContainCode(primaryCancerCondtion.histologyMorphologyBehavior[0], 'Morphology-Invasive') || this.profilesContainCode(currentCoding, 'Cancer-Invasive Breast'))
+          &&
+          (this.profilesContainCode(currentCoding, 'Cancer-Breast')))
+          &&
+          (primaryCancerCondtion.clinicalStatus[0].display == 'current')
+          ) {
+            return 'Invasive Breast Cancer and recurrent';
+        }
+        // 4. Locally Recurrent
+        if (
+          (this.profilesContainCode(currentCoding, 'Cancer-Breast') && (primaryCancerCondtion.clinicalStatus[0].display == 'recurrent'))
+          ) {
+            return 'Locally Recurrent';
+        }
+      }
+    }
   }
-  getSecondaryCancerValues(): string {
+  getSecondaryCancerValues(extractedMCODE:extractedMCODE): string {
+    // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
+    for (const secondaryCancerCondition of extractedMCODE.secondaryCancerCondition){
+          
+      // Cycle through each of the secondary Cancer condition's codes independently due to code-dependent conditions
+      for (const currentCoding of secondaryCancerCondition.coding){
 
+        // 1. Brain Metastasis
+        if (this.profilesContainCode(currentCoding, 'Metastasis-Brain') && secondaryCancerCondition.clinicalStatus[0].display == 'active') {
+          return 'Brain metastasis';
+        }
+        // 2. Invasive Breast Cancer and Metastatics
+        if (
+          ((this.profilesContainCode(extractedMCODE.primaryCancerCondition[0].histologyMorphologyBehavior[0], 'Morphology-Invasive') || this.profilesContainCode(extractedMCODE.primaryCancerCondition[0].coding[0], 'Cancer-Invasive Breast'))
+          &&
+
+      }
+    }
   }
   getHistologyMorphologyValue(): string {
 
@@ -501,9 +552,8 @@ export class extractedMCODE {
 
   }
 
+  // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
   normalizeCodeSystem(codeSystem : string) : string {
-    // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
-
     if (codeSystem.includes('snomed')) {
       return 'SNOMED';
     } else if (codeSystem.includes('rxnorm')) {
@@ -515,10 +565,34 @@ export class extractedMCODE {
     } else if (codeSystem.includes('loinc')) {
       return 'LOINC';
     } else {
-      console.log('INVALID CODE SYSTEM ERROR');
-      console.log(currentCodeSystem);
       return '';
     }
   }
 
+  // Return whether any of the codes in a given coding exist in the given profiles.
+  profilesContainCode(coding: Coding, ...profiles: string[]): boolean {
+    // Cycle through the profiles
+      for(const profile: string of profiles){
+      // Pull out the relevant codes from the relevant code system.
+      const currentCodeSystem: string = this.normalizeCodeSystem(coding.system);
+      const codeSet: string[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as string[];
+      console.log(coding);
+      // Check that the current code matches the given code.
+      for (const currentCode: string of codeSet) {
+        if(coding.code == currentCode){
+          return true;
+        }
+      }
+    }
+    // If we reach here, there were no codes in the given profile.
+    return false;
+  }
+  // Returns whether the given code is any code not in the given profile.
+  profileDoesNotContainCode(coding: Coding, profile: string): boolean {
+    if(coding.code == undefined || coding.code == null){
+      return false;
+    } else {
+      return !this.profileContainsCode(coding, profile);
+    }
+  }
 }

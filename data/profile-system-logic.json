@@ -11,7 +11,7 @@
         } ]
       }
     }, {
-      "type" : "Invasive Breast Cancer and Metastatic ",
+      "type" : "Invasive Breast Cancer and Metastatic",
       "operation" : {
         "operatorType" : "AND",
         "operations" : [ {
@@ -99,13 +99,13 @@
       }
     } ]
   },
-  "Medication Statement " : {
+  "Medication Statement" : {
     "types" : [ {
       "type" : "T-DM1 ",
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "\"CancerRelatedMedicationStatement-medication[x] is-in Treatment-T-DM1"
+          "condition" : "CancerRelatedMedicationStatement-medication[x] is-in Treatment-T-DM1"
         } ]
       }
     }, {
@@ -113,7 +113,7 @@
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
-          "condition" : "\"CancerRelatedMedicationStatement-medication[x] is-in Treatment-CDK4-6-Inhibtor"
+          "condition" : "CancerRelatedMedicationStatement-medication[x] is-in Treatment-CDK4-6-Inhibtor"
         } ]
       }
     }, {
@@ -232,7 +232,7 @@
           "conditions" : [ {
             "condition" : "SecondaryCancerCondition-bodySite = SNOMED#12738006"
           }, {
-            "condition" : "SNOMED#119235005)"
+            "condition" : "SNOMED#119235005"
           } ]
         } ],
         "conditions" : [ {
@@ -486,7 +486,7 @@
         } ]
       }
     }, {
-      "type" : "HER2+ and ER+ ",
+      "type" : "HER2+ and ER+",
       "operation" : {
         "operatorType" : "AND",
         "operations" : [ {
@@ -494,7 +494,7 @@
           "operations" : [ {
             "operatorType" : "OR",
             "conditions" : [ {
-              "condition" : "valueQuantity = 3*3+)"
+              "condition" : "valueQuantity = 3*3+"
             }, {
               "condition" : "valueCodeableConcept = SNOMED#10828004-Positive-(qualifier-value)"
             }, {
@@ -806,7 +806,7 @@
           "operations" : [ {
             "operatorType" : "OR",
             "conditions" : [ {
-              "condition" : "valueQuantity/valueRatio = 0* <1%"
+              "condition" : "valueQuantity/valueRatio = 0*<1%"
             }, {
               "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
@@ -821,7 +821,7 @@
           "operations" : [ {
             "operatorType" : "OR",
             "conditions" : [ {
-              "condition" : "valueQuantity/valueRatio = 0* <1%"
+              "condition" : "valueQuantity/valueRatio = 0*<1%"
             }, {
               "condition" : "valueCodeableConcept = SNOMED#260385009-Negative-(qualifier-value)"
             }, {
@@ -954,7 +954,7 @@
   },
   "Surgical Procedure" : {
     "types" : [ {
-      "type" : "Resection ",
+      "type" : "Resection",
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
@@ -962,7 +962,7 @@
         } ]
       }
     }, {
-      "type" : "Splenectomy ",
+      "type" : "Splenectomy",
       "operation" : {
         "operatorType" : "NONE",
         "conditions" : [ {
