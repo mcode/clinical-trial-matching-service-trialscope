@@ -10,9 +10,6 @@ import { IncomingMessage } from 'http';
 import Configuration from './env';
 import RequestError from './request-error';
 
-import { fhirclient } from 'fhirclient/lib/types';
-import * as fhirpath from 'fhirpath';
-
 export type FHIRPath = string;
 import * as mcode from './mcode';
 
@@ -235,21 +232,22 @@ export class TrialScopeQuery {
     const extractedMCODE = new mcode.extractedMCODE(patientBundle);
     console.log(extractedMCODE);
     this.mcode = {};
-    this.mcode.primaryCancer = extractedMCODE.getPrimaryCancer();
-    this.mcode.secondaryCancer = extractedMCODE.getSecondaryCancer();
-    this.mcode.histologyMorphology = extractedMCODE.getHistologyMorphology();
-    this.mcode.stage = extractedMCODE.getStage();
-    this.mcode.tumorMarker = extractedMCODE.getTumorMarker();
-    this.mcode.radiationProcedure = extractedMCODE.getRadiationProcedure();
-    this.mcode.surgicalProcedure = extractedMCODE.getSurgicalProcedure();
-    this.mcode.medicationStatement = extractedMCODE.getMedicationStatement();
+    this.mcode.primaryCancer = extractedMCODE.getPrimaryCancerValue();
+    this.mcode.secondaryCancer = extractedMCODE.getSecondaryCancerValue();
+    this.mcode.histologyMorphology = extractedMCODE.getHistologyMorphologyValue();
+    this.mcode.stage = extractedMCODE.getStageValue();
+    this.mcode.tumorMarker = extractedMCODE.getTumorMarkerValue();
+    this.mcode.radiationProcedure = extractedMCODE.getRadiationProcedureValue();
+    this.mcode.surgicalProcedure = extractedMCODE.getSurgicalProcedureValue();
+    this.mcode.medicationStatement = extractedMCODE.getMedicationStatementValue();
+    console.log(this.mcode);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
         continue;
       }
       const resource = entry.resource;
-      console.log(`Checking resource ${resource.resourceType}`);
+      //console.log(`Checking resource ${resource.resourceType}`);
       if (resource.resourceType === 'Parameters') {
         for (const parameter of resource.parameter) {
           console.log(` - Setting parameter ${parameter.name} to ${parameter.valueString}`);
@@ -268,9 +266,6 @@ export class TrialScopeQuery {
         this.addCondition(resource);
       }
     }
-    const primaryCancerString: string = extractedMCODE.getFilterType('Primary Cancer', extractedMCODE);
-    console.log('Filter Result:');
-    console.log(primaryCancerString);
   }
   addCondition(condition: Condition): void {
     // Should have a code

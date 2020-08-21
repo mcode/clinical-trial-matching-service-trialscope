@@ -76,6 +76,7 @@ app.post('/getClinicalTrial', function (req, res) {
           res.status(ex.httpStatus).send({ error: ex.message });
         } else {
           res.status(500).send({ error: 'Internal server error' });
+          console.log(ex);
         }
       }
     } else {
