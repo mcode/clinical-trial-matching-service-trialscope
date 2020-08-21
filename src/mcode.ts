@@ -44,6 +44,11 @@ export interface SecondaryCancerCondition {
   bodySite?: Coding[];
 }
 
+export interface CancerRelatedRadiationProcedure {
+  coding?: Coding[];
+  bodySite?: Coding[];
+}
+
 export interface TumorMarker {
   code?: Coding[];
   valueQuantity?: Quantity[];
@@ -60,7 +65,7 @@ export class extractedMCODE {
   secondaryCancerCondition?: SecondaryCancerCondition[]; // wava has 0 resources
   birthDate?: string;
   tumorMarker?: TumorMarker[];
-  cancerRelatedRadiationProcedure?: Coding[]; // can this be a set - wava has 34 of these put they're all the same
+  cancerRelatedRadiationProcedure?: CancerRelatedRadiationProcedure[]; // can this be a set - wava has 34 of these put they're all the same
   cancerRelatedSurgicalProcedure?: Coding[]; // would also be better as a set
   cancerRelatedMedicationStatement?: Coding[]; // this too
 
@@ -208,10 +213,25 @@ export class extractedMCODE {
         resource.resourceType === 'Procedure' &&
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
       ) {
-        this.cancerRelatedRadiationProcedure = this.addCoding(
-          this.cancerRelatedRadiationProcedure,
-          this.lookup(resource, 'code.coding') as Coding[]
-        );
+        const tempCancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure = {};
+        if (this.lookup(resource, 'code.coding').length !== 0) {
+          tempCancerRelatedRadiationProcedure.coding = this.lookup(resource, 'code.coding') as Coding[];
+        }
+        if (this.lookup(resource, 'bodySite.coding').length !== 0) {
+          tempCancerRelatedRadiationProcedure.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
+        }
+        if (this.cancerRelatedRadiationProcedure) {
+          if (
+            !this.listContainsRadiationProcedure(
+              this.cancerRelatedRadiationProcedure,
+              tempCancerRelatedRadiationProcedure
+            )
+          ) {
+            this.cancerRelatedRadiationProcedure.push(tempCancerRelatedRadiationProcedure);
+          }
+        } else {
+          this.cancerRelatedRadiationProcedure = [tempCancerRelatedRadiationProcedure];
+        }
       }
 
       if (
@@ -267,6 +287,26 @@ export class extractedMCODE {
       return codes;
     }
   }
+  listContainsRadiationProcedure(
+    procedure_list: CancerRelatedRadiationProcedure[],
+    procedure: CancerRelatedRadiationProcedure
+  ): boolean {
+    for (const stored_procedure of procedure_list) {
+      if (
+        procedure.coding.every((coding1) =>
+          stored_procedure.coding.some((coding2) => coding1.system == coding2.system && coding1.code == coding2.code)
+        ) &&
+        (!procedure.bodySite ||
+          !stored_procedure.bodySite ||
+          procedure.bodySite.every((coding1) =>
+            stored_procedure.coding.some((coding2) => coding1.system == coding2.system && coding1.code == coding2.code)
+          ))
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
   // Primary Cancer Value
   getPrimaryCancerValue(): string {
     if (!this.primaryCancerCondition) {
@@ -300,7 +340,7 @@ export class extractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
@@ -394,24 +434,28 @@ export class extractedMCODE {
     }
     // 1. Invasive Carcinoma
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
-    for (const primaryCancerCondition of this.primaryCancerCondition){
-      if(
-        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast')))
-        && (primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive-Carcinoma'))))
-        ||
-        (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Carcinoma')))) {
-          return 'Invasive carcinoma';
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive-Carcinoma')
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive Carcinoma'))
+      ) {
+        return 'Invasive carcinoma';
       }
     }
     // 2. Invasive Breast Cancer
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
-    for (const primaryCancerCondition of this.primaryCancerCondition){
-      if(
-        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast')))
-        && (primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))))
-        ||
-        (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive_Breast')))) {
-          return 'Invasive carcinoma';
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))
+      ) {
+        return 'Invasive carcinoma';
       }
     }
     // None of the conditions are satisfied.
@@ -419,62 +463,75 @@ export class extractedMCODE {
   }
   getStageValue(): string {
     if (!this.primaryCancerCondition) {
+      // im srry this is wrong
       return null;
     }
     if (!this.TNMClinicalStageGroup || !this.TNMPathologicalStageGroup) {
+      // this too
       return null;
     }
     // 1. Invasive Breast Cancer and Locally Advanced
-    for (const primaryCancerCondition of this.primaryCancerCondition){
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
       if (
-        (((primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))) || (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))))
-        && (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))))
-        &&
-        ((this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3', 'Stage-4'))) || (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3', 'Stage-4'))))) {
-          return 'Invasive Breast Cancer and Locally Advanced';
+        (primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+          this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
+        ) ||
+          primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))) &&
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')) ||
+          this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')))
+      ) {
+        return 'Invasive Breast Cancer and Locally Advanced';
       }
     }
     // 2. Non-Invasive
     if (
-      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0'))) ||
-      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0')))){
-        return 'Non-Invasive';
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
+    ) {
+      return 'Non-Invasive';
     }
     // 3. Locally Advanced
     if (
-      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3'))) ||
-      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3')))){
-        return 'Non-Invasive';
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
+    ) {
+      return 'Non-Invasive';
     }
     // 4. Stage 0
     if (
-      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0'))) ||
-      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0')))){
-        return 'Stage 0';
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
+    ) {
+      return 'Stage 0';
     }
     // 5. Stage 1
     if (
-      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-1'))) ||
-      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-1')))){
-        return 'Non-Invasive';
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1'))
+    ) {
+      return 'Non-Invasive';
     }
     // 6. Stage 2
     if (
-      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-2'))) ||
-      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-2')))){
-        return 'Non-Invasive';
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2'))
+    ) {
+      return 'Non-Invasive';
     }
     // 7. Stage 3
     if (
-      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3'))) ||
-      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3')))){
-        return 'Non-Invasive';
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
+    ) {
+      return 'Non-Invasive';
     }
     // 8. Stage 4
     if (
-      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4'))) ||
-      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4')))){
-        return 'Non-Invasive';
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
+    ) {
+      return 'Non-Invasive';
     }
     // None of the conditions are satisfied.
     return null;
@@ -482,21 +539,59 @@ export class extractedMCODE {
   // Age (18 or younger/older)
   getAgeValue(): string {
     // Birthdate is in format: '1966-08-03'
-    let today: Date = new Date();
-    let checkDate: Date = new Date(this.birthDate);
+    const today: Date = new Date();
+    const checkDate: Date = new Date(this.birthDate);
     // Time Difference (Milliseconds)
-    let millisecondsAge = today.getTime() - checkDate.getTime();
-    let milliseconds18Years = ((1000 * 60 * 60 * 24) * 365) * 18;
+    const millisecondsAge = today.getTime() - checkDate.getTime();
+    const milliseconds18Years = 1000 * 60 * 60 * 24 * 365 * 18;
     return millisecondsAge > milliseconds18Years ? '18 Or Over' : 'Under 18';
   }
   getTumorMarkerValue(): string {
     return '';
   }
   getRadiationProcedureValue(): string {
-    return '';
+    if (!this.cancerRelatedRadiationProcedure) {
+      return null;
+    }
+    for (const cancerRelatedRadiationProcedure of this.cancerRelatedRadiationProcedure) {
+      if (
+        cancerRelatedRadiationProcedure.coding &&
+        cancerRelatedRadiationProcedure.coding.some((coding) => this.codeIsInSheet(coding, 'Treatment-SRS-Brain'))
+      ) {
+        return 'SRS';
+      }
+    }
+    for (const cancerRelatedRadiationProcedure of this.cancerRelatedRadiationProcedure) {
+      if (
+        cancerRelatedRadiationProcedure.coding &&
+        cancerRelatedRadiationProcedure.bodySite &&
+        cancerRelatedRadiationProcedure.coding.some(
+          (coding) => this.normalizeCodeSystem(coding.system) == 'SNOMED' && coding.code == '108290001'
+        ) &&
+        cancerRelatedRadiationProcedure.bodySite.some(
+          (coding) =>
+            this.normalizeCodeSystem(coding.system) == 'SNOMED' &&
+            (coding.code == '12738006' || coding.code == '119235005')
+        )
+      ) {
+        return 'WBRT';
+      }
+    }
+    return 'Radiation Therapy';
   }
   getSurgicalProcedureValue(): string {
-    return '';
+    if (!this.cancerRelatedSurgicalProcedure) {
+      return null;
+    }
+    if (this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Resection-Brain'))) {
+      return 'Resection';
+    } else if (
+      this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Splenectomy'))
+    ) {
+      return 'Splenectomy';
+    } else {
+      return null;
+    }
   }
   getMedicationStatementValue(): string {
     if (!this.cancerRelatedMedicationStatement) {
@@ -575,7 +670,7 @@ export class extractedMCODE {
     const code = coding.code;
     const system = this.normalizeCodeSystem(coding.system);
     const codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
-    console.log(coding);
+    //console.log(coding);
     // Check that the current code matches the given code.
     for (const currentCode of codeSet) {
       if (coding.code == currentCode.code) {
