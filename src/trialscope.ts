@@ -240,6 +240,7 @@ export class TrialScopeQuery {
     this.mcode.radiationProcedure = extractedMCODE.getRadiationProcedureValue();
     this.mcode.surgicalProcedure = extractedMCODE.getSurgicalProcedureValue();
     this.mcode.medicationStatement = extractedMCODE.getMedicationStatementValue();
+    extractedMCODE.getAgeValue(); // Age goes somewhere?
     console.log(this.mcode);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {

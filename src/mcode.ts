@@ -6,6 +6,7 @@ import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
 import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
 
 import profile_system_codesX from '../data/profile-system-codes.json';
+import { toJson } from 'xml2json';
 //import profile_system_logic from '../data/profile-system-logic.json';
 
 const profile_system_codes = profile_system_codesX as ProfileSystemCodes;
@@ -243,7 +244,6 @@ export class extractedMCODE {
     return fhirpath.evaluate(resource, path, environment);
   }
   resourceProfile(profiles: fhirpath.PathLookupResult[], key: string): boolean {
-    //console.log(profiles);
     for (const profile of profiles) {
       if ((profile as string).includes(key)) {
         return true;
@@ -300,7 +300,7 @@ export class extractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
@@ -353,7 +353,7 @@ export class extractedMCODE {
           )
         ) ||
           this.primaryCancerCondition.some((primCanCond) =>
-            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive Breast'))
+            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))
           )) &&
         this.primaryCancerCondition.some((primCanCond) =>
           primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer Breast'))
@@ -410,7 +410,7 @@ export class extractedMCODE {
         ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast')))
         && (primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))))
         ||
-        (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Breast')))) {
+        (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive_Breast')))) {
           return 'Invasive carcinoma';
       }
     }
@@ -427,7 +427,7 @@ export class extractedMCODE {
     // 1. Invasive Breast Cancer and Locally Advanced
     for (const primaryCancerCondition of this.primaryCancerCondition){
       if (
-        (((primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))) || (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Breast'))))
+        (((primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))) || (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))))
         && (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))))
         &&
         ((this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3', 'Stage-4'))) || (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3', 'Stage-4'))))) {
@@ -479,8 +479,15 @@ export class extractedMCODE {
     // None of the conditions are satisfied.
     return null;
   }
+  // Age (18 or younger/older)
   getAgeValue(): string {
-    return '';
+    // Birthdate is in format: '1966-08-03'
+    let today: Date = new Date();
+    let checkDate: Date = new Date(this.birthDate);
+    // Time Difference (Milliseconds)
+    let millisecondsAge = today.getTime() - checkDate.getTime();
+    let milliseconds18Years = ((1000 * 60 * 60 * 24) * 365) * 18;
+    return millisecondsAge > milliseconds18Years ? '18 Or Over' : 'Under 18';
   }
   getTumorMarkerValue(): string {
     return '';
@@ -603,12 +610,9 @@ export class extractedMCODE {
     for (const profile of profiles) {
       // Pull out the relevant codes from the relevant code system.
       const currentCodeSystem: string = this.normalizeCodeSystem(coding.system);
-      //console.log(profile);
-      //console.log(profile_system_codes[profile]);
       const codeSet: { code: string }[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {
         code: string;
       }[];
-      console.log(coding);
       // Check that the current code matches the given code.
       for (const currentCode of codeSet) {
         if (coding.code == currentCode.code) {
