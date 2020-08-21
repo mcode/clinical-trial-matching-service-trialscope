@@ -62,7 +62,7 @@
   },
   "Histology Morphology " : {
     "types" : [ {
-      "type" : "Invasive carcinoma ",
+      "type" : "Invasive carcinoma",
       "operation" : {
         "operatorType" : "OR",
         "operations" : [ {

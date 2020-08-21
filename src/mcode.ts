@@ -564,8 +564,30 @@ export class extractedMCODE {
       }
     }
   }
+  // Histology Morphology Value
   getHistologyMorphologyValue(): string {
-
+    // 1. Invasive Carcinoma
+    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    for (const primaryCancerCondition of this.primaryCancerCondition){
+      if(
+        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast')))
+        && (primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive-Carcinoma'))))
+        ||
+        (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Carcinoma')))) {
+          return 'Invasive carcinoma';
+      }
+    }
+    // 2. Invasive Breast Cancer
+    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    for (const primaryCancerCondition of this.primaryCancerCondition){
+      if(
+        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast')))
+        && (primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))))
+        ||
+        (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Breast')))) {
+          return 'Invasive carcinoma';
+      }
+    }
   }
   getStageValue(): string {
 
