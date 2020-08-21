@@ -3,10 +3,12 @@ import * as fhirpath from 'fhirpath';
 import { Bundle } from './bundle';
 
 import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
-import { CodeProfile } from '../data/profileSystemLogic';
+import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
 
-import profile_system_codes from '../data/profile-system-codes.json';
-import profile_system_logic from '../data/profile-system-logic.json';
+import profile_system_codesX from '../data/profile-system-codes.json';
+//import profile_system_logic from '../data/profile-system-logic.json';
+
+const profile_system_codes = profile_system_codesX as ProfileSystemCodes;
 
 export type FHIRPath = string;
 
@@ -92,6 +94,9 @@ export class extractedMCODE {
             }
             count++;
           }
+        }
+        if (!tempPrimaryCancerCondition.histologyMorphologyBehavior) {
+          tempPrimaryCancerCondition.histologyMorphologyBehavior = [] as Coding[];
         }
 
         // add primaryCancerCondition
@@ -228,8 +233,6 @@ export class extractedMCODE {
         );
       }
     }
-
-    console.log(this);
   }
 
   lookup(
@@ -264,308 +267,128 @@ export class extractedMCODE {
       return codes;
     }
   }
-  /*
-  addPrimaryCancerCondition(condition_list: PrimaryCancerCondition[], condition: PrimaryCancerCondition): PrimaryCancerCondition[] {
-    if (condition_list) {
-
-
-    } else {
-      return [condition];
-    }
-  }
-  // Return the filter type based on the input profile string.
-  public getFilterType(filter: string, extractedMCODE: extractedMCODE): string {
-    // Parse through the logic JSON and check if certain conditions are met to return the corresponding string.
-    const typeStrings: string[] = (profile_system_logic[filter] as ProfileType).types;
-    for (const profileType of typeStrings) {
-      if (this.parseOperation(profileType['operation'], extractedMCODE)) {
-        // If the conditions associated with this type are all true, return this type.
-        return profileType['type'] as string;
-      }
-    }
-    // If there's no type that satisfies this person's attributes, return null.
-    return null;
-  }
-  // Parse an operation and return whether it returns TRUE or FALSE.
-  parseOperation(operation: string, extractedMCODE: extractedMCODE): boolean {
-    console.log(operation['operatorType']);
-
-    // If there are no more operations within this operation, then we've reached a leaf condition.
-    if (operation['operations'] == null) {
-      if (operation['operatorType'] == 'AND') {
-        for (const condition of operation['conditions']) {
-          // Cycle through the conditions and check if they meet the AND requirements.
-          if (!this.checkConditionValidity(condition, extractedMCODE)) {
-            return false;
-          }
-        }
-        // If they're all true, then we reach here.
-        return true;
-      } else if (operation['operatorType'] == 'OR') {
-        for (const condition of operation['conditions']) {
-          // Cycle through the conditions and check if they meet the OR requirements.
-          if (this.checkConditionValidity(condition, extractedMCODE)) {
-            return true;
-          }
-        }
-        // If they're all false, then we reach here.
-        return false;
-      } else if (operation['operatorType'] == 'NONE') {
-        // There will be one condition, check if it is satisfied.
-        const tempConditionArray: string[] = new Array(operation['conditions']) as string[];
-        const tempConditionString = tempConditionArray[0][0];
-        return this.checkConditionValidity(tempConditionString, extractedMCODE);
-      }
-    } else {
-      if (operation['operatorType'] == 'AND') {
-        // We need to parse through the operations and find their values.
-        for (const subOperation of operation['operations']) {
-          if (!this.parseOperation(subOperation, extractedMCODE)) {
-            return false;
-          }
-        }
-        // If they're all true, then we reach here.
-        return true;
-      } else if (operation['operatorType'] == 'OR') {
-        // We need to parse through the operations and find their values.
-        for (const subOperation of operation['operations']) {
-          if (this.parseOperation(subOperation, extractedMCODE)) {
-            return true;
-          }
-        }
-        // If they're all false, then we reach here.
-        return false;
-      }
-    }
-    console.log('LOGIC ERROR');
-    return false;
-  }
-  // Check whether the current condition is TRUE or FALSE
-  checkConditionValidity(condition: string, extractedMCODE: extractedMCODE): boolean {
-    console.log(condition);
-
-    const tempConditionString: string = condition['condition'] as string;
-    console.log(tempConditionString);
-
-    const splitConditions = tempConditionString.split(' ');
-    const operator = splitConditions[1];
-
-    // Each of these operator types are based on a code being in a profile.
-    if (operator == 'is-in' || operator == 'is-any-code' || operator == 'any-code-not-in') {
-      const neededCode: string = splitConditions[0];
-      const codesToCheck: CodingProfile[] = new Array(10) as CodingProfile[];
-      const systemsToCheck: string[] = new Array(10) as string[];
-
-      // Pull the correct code and code system from the extractedMCODE
-      const codeType: string = neededCode.split('-code')[0];
-      let i = 0;
-      for (const currentCode of extractedMCODE[codeType]) {
-        codesToCheck[i] = currentCode as CodingProfile;
-        systemsToCheck[i] = codesToCheck[i]['coding'][0].system;
-        i++;
-      }
-      // Make sure it was a valid code.
-      if (
-        neededCode != 'primaryCancerCondition-code' &&
-        neededCode != 'secondaryCancerCondition-code' &&
-        neededCode != 'cancerRelatedRadiationProcedure-code' &&
-        neededCode != 'tumorMarker-code'
-      ) {
-        console.log('CONDITION ERROR: INVALID CODE TYPE');
-        return false;
-      }
-
-      // Cycle through the list of codes and check
-      let currentIndex = 0;
-      for (const currentCode of codesToCheck) {
-        let currentCodeSystem: string = systemsToCheck[currentIndex];
-
-        // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
-        if (currentCodeSystem.includes('snomed')) {
-          currentCodeSystem = 'SNOMED';
-        } else if (currentCodeSystem.includes('rxnorm')) {
-          currentCodeSystem = 'RXNORM';
-        } else if (currentCodeSystem.includes('icd-10')) {
-          currentCodeSystem = 'ICD10';
-        } else if (currentCodeSystem.includes('ajcc')) {
-          currentCodeSystem = 'AJCC';
-        } else if (currentCodeSystem.includes('loinc')) {
-          currentCodeSystem = 'LOINC';
-        } else {
-          console.log('INVALID CODE SYSTEM ERROR');
-          console.log(currentCodeSystem);
-        }
-
-        //This condition is based on whether a code is in a certain code system.
-        const profileList: string[] = splitConditions[2].split('*');
-        let anyCodeNotInOperation = true;
-        if (operator == 'is-any-code') {
-          // Chcek that there is any code at all.
-          if (currentCode != undefined) {
-            return true;
-          }
-        } else if (operator == 'any-code-not-in') { // what about the is-in operator?
-          // Pull the list of profiles that it should NOT be in.
-          anyCodeNotInOperation = false;
-        }
-
-        // Cycle through the list of profiles to check the conditions for all.
-        for (const profile of profileList) {
-          // Check if the current profile contains the current code.
-          const codeSet: string[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as string[];
-          for (const checkCode of codeSet) {
-            console.log(checkCode);
-            if (checkCode['code'] == currentCode['coding'][0]['code']) {
-              console.log('MATCH FOUND');
-              // If the code is supposed to be in the list, returns true. If it's not, returns false.
-              return anyCodeNotInOperation;
-            }
-          }
-          // If the code was never found in the list, and it wasn't supposed to, return true.
-          if (!anyCodeNotInOperation) {
-            console.log('MATCH NOT FOUND FOR AN ANY-CODE-NOT-IN OPERATION');
-            return true;
-          }
-        }
-        currentIndex++;
-      }
-    } else if (operator == '=') {
-      // Simple equality logic
-
-      // The lefthand side of the '=' operator.
-      const neededRequirement: string = splitConditions[0];
-      // The righthand side of the '=' operator.
-      const equalityValue: string = splitConditions[2];
-      let currentRequirement: string;
-
-      if (neededRequirement == 'valueCodeableConcept') {
-        const valueCodeableConcept: Coding[] = extractedMCODE.tumorMarker[0].valueCodeableConcept;
-      } else if (neededRequirement == 'valueQuantity/valueRatio') {
-        const quantity: Quantity[] = extractedMCODE.tumorMarker[0].valueQuantity;
-        const ratio: Ratio[] = extractedMCODE.tumorMarker[0].valueRatio;
-      } else if (neededRequirement == 'interpretaion') {
-        const quantity: Quantity[] = extractedMCODE.tumorMarker[0].interpretation;
-        // compare display? or code?
-      } else if (neededRequirement == 'clinicalstatus') {
-        // primary/secondary cancer conditions use/have this
-        currentRequirement = extractedMCODE.secondaryCancerCondition[0].clinicalStatus[0].code;
-      } else if (neededRequirement == 'SecondaryCancerCondition-bodySite') {
-        currentRequirement = extractedMCODE.secondaryCancerCondition[0].clinicalStatus[0].code;
-      } else if (neededRequirement == 'CancerRelatedMedicationStatement-medication[x]') {
-        currentRequirement = extractedMCODE.cancerRelatedMedicationStatement[0].code;
-        // The code/string may need to be parsed for this correctly work. Haven't been able to test it.
-        if (currentRequirement == equalityValue) {
-          return true;
-        }
-      } else if (neededRequirement == 'cancerRelatedRadiationProcedure-code-medication[x]') {
-        currentRequirement = extractedMCODE.cancerRelatedRadiationProcedure[0].code;
-        // The code/string may need to be parsed for this correctly work. Haven't been able to test it.
-        if (currentRequirement == equalityValue) {
-          return true;
-        }
-      }
-    } else {
-      console.log('CONDITION ERROR: INVALID CONDITION TYPE');
-      return false;
-    }
-    // If we reach here, no conditions were satisfied, thus it is false.
-    return false;
-  }
-  */
-
   // Primary Cancer Value
-  getPrimaryCancerValues(): string {
-     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
-     for (const primaryCancerCondition of this.primaryCancerCondition){
+  getPrimaryCancerValue(): string {
+    if (!this.primaryCancerCondition) {
+      return null;
+    }
+    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
       // Cycle through each of the primary Cancer condition's codes independently due to code-dependent conditions
-      for (const currentCoding of primaryCancerCondition.coding){
+      for (const currentCoding of primaryCancerCondition.coding) {
         // 3. Invasive Breast Cancer and Recurrent
         if (
-          ((primaryCancerCondition.histologyMorphologyBehavior.some(coding => this.profilesContainCode(coding, 'Morphology-Invasive')) || this.profilesContainCode(currentCoding, 'Cancer-Invasive Breast'))
-          &&
-          (this.profilesContainCode(currentCoding, 'Cancer-Breast')))
-          &&
-          (primaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'current'))
-          ) {
-            return 'Invasive Breast Cancer and recurrent';
+          (primaryCancerCondition.histologyMorphologyBehavior.some((coding) =>
+            this.profilesContainCode(coding, 'Morphology-Invasive')
+          ) ||
+            this.profilesContainCode(currentCoding, 'Cancer-Invasive_Breast')) &&
+          this.profilesContainCode(currentCoding, 'Cancer-Breast') &&
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrence')
+        ) {
+          return 'Invasive Breast Cancer and recurrent';
         }
       }
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 1. Breast Cancer
-      if (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))) {
+      if (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))) {
         return 'Breast Cancer';
       }
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
-    for (const primaryCancerCondition of this.primaryCancerCondition){
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))) && (primaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'current')))
-        &&
-        ((this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-1','Stage-2','Stage-3','Stage-4'))) || (this.TNMPathologicalStageGroup.some(coding => this.profilesContainCode(coding, 'Stage-1','Stage-2','Stage-3','Stage-4'))))
-        ) {
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
+        (this.TNMClinicalStageGroup.some((code) =>
+          this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
+        ) ||
+          this.TNMPathologicalStageGroup.some((coding) =>
+            this.profilesContainCode(coding, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
+          ))
+      ) {
         return 'Concomitant invasive malignancies';
       }
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
-    for (const primaryCancerCondition of this.primaryCancerCondition){
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 4. Locally Recurrent
       if (
-        ((primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))) && (primaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'current')))
-        ) {
-          return 'Locally Recurrent';
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
+      ) {
+        return 'Locally Recurrent';
       }
     }
     // None of the conditions satisfied.
     return null;
   }
   // Secondary Cancer Value
-  getSecondaryCancerValues(): string {
+  getSecondaryCancerValue(): string {
+    if (!this.secondaryCancerCondition) {
+      return null;
+    }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
-    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+    for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 1. Brain Metastasis
       if (
-        (secondaryCancerCondition.coding.some(coding => this.profilesContainCode(coding, 'Metastasis-Brain')))
-        && (secondaryCancerCondition.clinicalStatus.some(clinStat => clinStat.display == 'active'))) {
+        secondaryCancerCondition.coding.some((coding) => this.profilesContainCode(coding, 'Metastasis-Brain')) &&
+        secondaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
+      ) {
         return 'Brain metastasis';
       }
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
-    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+    for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 2. Invasive Breast Cancer and Metastatics
       if (
-        (((this.primaryCancerCondition.some(primCanCond => primCanCond.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))))
-        || (this.primaryCancerCondition.some(primCanCond => primCanCond.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Breast')))))
-        && (this.primaryCancerCondition.some(primCanCond => primCanCond.coding.some(code => this.profilesContainCode(code, 'Cancer Breast')))))
-        &&
-        (((secondaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'ANYCODE')))) || 
-        (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4'))) ||
-        (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4'))))) {
-          return 'Invasive Breast Cancer and Metastatic';
+        (this.primaryCancerCondition.some((primCanCond) =>
+          primCanCond.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
+          )
+        ) ||
+          this.primaryCancerCondition.some((primCanCond) =>
+            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive Breast'))
+          )) &&
+        this.primaryCancerCondition.some((primCanCond) =>
+          primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer Breast'))
+        ) &&
+        (secondaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'ANYCODE')) ||
+          this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
+          this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')))
+      ) {
+        return 'Invasive Breast Cancer and Metastatic';
       }
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
-    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+    for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 3. Leptomeningeal metastatic disease
-      if (secondaryCancerCondition.bodySite.some(bdySte => bdySte == 'SNOMED#8935007')) {
+      if (secondaryCancerCondition.bodySite.some((bdySte) => bdySte == 'SNOMED#8935007')) {
+        // obviously this is wrong
         return 'Leptomeningeal metastatic disease';
       }
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
-    for (const secondaryCancerCondition of this.secondaryCancerCondition){
+    for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 4. Metastatic
       if (
-        (secondaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'ANYCODE')))
-        || (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4')))
-        || (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4')))) {
+        secondaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'ANYCODE')) ||
+        this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
+        this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
+      ) {
         return 'Metastatic';
       }
     }
+    // None of the conditions satisfied.
+    return null;
   }
   // Histology Morphology Value
   getHistologyMorphologyValue(): string {
+    if (!this.primaryCancerCondition) {
+      return null;
+    }
     // 1. Invasive Carcinoma
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition){
@@ -588,91 +411,105 @@ export class extractedMCODE {
           return 'Invasive carcinoma';
       }
     }
+    // None of the conditions satisfied.
+    return null;
   }
   getStageValue(): string {
-
+    return '';
   }
   getAgeValue(): string {
-
+    return '';
   }
   getTumorMarkerValue(): string {
-
+    return '';
   }
   getRadiationProcedureValue(): string {
-
+    return '';
   }
   getSurgicalProcedureValue(): string {
-
+    return '';
   }
   getMedicationStatementValue(): string {
-    if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Trastuzamab')) &&
-              this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Pertuzumab')) &&
-              this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-T-DM1')) ) {
-
+    if (!this.cancerRelatedMedicationStatement) {
+      return null;
+    }
+    if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuzumab')) &&
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pertuzumab')) &&
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))
+    ) {
       return 'DrugCombo-1';
-
-    } else if ( (this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-CDK46 Inhibitor')) ||
-               this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'mTOR Inhibitor'))) &&
-               this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Endocrine Therapy')) ) {
-
+    } else if (
+      (this.cancerRelatedMedicationStatement.some((coding) =>
+        this.codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor')
+      ) ||
+        this.cancerRelatedMedicationStatement.some((coding) =>
+          this.codeIsInSheet(coding, 'Treatment-mTOR Inhibitor')
+        )) &&
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine Therapy'))
+    ) {
       return 'CDK4/6-mTOR and Endocrine ';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-T-DM1')) ) {
-
+    } else if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))) {
       return 'T-DM1';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor'))
+    ) {
       return 'CDK4/6 inhibitor';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Pembrolizumab')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pembrolizumab'))
+    ) {
       return 'Pembrolizumab';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => this.normalizeCodeSystem(coding.system) == 'NIH' &&
-                                                                      coding.code == '#C1198') ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some(
+        (coding) => this.normalizeCodeSystem(coding.system) == 'NIH' && coding.code == '#C1198'
+      )
+    ) {
       return 'Poly ICLC';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-mTOR Inhibtor')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-mTOR Inhibitor'))
+    ) {
       return 'mTOR inhibitor';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Endocrine Therapy')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine Therapy'))
+    ) {
       return 'Concurrent Endocrine Therapy';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-anti-Androgen')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-Androgen'))
+    ) {
       return 'Anti-androgen ';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-anti-HER2')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-HER2'))
+    ) {
       return 'anti-HER2';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-Tyrosine Kinase Inhib')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) =>
+        this.codeIsInSheet(coding, 'Treatment-Tyrosine Kinase Inhib')
+      )
+    ) {
       return 'Tyrosine Kinase Inhibitor';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-P13K Inhibitor')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-P13K Inhibitor'))
+    ) {
       return 'P13K inhibitor';
-
-    } else if ( this.cancerRelatedMedicationStatement.some(coding => codeIsInSheet(coding, 'Treatment-anti-PD1, PDL1, PDL2')) ) {
-
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) =>
+        this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1, PDL2')
+      )
+    ) {
       return 'anti-PD';
-
+    } else {
+      return null;
     }
   }
 
   codeIsInSheet(coding: Coding, sheetName: string): boolean {
     const code = coding.code;
     const system = this.normalizeCodeSystem(coding.system);
-    const codeSet: string[] = (profile_system_codes[sheetName] as CodeProfile)[system] as string[];
+    const codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
     console.log(coding);
     // Check that the current code matches the given code.
-    for (const currentCode: string of codeSet) {
-      if(coding.code == currentCode){
+    for (const currentCode of codeSet) {
+      if (coding.code == currentCode.code) {
         return true;
       }
     }
@@ -680,11 +517,11 @@ export class extractedMCODE {
   }
 
   // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
-  normalizeCodeSystem(codeSystem : string) : string {
+  normalizeCodeSystem(codeSystem: string): string {
     if (codeSystem.includes('snomed')) {
       return 'SNOMED';
     } else if (codeSystem.includes('rxnorm')) {
-      return 'RXNORM';
+      return 'RxNorm';
     } else if (codeSystem.includes('icd-10')) {
       return 'ICD10';
     } else if (codeSystem.includes('ajcc')) {
@@ -692,7 +529,7 @@ export class extractedMCODE {
     } else if (codeSystem.includes('loinc')) {
       return 'LOINC';
     } else if (codeSystem.includes('nih')) {
-          return 'NIH';
+      return 'NIH';
     } else {
       return '';
     }
@@ -701,14 +538,18 @@ export class extractedMCODE {
   // Return whether any of the codes in a given coding exist in the given profiles.
   profilesContainCode(coding: Coding, ...profiles: string[]): boolean {
     // Cycle through the profiles
-      for(const profile: string of profiles){
+    for (const profile of profiles) {
       // Pull out the relevant codes from the relevant code system.
       const currentCodeSystem: string = this.normalizeCodeSystem(coding.system);
-      const codeSet: string[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as string[];
+      //console.log(profile);
+      //console.log(profile_system_codes[profile]);
+      const codeSet: { code: string }[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {
+        code: string;
+      }[];
       console.log(coding);
       // Check that the current code matches the given code.
-      for (const currentCode: string of codeSet) {
-        if(coding.code == currentCode){
+      for (const currentCode of codeSet) {
+        if (coding.code == currentCode.code) {
           return true;
         }
       }
@@ -718,10 +559,10 @@ export class extractedMCODE {
   }
   // Returns whether the given code is any code not in the given profile.
   profileDoesNotContainCode(coding: Coding, profile: string): boolean {
-    if(coding.code == undefined || coding.code == null){
+    if (coding.code == undefined || coding.code == null) {
       return false;
     } else {
-      return !this.profileContainsCode(coding, profile);
+      return !this.profilesContainCode(coding, profile);
     }
   }
 }
