@@ -307,6 +307,7 @@ export class TrialScopeQueryRunner {
   constructor(
     public endpoint: string,
     private token: string,
+    private backupService: ClinicalTrialGovService,
     requestGenerator: RequestGeneratorFunction = https.request
   ) {
     this.generateRequest = requestGenerator;
@@ -362,16 +363,14 @@ export class TrialScopeQueryRunner {
         studies.push(study);
         index++;
       }
-      const filepath = 'src';
-      const backupService = new ClinicalTrialGovService(filepath);
       if (backupIds.length == 0) {
         return new SearchSet(studies);
       } else {
-        return backupService.downloadTrials(backupIds).then(() => {
+        return this.backupService.downloadTrials(backupIds).then(() => {
           for (let study of studies) {
             // console.log(study.identifier[0].value);
             if (backupIds.includes(study.identifier[0].value)) {
-              study = backupService.updateTrial(study);
+              study = this.backupService.updateTrial(study);
             }
           }
 
