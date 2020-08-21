@@ -1,6 +1,5 @@
-import { ResearchStudy, Arm, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
-import { TrialScopeTrial, ArmGroup, Site } from './trialscope';
-import * as trialbackup from './trialbackup';
+import { ResearchStudy, fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
+import { TrialScopeTrial, ArmGroup } from './trialscope';
 
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([
@@ -119,43 +118,13 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
     });
   }
 
-  // Checks if research study contains enrollment criteria
-  const nctId = result.identifier[0].value;
-  /*
-  This does not work at present, it attempts to load data from a local file
-  const backup = trialbackup.getBackupTrial(nctId);
-
-  if (!trial.criteria) {
-    result.enrollment = [
-      { reference: `#group${result.id}`, type: 'Group', display: trialbackup.getBackupCriteria(backup) }
-    ];
-  }
-  if (!trial.detailedDescription) {
-    result.description = trialbackup.getBackupSummary(backup);
-  }
-  if (!trial.phase) {
-    result.phase = {
-      coding: [
-        {
-          system: 'http://terminology.hl7.org/CodeSystem/research-study-phase',
-          code: convertPhaseCode(trialbackup.getBackupPhase(backup)),
-          display: trialbackup.getBackupPhase(backup)
-        }
-      ],
-      text: trialbackup.getBackupPhase(backup)
-    };
-  }
-  if (!trial.studyType) {
-    result.category = [{ text: trialbackup.getBackupStudyType(backup) }];
-  }
-  */
   return result;
 }
 
-function createArm(armGroups: ArmGroup[]): Arm[] {
-  const arms: Arm[] = [];
+function createArm(armGroups: ArmGroup[]): fhir.Arm[] {
+  const arms: fhir.Arm[] = [];
   for (const armgroup of armGroups) {
-    const singleArm: Arm = {};
+    const singleArm: fhir.Arm = {};
     if (armgroup.arm_group_label) {
       singleArm.name = armgroup.arm_group_label;
     }

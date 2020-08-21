@@ -1,13 +1,15 @@
 /**
  * Module for running queries via TrialScope
  */
-
+import { ClinicalTrialGovService } from 'clinical-trial-matching-service';
 import https from 'https';
 import http from 'http';
 import { mapConditions } from './mapping';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
-import { Bundle, Condition, RequestError, ResearchStudy, SearchSet } from 'clinical-trial-matching-service';
+import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
+import * as fs from 'fs';
+import path from 'path';
 
 /**
  * Maps FHIR phases to TrialScope phases.
@@ -205,7 +207,7 @@ export class TrialScopeQuery {
     'countries',
     'maximumAge'
   ];
-  constructor(patientBundle: Bundle) {
+  constructor(patientBundle: fhir.Bundle) {
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
@@ -232,7 +234,7 @@ export class TrialScopeQuery {
       }
     }
   }
-  addCondition(condition: Condition): void {
+  addCondition(condition: fhir.Condition): void {
     // Should have a code
     // TODO: Limit to specific coding systems (maybe)
     for (const code of condition.code.coding) {
@@ -305,12 +307,13 @@ export class TrialScopeQueryRunner {
   constructor(
     public endpoint: string,
     private token: string,
+    private backupService: ClinicalTrialGovService,
     requestGenerator: RequestGeneratorFunction = https.request
   ) {
     this.generateRequest = requestGenerator;
   }
 
-  runQuery(patientBundle: Bundle): Promise<SearchSet> {
+  runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
     return new Promise<TrialScopeResponse>((resolve, reject) => {
       const query = new TrialScopeQuery(patientBundle);
       this.sendQuery(query.toQuery())
@@ -348,15 +351,40 @@ export class TrialScopeQueryRunner {
         .catch(reject);
     }).then<SearchSet>((trialscopeResponse) => {
       // Convert to SearchSet
-      const studies: ResearchStudy[] = [];
+      const studies: fhir.ResearchStudy[] = [];
       let index = 0;
-
+      const backupIds: string[] = [];
       for (const node of trialscopeResponse.data.baseMatches.edges) {
         const trial: TrialScopeTrial = node.node;
-        studies.push(convertTrialScopeToResearchStudy(trial, index));
+        const study = convertTrialScopeToResearchStudy(trial, index);
+        if (!study.description || !study.enrollment || !study.phase || !study.category) {
+          backupIds.push(trial.nctId);
+        }
+        studies.push(study);
         index++;
       }
-      return new SearchSet(studies);
+      if (backupIds.length == 0) {
+        return new SearchSet(studies);
+      } else {
+        return this.backupService.downloadTrials(backupIds).then(() => {
+          for (let study of studies) {
+            // console.log(study.identifier[0].value);
+            if (backupIds.includes(study.identifier[0].value)) {
+              study = this.backupService.updateTrial(study);
+            }
+          }
+
+          // FIXME: This should be handled by the service itself
+          fs.unlink('src/backup.zip', (err) => {
+            if (err) console.log(err);
+          });
+          fs.rmdir(path.resolve('src/backups/'), { recursive: true }, (err) => {
+            if (err) console.log(err);
+          });
+
+          return new SearchSet(studies);
+        });
+      }
     });
   }
 

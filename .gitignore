@@ -5,6 +5,9 @@
 /dist-spec
 /src/AllPublicXML
 
+# Ignore backup files
+/clinicaltrial-backup-cache
+
 # Ignore installed modules
 /node_modules
 spec/data/org.hl7.fhir.validator.jar

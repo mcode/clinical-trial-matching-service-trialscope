@@ -10,7 +10,9 @@ describe('TrailScopeService', () => {
     let server: http.Server;
     beforeAll(() => {
       service = new TrialScopeService({ endpoint: 'http://localhost/', token: 'ignored', port: 0 });
-      server = service.listen();
+      return service.init().then(() => {
+        server = service.listen();
+      });
     });
     afterAll(() => {
       service.close();
@@ -79,10 +81,13 @@ describe('start()', () => {
     process.env.TRIALSCOPE_ENDPOINT = 'https://www.example.com/test/endpoint';
     process.env.TRIALSCOPE_PORT = '0';
     process.env.TRIALSCOPE_TOKEN = 'an example token';
-    const service = start();
-    expect(service.port).toEqual(0);
-    expect(service.queryRunner.endpoint).toEqual('https://www.example.com/test/endpoint');
-    // Intentially bypass private for testing purposes
-    expect(service.queryRunner['token']).toEqual('an example token');
+    return expectAsync(
+      start().then((service) => {
+        expect(service.port).toEqual(0);
+        expect(service.queryRunner.endpoint).toEqual('https://www.example.com/test/endpoint');
+        // Intentially bypass private for testing purposes
+        expect(service.queryRunner['token']).toEqual('an example token');
+      })
+    ).toBeResolved();
   });
 });
