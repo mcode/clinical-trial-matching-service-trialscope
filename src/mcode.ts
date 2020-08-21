@@ -322,7 +322,7 @@ export class extractedMCODE {
         return 'Locally Recurrent';
       }
     }
-    // None of the conditions satisfied.
+    // None of the conditions are satisfied.
     return null;
   }
   // Secondary Cancer Value
@@ -339,6 +339,9 @@ export class extractedMCODE {
       ) {
         return 'Brain metastasis';
       }
+    }
+    if (!this.TNMClinicalStageGroup || !this.TNMPathologicalStageGroup) {
+      return null;
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
@@ -381,7 +384,7 @@ export class extractedMCODE {
         return 'Metastatic';
       }
     }
-    // None of the conditions satisfied.
+    // None of the conditions are satisfied.
     return null;
   }
   // Histology Morphology Value
@@ -411,11 +414,70 @@ export class extractedMCODE {
           return 'Invasive carcinoma';
       }
     }
-    // None of the conditions satisfied.
+    // None of the conditions are satisfied.
     return null;
   }
   getStageValue(): string {
-    return '';
+    if (!this.primaryCancerCondition) {
+      return null;
+    }
+    if (!this.TNMClinicalStageGroup || !this.TNMPathologicalStageGroup) {
+      return null;
+    }
+    // 1. Invasive Breast Cancer and Locally Advanced
+    for (const primaryCancerCondition of this.primaryCancerCondition){
+      if (
+        (((primaryCancerCondition.histologyMorphologyBehavior.some(histMorphBehav => this.profilesContainCode(histMorphBehav, 'Morphology-Invasive'))) || (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Invasive Breast'))))
+        && (primaryCancerCondition.coding.some(code => this.profilesContainCode(code, 'Cancer-Breast'))))
+        &&
+        ((this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3', 'Stage-4'))) || (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3', 'Stage-4'))))) {
+          return 'Invasive Breast Cancer and Locally Advanced';
+      }
+    }
+    // 2. Non-Invasive
+    if (
+      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0'))) ||
+      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0')))){
+        return 'Non-Invasive';
+    }
+    // 3. Locally Advanced
+    if (
+      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3'))) ||
+      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3')))){
+        return 'Non-Invasive';
+    }
+    // 4. Stage 0
+    if (
+      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0'))) ||
+      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-0')))){
+        return 'Stage 0';
+    }
+    // 5. Stage 1
+    if (
+      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-1'))) ||
+      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-1')))){
+        return 'Non-Invasive';
+    }
+    // 6. Stage 2
+    if (
+      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-2'))) ||
+      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-2')))){
+        return 'Non-Invasive';
+    }
+    // 7. Stage 3
+    if (
+      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3'))) ||
+      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-3')))){
+        return 'Non-Invasive';
+    }
+    // 8. Stage 4
+    if (
+      (this.TNMClinicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4'))) ||
+      (this.TNMPathologicalStageGroup.some(code => this.profilesContainCode(code, 'Stage-4')))){
+        return 'Non-Invasive';
+    }
+    // None of the conditions are satisfied.
+    return null;
   }
   getAgeValue(): string {
     return '';
