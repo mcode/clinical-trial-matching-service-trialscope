@@ -3,7 +3,7 @@ import * as fhirpath from 'fhirpath';
 import { Bundle } from './bundle';
 
 import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
-import { CodeProfile,  ProfileSystemCodes} from '../data/profileSystemLogic';
+import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
 
 import profile_system_codesX from '../data/profile-system-codes.json';
 //import profile_system_logic from '../data/profile-system-logic.json';
@@ -269,7 +269,7 @@ export class extractedMCODE {
   }
   // Primary Cancer Value
   getPrimaryCancerValue(): string {
-    if(!this.primaryCancerCondition) {
+    if (!this.primaryCancerCondition) {
       return null;
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
@@ -327,7 +327,7 @@ export class extractedMCODE {
   }
   // Secondary Cancer Value
   getSecondaryCancerValue(): string {
-    if(!this.secondaryCancerCondition) {
+    if (!this.secondaryCancerCondition) {
       return null;
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
@@ -365,7 +365,8 @@ export class extractedMCODE {
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 3. Leptomeningeal metastatic disease
-      if (secondaryCancerCondition.bodySite.some((bdySte) => bdySte == 'SNOMED#8935007')) { // obviously this is wrong
+      if (secondaryCancerCondition.bodySite.some((bdySte) => bdySte == 'SNOMED#8935007')) {
+        // obviously this is wrong
         return 'Leptomeningeal metastatic disease';
       }
     }
@@ -413,7 +414,9 @@ export class extractedMCODE {
       (this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor')
       ) ||
-        this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-mTOR Inhibitor'))) &&
+        this.cancerRelatedMedicationStatement.some((coding) =>
+          this.codeIsInSheet(coding, 'Treatment-mTOR Inhibitor')
+        )) &&
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine Therapy'))
     ) {
       return 'CDK4/6-mTOR and Endocrine ';
@@ -473,7 +476,7 @@ export class extractedMCODE {
   codeIsInSheet(coding: Coding, sheetName: string): boolean {
     const code = coding.code;
     const system = this.normalizeCodeSystem(coding.system);
-    const codeSet: {code: string}[] = (profile_system_codes[sheetName] as CodeProfile)[system] as {code: string}[];
+    const codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
     console.log(coding);
     // Check that the current code matches the given code.
     for (const currentCode of codeSet) {
@@ -511,7 +514,9 @@ export class extractedMCODE {
       const currentCodeSystem: string = this.normalizeCodeSystem(coding.system);
       //console.log(profile);
       //console.log(profile_system_codes[profile]);
-      const codeSet: {code: string}[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {code: string}[];
+      const codeSet: { code: string }[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {
+        code: string;
+      }[];
       console.log(coding);
       // Check that the current code matches the given code.
       for (const currentCode of codeSet) {
