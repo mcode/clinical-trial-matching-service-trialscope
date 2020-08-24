@@ -7,7 +7,6 @@ import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
 
 import profile_system_codesX from '../data/profile-system-codes.json';
 import { toJson } from 'xml2json';
-//import profile_system_logic from '../data/profile-system-logic.json';
 
 const profile_system_codes = profile_system_codesX as ProfileSystemCodes;
 
@@ -59,15 +58,15 @@ export interface TumorMarker {
 
 // extracted MCODE info?? WIP
 export class extractedMCODE {
-  primaryCancerCondition?: PrimaryCancerCondition[]; // wava has 1 resource - need histology extension
-  TNMClinicalStageGroup?: Coding[]; // wava has 1 resource
-  TNMPathologicalStageGroup?: Coding[]; // wava has 0 resources
-  secondaryCancerCondition?: SecondaryCancerCondition[]; // wava has 0 resources
-  birthDate?: string;
-  tumorMarker?: TumorMarker[];
-  cancerRelatedRadiationProcedure?: CancerRelatedRadiationProcedure[]; // can this be a set - wava has 34 of these put they're all the same
-  cancerRelatedSurgicalProcedure?: Coding[]; // would also be better as a set
-  cancerRelatedMedicationStatement?: Coding[]; // this too
+  primaryCancerCondition: PrimaryCancerCondition[]; // wava has 1 resource - need histology extension
+  TNMClinicalStageGroup: Coding[]; // wava has 1 resource
+  TNMPathologicalStageGroup: Coding[]; // wava has 0 resources
+  secondaryCancerCondition: SecondaryCancerCondition[]; // wava has 0 resources
+  birthDate: string;
+  tumorMarker: TumorMarker[];
+  cancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure[]; // can this be a set - wava has 34 of these put they're all the same
+  cancerRelatedSurgicalProcedure: Coding[]; // would also be better as a set
+  cancerRelatedMedicationStatement: Coding[]; // this too
 
   constructor(patientBundle: Bundle) {
     for (const entry of patientBundle.entry) {
@@ -82,12 +81,8 @@ export class extractedMCODE {
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-primary-cancer-condition')
       ) {
         const tempPrimaryCancerCondition: PrimaryCancerCondition = {};
-        if (this.lookup(resource, 'code.coding').length !== 0) {
-          tempPrimaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
-        }
-        if (this.lookup(resource, 'clinicalStatus.coding').length !== 0) {
-          tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
-        }
+        tempPrimaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
+        tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
         if (this.lookup(resource, 'extension').length !== 0) {
           let count = 0;
           for (const extension of this.lookup(resource, 'extension')) {
@@ -105,8 +100,6 @@ export class extractedMCODE {
           tempPrimaryCancerCondition.histologyMorphologyBehavior = [] as Coding[];
         }
 
-        // add primaryCancerCondition
-        //this.primaryCancerCondition = addPrimaryCancerCondition(this.primaryCancerCondition, tempPrimaryCancerCondition);
         if (this.primaryCancerCondition) {
           this.primaryCancerCondition.push(tempPrimaryCancerCondition); // needs specific de-dup helper function
         } else {
@@ -122,15 +115,6 @@ export class extractedMCODE {
           this.TNMClinicalStageGroup,
           this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
         );
-        /*
-        if (this.TNMClinicalStageGroup) {
-          this.TNMClinicalStageGroup = this.TNMClinicalStageGroup.concat(
-            this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
-          );
-        } else {
-          this.TNMClinicalStageGroup = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
-        }
-        */
       }
 
       if (
@@ -141,31 +125,16 @@ export class extractedMCODE {
           this.TNMPathologicalStageGroup,
           this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
         );
-        /*
-        if (this.TNMPathologicalStageGroup) {
-          this.TNMPathologicalStageGroup = this.TNMPathologicalStageGroup.concat(
-            this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
-          );
-        } else {
-          this.TNMPathologicalStageGroup = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
-        }
-        */
       }
 
       if (
         resource.resourceType === 'Condition' &&
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-secondary-cancer-condition')
       ) {
-        const tempSecondaryCancerCondition: { clinicalStatus?: Coding[]; coding?: Coding[]; bodySite?: Coding[] } = {};
-        if (this.lookup(resource, 'code.coding').length !== 0) {
-          tempSecondaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
-        }
-        if (this.lookup(resource, 'clinicalStatus.coding').length !== 0) {
-          tempSecondaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
-        }
-        if (this.lookup(resource, 'bodySite.coding').length !== 0) {
-          tempSecondaryCancerCondition.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
-        }
+        const tempSecondaryCancerCondition: SecondaryCancerCondition = {};
+        tempSecondaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
+        tempSecondaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
+        tempSecondaryCancerCondition.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
         if (this.secondaryCancerCondition) {
           this.secondaryCancerCondition.push(tempSecondaryCancerCondition); // needs specific de-dup helper function
         } else {
@@ -179,6 +148,8 @@ export class extractedMCODE {
       ) {
         if (this.lookup(resource, 'birthDate').length !== 0) {
           this.birthDate = this.lookup(resource, 'birthDate')[0] as string;
+        } else {
+          this.birthDate = 'NA';
         }
       }
 
@@ -187,21 +158,11 @@ export class extractedMCODE {
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tumor-marker')
       ) {
         const tempTumorMarker: TumorMarker = {};
-        if (this.lookup(resource, 'code.coding').length !== 0) {
-          tempTumorMarker.code = this.lookup(resource, 'code.coding') as Coding[];
-        }
-        if (this.lookup(resource, 'valueQuantity').length !== 0) {
-          tempTumorMarker.valueQuantity = this.lookup(resource, 'valueQuantity') as Quantity[];
-        }
-        if (this.lookup(resource, 'valueRatio').length !== 0) {
-          tempTumorMarker.valueRatio = this.lookup(resource, 'valueRatio') as Ratio[];
-        }
-        if (this.lookup(resource, 'valueCodeableConcept.coding').length !== 0) {
-          tempTumorMarker.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
-        }
-        if (this.lookup(resource, 'interpretation.coding').length !== 0) {
-          tempTumorMarker.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
-        }
+        tempTumorMarker.code = this.lookup(resource, 'code.coding') as Coding[];
+        tempTumorMarker.valueQuantity = this.lookup(resource, 'valueQuantity') as Quantity[];
+        tempTumorMarker.valueRatio = this.lookup(resource, 'valueRatio') as Ratio[];
+        tempTumorMarker.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+        tempTumorMarker.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
         if (this.tumorMarker) {
           this.tumorMarker.push(tempTumorMarker);
         } else {
@@ -214,12 +175,8 @@ export class extractedMCODE {
         this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
       ) {
         const tempCancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure = {};
-        if (this.lookup(resource, 'code.coding').length !== 0) {
-          tempCancerRelatedRadiationProcedure.coding = this.lookup(resource, 'code.coding') as Coding[];
-        }
-        if (this.lookup(resource, 'bodySite.coding').length !== 0) {
-          tempCancerRelatedRadiationProcedure.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
-        }
+        tempCancerRelatedRadiationProcedure.coding = this.lookup(resource, 'code.coding') as Coding[];
+        tempCancerRelatedRadiationProcedure.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
         if (this.cancerRelatedRadiationProcedure) {
           if (
             !this.listContainsRadiationProcedure(
@@ -253,6 +210,34 @@ export class extractedMCODE {
           this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[]
         );
       }
+    }
+    // add empty fields if they are not yet undefined
+    if (!this.primaryCancerCondition) {
+      this.primaryCancerCondition = [] as PrimaryCancerCondition[];
+    }
+    if (!this.TNMClinicalStageGroup) {
+      this.TNMClinicalStageGroup = [] as Coding[];
+    }
+    if (!this.TNMPathologicalStageGroup) {
+      this.TNMPathologicalStageGroup = [] as Coding[];
+    }
+    if (!this.secondaryCancerCondition) {
+      this.secondaryCancerCondition = [] as SecondaryCancerCondition[];
+    }
+    if (!this.birthDate) {
+      this.birthDate = 'NA';
+    }
+    if (!this.tumorMarker) {
+      this.tumorMarker = [] as TumorMarker[];
+    }
+    if (!this.cancerRelatedRadiationProcedure) {
+      this.cancerRelatedRadiationProcedure = [] as CancerRelatedRadiationProcedure[];
+    }
+    if (!this.cancerRelatedSurgicalProcedure) {
+      this.cancerRelatedSurgicalProcedure = [] as Coding[];
+    }
+    if (!this.cancerRelatedMedicationStatement) {
+      this.cancerRelatedMedicationStatement = [] as Coding[];
     }
   }
 
@@ -496,7 +481,7 @@ export class extractedMCODE {
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
     ) {
-      return 'Non-Invasive';
+      return 'Locally Advanced';
     }
     // 4. Stage 0
     if (
@@ -510,34 +495,37 @@ export class extractedMCODE {
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1'))
     ) {
-      return 'Non-Invasive';
+      return 'Stage 1';
     }
     // 6. Stage 2
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2'))
     ) {
-      return 'Non-Invasive';
+      return 'Stage 2';
     }
     // 7. Stage 3
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
     ) {
-      return 'Non-Invasive';
+      return 'Stage 3';
     }
     // 8. Stage 4
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
     ) {
-      return 'Non-Invasive';
+      return 'Stage 4';
     }
     // None of the conditions are satisfied.
     return null;
   }
   // Age (18 or younger/older)
   getAgeValue(): string {
+    if (this.birthDate == 'NA') {
+      return null;
+    }
     // Birthdate is in format: '1966-08-03'
     const today: Date = new Date();
     const checkDate: Date = new Date(this.birthDate);
@@ -550,7 +538,7 @@ export class extractedMCODE {
     return '';
   }
   getRadiationProcedureValue(): string {
-    if (!this.cancerRelatedRadiationProcedure) {
+    if (this.cancerRelatedRadiationProcedure.length == 0) {
       return null;
     }
     for (const cancerRelatedRadiationProcedure of this.cancerRelatedRadiationProcedure) {
@@ -580,7 +568,7 @@ export class extractedMCODE {
     return 'Radiation Therapy';
   }
   getSurgicalProcedureValue(): string {
-    if (!this.cancerRelatedSurgicalProcedure) {
+    if (this.cancerRelatedSurgicalProcedure.length == 0) {
       return null;
     }
     if (this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Resection-Brain'))) {
@@ -594,7 +582,7 @@ export class extractedMCODE {
     }
   }
   getMedicationStatementValue(): string {
-    if (!this.cancerRelatedMedicationStatement) {
+    if (this.cancerRelatedMedicationStatement.length == 0) {
       return null;
     }
     if (
@@ -669,7 +657,10 @@ export class extractedMCODE {
   codeIsInSheet(coding: Coding, sheetName: string): boolean {
     const code = coding.code;
     const system = this.normalizeCodeSystem(coding.system);
-    const codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
+    let codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
+    if(!codeSet) {
+      codeSet = [];
+    }
     //console.log(coding);
     // Check that the current code matches the given code.
     for (const currentCode of codeSet) {
@@ -705,10 +696,17 @@ export class extractedMCODE {
     for (const profile of profiles) {
       // Pull out the relevant codes from the relevant code system.
       const currentCodeSystem: string = this.normalizeCodeSystem(coding.system);
-      const codeSet: { code: string }[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {
+      let codeSet: { code: string }[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {
         code: string;
       }[];
+      if(!codeSet) {
+        codeSet = [];
+      }
       // Check that the current code matches the given code.
+      //console.log(profile);
+      //console.log(currentCodeSystem);
+      //console.log(profile_system_codes[profile]);
+      //console.log(codeSet);
       for (const currentCode of codeSet) {
         if (coding.code == currentCode.code) {
           return true;
