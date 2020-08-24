@@ -524,19 +524,19 @@ export class extractedMCODE {
   getTumorMarkerValue(): string {
     // HER2+
     for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker)) {
+      if (this.isHER2Positive(tumorMarker, 3)) {
         return 'HER2+';
       }
     }
     // HER2+ and ER+
     for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker) && this.isERPositive(tumorMarker, 10)) {
+      if (this.isHER2Positive(tumorMarker, 3) && this.isERPositive(tumorMarker, 10)) {
         return 'HER2+ and ER+';
       }
     }
     // HER2+ and PR+
     for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker) && this.isPRPositive(tumorMarker, 10)) {
+      if (this.isHER2Positive(tumorMarker, 3) && this.isPRPositive(tumorMarker, 10)) {
         return 'HER2+ and PR+';
       }
     }
@@ -554,37 +554,54 @@ export class extractedMCODE {
     }
     // ER+ and HER2- and FGFR amplifications
     for (const tumorMarker of this.tumorMarker) {
-      if (this.isERPositive(tumorMarker, 1) && this.isHER2Negative(tumorMarker) && this.isFGFRAmplification(tumorMarker, 1)) {
+      if (
+        this.isERPositive(tumorMarker, 1) &&
+        this.isHER2Negative(tumorMarker) &&
+        this.isFGFRAmplification(tumorMarker, 1)
+      ) {
         return 'ER+ and HER2- and FGFR amplifications';
       }
     }
     // PR+ and HER2- and FGFR amplifications
     for (const tumorMarker of this.tumorMarker) {
-      if (this.isPRPositive(tumorMarker, 1) && this.isHER2Negative(tumorMarker) && this.isFGFRAmplification(tumorMarker, 1)) {
+      if (
+        this.isPRPositive(tumorMarker, 1) &&
+        this.isHER2Negative(tumorMarker) &&
+        this.isFGFRAmplification(tumorMarker, 1)
+      ) {
         return 'PR+ and HER2- and FGFR amplifications';
       }
     }
     // ER+ PR+ HER2-
     for (const tumorMarker of this.tumorMarker) {
-      if ( this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1) && this.isERPositive(tumorMarker, 1)) {
+      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1) && this.isERPositive(tumorMarker, 1)) {
         return 'ER+ PR+ HER2-';
       }
     }
     // Triple Negative
     for (const tumorMarker of this.tumorMarker) {
-      if ( this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1)) {
+      if (this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1)) {
         return 'Triple Negative';
       }
     }
     // Triple Negative-10
     for (const tumorMarker of this.tumorMarker) {
-      if ( this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 10) && this.isERNegative(tumorMarker, 10)) {
+      if (
+        this.isHER2Negative(tumorMarker) &&
+        this.isPRNegative(tumorMarker, 10) &&
+        this.isERNegative(tumorMarker, 10)
+      ) {
         return 'Triple Negative-10';
       }
     }
     // Triple Negative and RB Positive
     for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1) && this.isRBPostive(tumorMarker, 50)) {
+      if (
+        this.isHER2Negative(tumorMarker) &&
+        this.isPRNegative(tumorMarker, 1) &&
+        this.isERNegative(tumorMarker, 1) &&
+        this.isRBPostive(tumorMarker, 50)
+      ) {
         return 'Triple Negative and RB Positive';
       }
     }
@@ -592,68 +609,84 @@ export class extractedMCODE {
     return null;
   }
   isHER2Negative(tumorMarker: TumorMarker): boolean {
-    return (tumorMarker.valueCodeableConcept.some(
-      (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
-    ) ||
-      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
-      tumorMarker.valueQuantity.some((valQuant) =>
-        this.profilesContainCode(valQuant, '0', '1', '2', '1+', '2+')
-      )) &&
-    tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'));
+    return (
+      (tumorMarker.valueCodeableConcept.some(
+        (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
+      ) ||
+        tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
+        tumorMarker.valueQuantity.some((valQuant) => this.profilesContainCode(valQuant, '0', '1', '2', '1+', '2+'))) &&
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'))
+    );
   }
-  isHER2Positive(tumorMarker: TumorMarker): boolean {
+  isHER2Positive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')) &&
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
       ) ||
         tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
-        tumorMarker.valueQuantity.some((valQuant) => this.profilesContainCode(valQuant, '3', '3+')))
+        tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric))
     );
   }
   isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
-    return (tumorMarker.valueCodeableConcept.some(
-      (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
-    ) ||
-      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
-      (tumorMarker.valueQuantity.some((valQuant) => (valQuant >= metric)) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))));
-  }
-  isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
-    return (tumorMarker.valueCodeableConcept.some(
-      (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
-    ) ||
-      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
-      (tumorMarker.valueQuantity.some((valQuant) => valQuant <= metric) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))));
-  }
-  isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
-    return (tumorMarker.valueCodeableConcept.some(
-      (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
-    ) ||
+    return (
+      tumorMarker.valueCodeableConcept.some(
+        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
+      ) ||
       tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
       (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))));
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR')))
+    );
   }
-  isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
-    return (tumorMarker.valueCodeableConcept.some(
-      (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
-    ) ||
+  isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
+    return (
+      tumorMarker.valueCodeableConcept.some(
+        (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
+      ) ||
       tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
       (tumorMarker.valueQuantity.some((valQuant) => valQuant <= metric) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))));
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR')))
+    );
+  }
+  isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
+    return (
+      tumorMarker.valueCodeableConcept.some(
+        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
+      ) ||
+      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
+      (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric) &&
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER')))
+    );
+  }
+  isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
+    return (
+      tumorMarker.valueCodeableConcept.some(
+        (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
+      ) ||
+      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
+      (tumorMarker.valueQuantity.some((valQuant) => valQuant <= metric) &&
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER')))
+    );
   }
   isFGFRAmplification(tumorMarker: TumorMarker, metric: number): boolean {
-    return (tumorMarker.valueCodeableConcept.some((valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)') ||
-    (tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
-    (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric)))) &&
-    tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-FGFR'));
+    return (
+      (tumorMarker.valueCodeableConcept.some(
+        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
+      ) ||
+        tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
+        tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric)) &&
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-FGFR'))
+    );
   }
   isRBPostive(tumorMarker: TumorMarker, metric: number): boolean {
-    return ((tumorMarker.valueQuantity.some(valQuant => valQuant >= metric)) ||
-      (tumorMarker.valueCodeableConcept.some(valCodeCon => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)')) ||
-      (tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')))) &&
-      (tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-RB')));
+    return (
+      (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric) ||
+        tumorMarker.valueCodeableConcept.some(
+          (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
+        ) ||
+        tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H'))) &&
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-RB'))
+    );
   }
   getRadiationProcedureValue(): string {
     if (this.cancerRelatedRadiationProcedure.length == 0) {
