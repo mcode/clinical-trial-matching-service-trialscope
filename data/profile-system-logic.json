@@ -522,7 +522,7 @@
         } ]
       }
     }, {
-      "type" : "HER2+ and PR+ ",
+      "type" : "HER2+ and PR+",
       "operation" : {
         "operatorType" : "AND",
         "operations" : [ {
@@ -558,7 +558,7 @@
         } ]
       }
     }, {
-      "type" : "ER+ and HER2- ",
+      "type" : "ER+ and HER2-",
       "operation" : {
         "operatorType" : "AND",
         "operations" : [ {

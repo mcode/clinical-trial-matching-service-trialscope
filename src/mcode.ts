@@ -294,9 +294,6 @@ export class extractedMCODE {
   }
   // Primary Cancer Value
   getPrimaryCancerValue(): string {
-    if (!this.primaryCancerCondition) {
-      return null;
-    }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // Cycle through each of the primary Cancer condition's codes independently due to code-dependent conditions
@@ -352,9 +349,6 @@ export class extractedMCODE {
   }
   // Secondary Cancer Value
   getSecondaryCancerValue(): string {
-    if (!this.secondaryCancerCondition) {
-      return null;
-    }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 1. Brain Metastasis
@@ -414,9 +408,6 @@ export class extractedMCODE {
   }
   // Histology Morphology Value
   getHistologyMorphologyValue(): string {
-    if (!this.primaryCancerCondition) {
-      return null;
-    }
     // 1. Invasive Carcinoma
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
@@ -447,22 +438,18 @@ export class extractedMCODE {
     return null;
   }
   getStageValue(): string {
-    if (!this.primaryCancerCondition) {
-      // im srry this is wrong
-      return null;
-    }
-    if (!this.TNMClinicalStageGroup || !this.TNMPathologicalStageGroup) {
-      // this too
-      return null;
-    }
+    // this.TNMClinicalStageGroup.some(code => console.log(code));
     // 1. Invasive Breast Cancer and Locally Advanced
     for (const primaryCancerCondition of this.primaryCancerCondition) {
+      primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) => console.log(histMorphBehav));
+      console.log('---');
+      primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) => console.log(histMorphBehav));
       if (
-        (primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+        ((primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
           this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
-        ) ||
+        ) &&
+          primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))) ||
           primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))) &&
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
         (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')) ||
           this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')))
       ) {
@@ -535,7 +522,138 @@ export class extractedMCODE {
     return millisecondsAge > milliseconds18Years ? '18 Or Over' : 'Under 18';
   }
   getTumorMarkerValue(): string {
-    return '';
+    // HER2+
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Positive(tumorMarker)) {
+        return 'HER2+';
+      }
+    }
+    // HER2+ and ER+
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Positive(tumorMarker) && this.isERPositive(tumorMarker, 10)) {
+        return 'HER2+ and ER+';
+      }
+    }
+    // HER2+ and PR+
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Positive(tumorMarker) && this.isPRPositive(tumorMarker, 10)) {
+        return 'HER2+ and PR+';
+      }
+    }
+    // ER+ and HER2-
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Negative(tumorMarker) && this.isERPositive(tumorMarker, 1)) {
+        return 'ER+ and HER2-';
+      }
+    }
+    // PR+ and HER2-
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1)) {
+        return 'HER2+ and PR+';
+      }
+    }
+    // ER+ and HER2- and FGFR amplifications
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isERPositive(tumorMarker, 1) && this.isHER2Negative(tumorMarker) && this.isFGFRAmplification(tumorMarker, 1)) {
+        return 'ER+ and HER2- and FGFR amplifications';
+      }
+    }
+    // PR+ and HER2- and FGFR amplifications
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isPRPositive(tumorMarker, 1) && this.isHER2Negative(tumorMarker) && this.isFGFRAmplification(tumorMarker, 1)) {
+        return 'PR+ and HER2- and FGFR amplifications';
+      }
+    }
+    // ER+ PR+ HER2-
+    for (const tumorMarker of this.tumorMarker) {
+      if ( this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1) && this.isERPositive(tumorMarker, 1)) {
+        return 'ER+ PR+ HER2-';
+      }
+    }
+    // Triple Negative
+    for (const tumorMarker of this.tumorMarker) {
+      if ( this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1)) {
+        return 'Triple Negative';
+      }
+    }
+    // Triple Negative-10
+    for (const tumorMarker of this.tumorMarker) {
+      if ( this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 10) && this.isERNegative(tumorMarker, 10)) {
+        return 'Triple Negative-10';
+      }
+    }
+    // Triple Negative and RB Positive
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1) && this.isRBPostive(tumorMarker, 50)) {
+        return 'Triple Negative and RB Positive';
+      }
+    }
+    // None of the conditions are satisfied.
+    return null;
+  }
+  isHER2Negative(tumorMarker: TumorMarker): boolean {
+    return (tumorMarker.valueCodeableConcept.some(
+      (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
+    ) ||
+      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
+      tumorMarker.valueQuantity.some((valQuant) =>
+        this.profilesContainCode(valQuant, '0', '1', '2', '1+', '2+')
+      )) &&
+    tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'));
+  }
+  isHER2Positive(tumorMarker: TumorMarker): boolean {
+    return (
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')) &&
+      (tumorMarker.valueCodeableConcept.some(
+        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
+      ) ||
+        tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
+        tumorMarker.valueQuantity.some((valQuant) => this.profilesContainCode(valQuant, '3', '3+')))
+    );
+  }
+  isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
+    return (tumorMarker.valueCodeableConcept.some(
+      (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
+    ) ||
+      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
+      (tumorMarker.valueQuantity.some((valQuant) => (valQuant >= metric)) &&
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))));
+  }
+  isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
+    return (tumorMarker.valueCodeableConcept.some(
+      (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
+    ) ||
+      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
+      (tumorMarker.valueQuantity.some((valQuant) => valQuant <= metric) &&
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))));
+  }
+  isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
+    return (tumorMarker.valueCodeableConcept.some(
+      (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)'
+    ) ||
+      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
+      (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric) &&
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))));
+  }
+  isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
+    return (tumorMarker.valueCodeableConcept.some(
+      (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)'
+    ) ||
+      tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||
+      (tumorMarker.valueQuantity.some((valQuant) => valQuant <= metric) &&
+        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))));
+  }
+  isFGFRAmplification(tumorMarker: TumorMarker, metric: number): boolean {
+    return (tumorMarker.valueCodeableConcept.some((valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)') ||
+    (tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) ||
+    (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric)))) &&
+    tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-FGFR'));
+  }
+  isRBPostive(tumorMarker: TumorMarker, metric: number): boolean {
+    return ((tumorMarker.valueQuantity.some(valQuant => valQuant >= metric)) ||
+      (tumorMarker.valueCodeableConcept.some(valCodeCon => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)')) ||
+      (tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')))) &&
+      (tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-RB')));
   }
   getRadiationProcedureValue(): string {
     if (this.cancerRelatedRadiationProcedure.length == 0) {
@@ -703,10 +821,6 @@ export class extractedMCODE {
         codeSet = [];
       }
       // Check that the current code matches the given code.
-      //console.log(profile);
-      //console.log(currentCodeSystem);
-      //console.log(profile_system_codes[profile]);
-      //console.log(codeSet);
       for (const currentCode of codeSet) {
         if (coding.code == currentCode.code) {
           return true;
