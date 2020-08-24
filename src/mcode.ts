@@ -658,7 +658,7 @@ export class extractedMCODE {
     const code = coding.code;
     const system = this.normalizeCodeSystem(coding.system);
     let codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
-    if(!codeSet) {
+    if (!codeSet) {
       codeSet = [];
     }
     //console.log(coding);
@@ -699,7 +699,7 @@ export class extractedMCODE {
       let codeSet: { code: string }[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {
         code: string;
       }[];
-      if(!codeSet) {
+      if (!codeSet) {
         codeSet = [];
       }
       // Check that the current code matches the given code.
