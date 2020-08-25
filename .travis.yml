@@ -16,10 +16,5 @@ script:
   - npm run lint
   - npm run-script coverage
 
-before_install:
-  - mkdir src/AllPublicXML
-  - mkdir src/AllPublicXML/NCT0358xxxx
-  - mv spec/data/NCT03587740.xml src/AllPublicXML/NCT0358xxxx
-
 after_success:
   - codecov

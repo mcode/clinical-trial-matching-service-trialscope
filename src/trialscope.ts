@@ -1,22 +1,15 @@
 /**
  * Module for running queries via TrialScope
  */
-
+import { ClinicalTrialGovService } from 'clinical-trial-matching-service';
 import https from 'https';
 import http from 'http';
 import { mapConditions } from './mapping';
-import { Bundle, Condition } from './bundle';
 import { IncomingMessage } from 'http';
-import Configuration from './env';
-import RequestError from './request-error';
-
-const environment = new Configuration().defaultEnvObject();
-
-if (typeof environment.TRIALSCOPE_TOKEN !== 'string' || environment.TRIALSCOPE_TOKEN === '') {
-  throw new Error(
-    'TrialScope token is not set in environment. Please set TRIALSCOPE_TOKEN to the TrialScope API token.'
-  );
-}
+import { convertTrialScopeToResearchStudy } from './research-study-mapping';
+import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
+import * as fs from 'fs';
+import path from 'path';
 
 /**
  * Maps FHIR phases to TrialScope phases.
@@ -214,7 +207,7 @@ export class TrialScopeQuery {
     'countries',
     'maximumAge'
   ];
-  constructor(patientBundle: Bundle) {
+  constructor(patientBundle: fhir.Bundle) {
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
@@ -241,7 +234,7 @@ export class TrialScopeQuery {
       }
     }
   }
-  addCondition(condition: Condition): void {
+  addCondition(condition: fhir.Condition): void {
     // Should have a code
     // TODO: Limit to specific coding systems (maybe)
     for (const code of condition.code.coding) {
@@ -303,28 +296,32 @@ export class TrialScopeQuery {
   }
 }
 
-export function runTrialScopeQuery(patientBundle: Bundle): Promise<TrialScopeResponse> {
-  return runRawTrialScopeQuery(new TrialScopeQuery(patientBundle));
-}
+type RequestGeneratorFunction = (
+  url: string | URL,
+  options: https.RequestOptions,
+  callback?: (res: IncomingMessage) => void
+) => http.ClientRequest;
 
-export default runTrialScopeQuery;
+export class TrialScopeQueryRunner {
+  private generateRequest: RequestGeneratorFunction;
+  constructor(
+    public endpoint: string,
+    private token: string,
+    private backupService: ClinicalTrialGovService,
+    requestGenerator: RequestGeneratorFunction = https.request
+  ) {
+    this.generateRequest = requestGenerator;
+  }
 
-/**
- * Runs a TrialScope query.
- *
- * @deprecated Will be merged in with #runTrialScopeQuery
- * @param {TrialScopeQuery|string} query the query to run
- */
-export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<TrialScopeResponse> {
-  if (typeof query === 'object' && typeof query.toQuery === 'function') {
-    // If given an object, assume we're going to need to paginate and load everything
-    return new Promise((resolve, reject) => {
-      sendQuery(query.toQuery())
+  runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
+    return new Promise<TrialScopeResponse>((resolve, reject) => {
+      const query = new TrialScopeQuery(patientBundle);
+      this.sendQuery(query.toQuery())
         .then((result) => {
           // Result is a parsed JSON object. See if we need to load more pages.
           const loadNextPage = (previousPage: TrialScopeResponse) => {
             query.after = previousPage.data.baseMatches.pageInfo.endCursor;
-            sendQuery(query.toQuery())
+            this.sendQuery(query.toQuery())
               .then((nextPage) => {
                 // Append results.
                 result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
@@ -352,89 +349,116 @@ export function runRawTrialScopeQuery(query: TrialScopeQuery | string): Promise<
           }
         })
         .catch(reject);
-    });
-  } else if (typeof query === 'string') {
-    // Run directly
-    return sendQuery(query);
-  }
-}
-
-type RequestGeneratorFunction = (
-  url: string | URL,
-  options: https.RequestOptions,
-  callback?: (res: IncomingMessage) => void
-) => http.ClientRequest;
-
-let generateRequest: RequestGeneratorFunction = https.request;
-
-/**
- * Override the request generator used to generate HTTPS requests. This may be
- * useful in some scenarios where the request needs to be modified. It's
- * primarily intended to be used in tests.
- *
- * @param requestGenerator the request generator to use instead of https.request
- */
-export function setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
-  generateRequest = requestGenerator ? requestGenerator : https.request;
-}
-
-function sendQuery(query: string): Promise<TrialScopeResponse> {
-  return new Promise((resolve, reject) => {
-    const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
-    console.log('Running raw TrialScope query');
-    console.log(query);
-    const request = generateRequest(
-      environment.trialscope_endpoint,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Content-Length': body.byteLength.toString(),
-          'Authorization': 'Bearer ' + environment.TRIALSCOPE_TOKEN
+    }).then<SearchSet>((trialscopeResponse) => {
+      // Convert to SearchSet
+      const studies: fhir.ResearchStudy[] = [];
+      let index = 0;
+      const backupIds: string[] = [];
+      for (const node of trialscopeResponse.data.baseMatches.edges) {
+        const trial: TrialScopeTrial = node.node;
+        const study = convertTrialScopeToResearchStudy(trial, index);
+        if (!study.description || !study.enrollment || !study.phase || !study.category) {
+          backupIds.push(trial.nctId);
         }
-      },
-      (result) => {
-        let responseBody = '';
-        result.on('data', (chunk) => {
-          responseBody += chunk;
+        studies.push(study);
+        index++;
+      }
+      if (backupIds.length == 0) {
+        return new SearchSet(studies);
+      } else {
+        return this.backupService.downloadTrials(backupIds).then(() => {
+          for (let study of studies) {
+            // console.log(study.identifier[0].value);
+            if (backupIds.includes(study.identifier[0].value)) {
+              study = this.backupService.updateTrial(study);
+            }
+          }
+
+          // FIXME: This should be handled by the service itself
+          fs.unlink('clinicaltrial-backup-cache/backup.zip', (err) => {
+            if (err) console.log(err);
+          });
+          fs.rmdir(path.resolve('clinicaltrial-backup-cache/backups/'), { recursive: true }, (err) => {
+            if (err) console.log(err);
+          });
+
+          return new SearchSet(studies);
         });
-        result.on('end', () => {
-          console.log('Complete');
-          if (result.statusCode === 200) {
-            const json = JSON.parse(responseBody) as unknown;
-            if (isTrialScopeResponse(json)) {
-              resolve(json);
-            } else {
-              // Going to have to be rejected.
-              if (isTrialScopeErrorResponse(json)) {
-                // TODO: Parse out errors?
-                reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+      }
+    });
+  }
+
+  sendQuery(query: string): Promise<TrialScopeResponse> {
+    return new Promise((resolve, reject) => {
+      const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
+      console.log('Running raw TrialScope query');
+      console.log(query);
+      const request = this.generateRequest(
+        this.endpoint,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Content-Length': body.byteLength.toString(),
+            'Authorization': 'Bearer ' + this.token
+          }
+        },
+        (result) => {
+          let responseBody = '';
+          result.on('data', (chunk) => {
+            responseBody += chunk;
+          });
+          result.on('end', () => {
+            console.log('Complete');
+            if (result.statusCode === 200) {
+              const json = JSON.parse(responseBody) as unknown;
+              if (isTrialScopeResponse(json)) {
+                resolve(json);
               } else {
                 // Going to have to be rejected.
                 if (isTrialScopeErrorResponse(json)) {
                   // TODO: Parse out errors?
                   reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
                 } else {
-                  reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
+                  // Going to have to be rejected.
+                  if (isTrialScopeErrorResponse(json)) {
+                    // TODO: Parse out errors?
+                    reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+                  } else {
+                    reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
+                  }
                 }
               }
+            } else {
+              reject(
+                new TrialScopeServerError(
+                  `Server returned ${result.statusCode} ${result.statusMessage}`,
+                  result,
+                  responseBody
+                )
+              );
             }
-          } else {
-            reject(
-              new TrialScopeServerError(
-                `Server returned ${result.statusCode} ${result.statusMessage}`,
-                result,
-                responseBody
-              )
-            );
-          }
-        });
-      }
-    );
+          });
+        }
+      );
 
-    request.on('error', (error) => reject(error));
+      request.on('error', (error) => reject(error));
 
-    request.write(body);
-    request.end();
-  });
+      request.write(body);
+      request.end();
+    });
+  }
+
+  /**
+   * Override the request generator used to generate HTTPS requests. This may be
+   * useful in some scenarios where the request needs to be modified. It's
+   * primarily intended to be used in tests.
+   *
+   * @param requestGenerator the request generator to use instead of https.request
+   */
+  setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
+    this.generateRequest = requestGenerator ? requestGenerator : https.request;
+  }
 }
+
+export default TrialScopeQueryRunner;

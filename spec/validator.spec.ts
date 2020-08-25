@@ -1,4 +1,4 @@
-import { ResearchStudy } from '../src/research-study';
+import { convertTrialScopeToResearchStudy } from '../src/research-study-mapping';
 import { TrialScopeTrial } from '../src/trialscope';
 
 import fs from 'fs';
@@ -37,7 +37,7 @@ describe('FHIR Validation', () => {
   it('validates matching service results -> research study object', function () {
     const data = fs.readFileSync('./spec/data/trialscope_trial.json', { encoding: 'utf8' });
     const json: TrialScopeTrial = JSON.parse(data) as TrialScopeTrial;
-    const study = new ResearchStudy(json, 1);
+    const study = convertTrialScopeToResearchStudy(json, 1);
     const result = fhir.validate(study);
     expect(result.valid).toBeTrue();
   });
