@@ -375,10 +375,10 @@ export class TrialScopeQueryRunner {
           }
 
           // FIXME: This should be handled by the service itself
-          fs.unlink('src/backup.zip', (err) => {
+          fs.unlink('clinicaltrial-backup-cache/backup.zip', (err) => {
             if (err) console.log(err);
           });
-          fs.rmdir(path.resolve('src/backups/'), { recursive: true }, (err) => {
+          fs.rmdir(path.resolve('clinicaltrial-backup-cache/backups/'), { recursive: true }, (err) => {
             if (err) console.log(err);
           });
 
