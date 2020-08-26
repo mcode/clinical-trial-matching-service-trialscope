@@ -613,7 +613,7 @@ export class extractedMCODE {
   isHER2Negative(tumorMarker: TumorMarker): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)' // you can't check things like that - there's an example of how you can to this in the getRadiationProcedureValue function for value 'WBRT'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009' &&  valCodeCon.display == 'Negative-(qualifier-value)'
       ) ||
         tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) ||  // these aren't profiles, they're values that need to be compared against the interpretation coding
         tumorMarker.valueQuantity.some((valQuant) => this.profilesContainCode(valQuant, '0', '1', '2', '1+', '2+'))) && // same here - values not profiles, valQuant isn't event he right type to go into this function, also we need to check both tumorMarker.valueQuantity and tumorMarker.valueRatio
@@ -624,7 +624,7 @@ export class extractedMCODE {
     return (
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')) &&
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)' // same as above
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive-(qualifier-value)'
       ) ||
         tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) || // same as above
         tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric)) // you can't compare an object type Quantity to a number, the checking will be more complicated
@@ -633,7 +633,7 @@ export class extractedMCODE {
   isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)' // same as above
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive-(qualifier-value)'
       ) ||
       tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) || // same as above
       (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric) && // same as above
@@ -643,7 +643,7 @@ export class extractedMCODE {
   isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)' // same as above
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009' && valCodeCon.display == 'Negative-(qualifier-value)'
       ) ||
       tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) || // same as above
       (tumorMarker.valueQuantity.some((valQuant) => valQuant <= metric) && // same as above
@@ -653,7 +653,7 @@ export class extractedMCODE {
   isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)' // same as above
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive-(qualifier-value)'
       ) ||
       tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) || // same as above
       (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric) && // same as above
@@ -663,7 +663,7 @@ export class extractedMCODE {
   isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => valCodeCon == 'SNOMED#260385009-Negative-(qualifier-value)' // same as above
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009' && valCodeCon.display == 'Negative-(qualifier-value)'
       ) ||
       tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'L', 'N', 'NEG', 'ND')) || // same as above
       (tumorMarker.valueQuantity.some((valQuant) => valQuant <= metric) && // same as above
@@ -673,7 +673,7 @@ export class extractedMCODE {
   isFGFRAmplification(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)' // same as above
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive-(qualifier-value)'
       ) ||
         tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H')) || // same as above
         tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric)) && // same as above
@@ -684,7 +684,7 @@ export class extractedMCODE {
     return (
       (tumorMarker.valueQuantity.some((valQuant) => valQuant >= metric) || // same as above
         tumorMarker.valueCodeableConcept.some(
-          (valCodeCon) => valCodeCon == 'SNOMED#10828004-Positive-(qualifier-value)' // same as above
+          (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive-(qualifier-value)'
         ) ||
         tumorMarker.interpretation.some((interp) => this.profilesContainCode(interp, 'POS', 'DET', 'H'))) && // same as above
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-RB'))
