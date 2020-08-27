@@ -615,10 +615,10 @@ export class extractedMCODE {
     return (
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')) &&
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-        tumorMarker.interpretation.some((interp) => (interp.display ==  'POS' || interp.display ==  'DET' || interp.display == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
-        tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['3', '3+'], '='))) // you can't compare an object type Quantity to a number, the checking will be more complicated
+        tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
+        tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['3', '3+'], '=')))
     );
   }
   quantityMatch(quantValue: string | number, quantComparator: string, quantUnit: string, metricValues: string[] | number[], metricComparator: string, metricUnit?: string) {
@@ -650,9 +650,9 @@ export class extractedMCODE {
     tumorMarker.interpretation.some((interp) => console.log(interp));
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009' &&  valCodeCon.display == 'Negative'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
       ) ||
-        tumorMarker.interpretation.some((interp) => (interp.display == 'L' || interp.display == 'N' || interp.display == 'NEG' || interp.display == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||  // Information on Interpretation values can be found at: http://hl7.org/fhir/R4/valueset-observation-interpretation.html
+        tumorMarker.interpretation.some((interp) => (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||  // Information on Interpretation values can be found at: http://hl7.org/fhir/R4/valueset-observation-interpretation.html
         tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['0', '1', '2', '1+', '2+'], '=') )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'))
     );
@@ -660,9 +660,9 @@ export class extractedMCODE {
   isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.display ==  'POS' || interp.display ==  'DET' || interp.display == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
+      tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
       (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')) &&
         tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR')))
     );
@@ -670,9 +670,9 @@ export class extractedMCODE {
   isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009' && valCodeCon.display == 'Negative'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.display == 'L' || interp.display == 'N' || interp.display == 'NEG' || interp.display == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
+      tumorMarker.interpretation.some((interp) => (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
       (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
                                                     this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')) &&
         tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR')))
@@ -681,9 +681,9 @@ export class extractedMCODE {
   isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.display ==  'POS' || interp.display ==  'DET' || interp.display == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
+      tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
       (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')) &&
         tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER')))
     );
@@ -691,9 +691,9 @@ export class extractedMCODE {
   isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009' && valCodeCon.display == 'Negative'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.display == 'L' || interp.display == 'N' || interp.display == 'NEG' || interp.display == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
+      tumorMarker.interpretation.some((interp) => (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
       (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
                                                     this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')) &&
         tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER')))
@@ -702,9 +702,9 @@ export class extractedMCODE {
   isFGFRAmplification(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive'
+        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-        tumorMarker.interpretation.some((interp) => (interp.display ==  'POS' || interp.display ==  'DET' || interp.display == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
+        tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
         tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%'))) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-FGFR'))
     );
@@ -713,9 +713,9 @@ export class extractedMCODE {
     return (
       (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>', '%')) ||
         tumorMarker.valueCodeableConcept.some(
-          (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004' && valCodeCon.display == 'Positive'
+          (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
         ) ||
-        tumorMarker.interpretation.some((interp) => (interp.display ==  'POS' || interp.display ==  'DET' || interp.display == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html')) &&
+        tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html')) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-RB'))
     );
   }
