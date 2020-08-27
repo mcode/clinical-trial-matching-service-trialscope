@@ -1,6 +1,7 @@
 import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
-import { Bundle } from './bundle';
+import { Bundle } from './bundle'; // replace this with type from shared library
+//import { fhir } from 'clinical-trial-matching-service';
 
 import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
 import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
@@ -68,7 +69,7 @@ export class extractedMCODE {
   cancerRelatedSurgicalProcedure: Coding[]; // would also be better as a set
   cancerRelatedMedicationStatement: Coding[]; // this too
 
-  constructor(patientBundle: Bundle) {
+  constructor(patientBundle: Bundle) { // fhir.Bundle
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
@@ -295,7 +296,7 @@ export class extractedMCODE {
   // Primary Cancer Value
   getPrimaryCancerValue(): string {
     if (this.primaryCancerCondition.length == 0) {
-      return null;
+      return 'NOT_SURE';
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
@@ -310,7 +311,7 @@ export class extractedMCODE {
           this.profilesContainCode(currentCoding, 'Cancer-Breast') &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrence')
         ) {
-          return 'Invasive Breast Cancer and recurrent';
+          return 'INVASIVE_BREAST_CANCER_AND_RECURRENT';
         }
       }
     }
@@ -321,14 +322,14 @@ export class extractedMCODE {
         primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
       ) {
-        return 'Locally Recurrent';
+        return 'LOCALLY_RECURRENT';
       }
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 1. Breast Cancer
       if (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))) {
-        return 'Breast Cancer';
+        return 'BREAST_CANCER';
       }
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
@@ -344,7 +345,7 @@ export class extractedMCODE {
             this.profilesContainCode(coding, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
           ))
       ) {
-        return 'Concomitant invasive malignancies';
+        return 'CONCOMITANT_INVASIVE_MALIGNANCIES';
       }
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
@@ -358,16 +359,16 @@ export class extractedMCODE {
           (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
             this.TNMPathologicalStageGroup.some((coding) => this.profilesContainCode(coding, 'Stage-0'))))
       ) {
-        return 'Other malignancy - except skin or cervical';
+        return 'OTHER_MALIGNANCY_EXCEPT_SKIN_OR_CERVICAL';
       }
     }
     // None of the conditions are satisfied.
-    return null;
+    return 'NOT_SURE';
   }
   // Secondary Cancer Value
   getSecondaryCancerValue(): string {
     if (this.secondaryCancerCondition.length == 0) {
-      return null;
+      return 'NOT_SURE';
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
@@ -376,7 +377,7 @@ export class extractedMCODE {
         secondaryCancerCondition.coding.some((coding) => this.profilesContainCode(coding, 'Metastasis-Brain')) &&
         secondaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
       ) {
-        return 'Brain metastasis';
+        return 'BRAIN_METASTASIS';
       }
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
@@ -398,7 +399,7 @@ export class extractedMCODE {
           this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
           this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')))
       ) {
-        return 'Invasive Breast Cancer and Metastatic';
+        return 'INVASIVE_BREAST_CANCER_AND_METASTATIC';
       }
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
@@ -409,7 +410,7 @@ export class extractedMCODE {
           (bdySte) => this.normalizeCodeSystem(bdySte.system) == 'SNOMED' && bdySte.code == '8935007'
         )
       ) {
-        return 'Leptomeningeal metastatic disease';
+        return 'LEPTOMENINGEAL_METASTATIC_DISEASE';
       }
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
@@ -420,16 +421,16 @@ export class extractedMCODE {
         this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
         this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
       ) {
-        return 'Metastatic';
+        return 'METASTATIC';
       }
     }
     // None of the conditions are satisfied.
-    return null;
+    return 'NOT_SURE';
   }
   // Histology Morphology Value
   getHistologyMorphologyValue(): string {
     if (this.primaryCancerCondition.length == 0) {
-      return null;
+      return 'NOT_SURE';
     }
     // 1. Invasive Carcinoma
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
@@ -441,7 +442,7 @@ export class extractedMCODE {
           )) ||
         primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive Carcinoma'))
       ) {
-        return 'Invasive carcinoma';
+        return 'INVASIVE_CARCINOMA';
       }
     }
     // 2. Invasive Breast Cancer
@@ -454,11 +455,11 @@ export class extractedMCODE {
           )) ||
         primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))
       ) {
-        return 'Invasive carcinoma';
+        return 'INVASIVE_BREAST_CANCER';
       }
     }
     // None of the conditions are satisfied.
-    return null;
+    return 'NOT_SURE';
   }
   getStageValue(): string {
     if (
@@ -466,7 +467,7 @@ export class extractedMCODE {
       this.TNMClinicalStageGroup.length == 0 &&
       this.TNMPathologicalStageGroup.length == 0
     ) {
-      return null;
+      return 'NOT_SURE';
     }
     // 1. Invasive Breast Cancer and Locally Advanced
     for (const primaryCancerCondition of this.primaryCancerCondition) {
@@ -482,7 +483,7 @@ export class extractedMCODE {
         (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')) ||
           this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')))
       ) {
-        return 'Invasive Breast Cancer and Locally Advanced';
+        return 'INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED';
       }
     }
     // 2. Non-Invasive
@@ -490,52 +491,52 @@ export class extractedMCODE {
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
     ) {
-      return 'Non-Invasive';
+      return 'NON_INVASIVE';
     }
     // 4. Stage 0
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
     ) {
-      return 'Stage 0';
+      return 'ZERO';
     }
     // 5. Stage 1
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1'))
     ) {
-      return 'Stage 1';
+      return 'ONE';
     }
     // 6. Stage 2
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2'))
     ) {
-      return 'Stage 2';
+      return 'TWO';
     }
     // 7. Stage 3
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
     ) {
-      return 'Stage 3';
+      return 'THREE';
     }
     // 8. Stage 4
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
     ) {
-      return 'Stage 4';
+      return 'FOUR';
     }
     // 3. Locally Advanced
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
     ) {
-      return 'Locally Advanced';
+      return 'LOCALLY_ADVANCED';
     }
     // None of the conditions are satisfied.
-    return null;
+    return 'NOT_SURE';
   }
   // Age (18 or younger/older)
   getAgeValue(): string {
@@ -552,69 +553,18 @@ export class extractedMCODE {
   }
   getTumorMarkerValue(): string {
     if (this.tumorMarker.length == 0) {
-      return null;
+      return 'NOT_SURE';
     }
     // these definitely aren't in a most specific to least specific order, so we'll need to rearrange them
-    // HER2+
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker)) {
-        return 'HER2+';
-      }
-    }
-    // HER2+ and ER+
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker) && this.isERPositive(tumorMarker, 10)) {
-        return 'HER2+ and ER+';
-      }
-    }
-    // HER2+ and PR+
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker) && this.isPRPositive(tumorMarker, 10)) {
-        return 'HER2+ and PR+';
-      }
-    }
-    // ER+ and HER2-
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isERPositive(tumorMarker, 1)) {
-        return 'ER+ and HER2-';
-      }
-    }
-    // PR+ and HER2-
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1)) {
-        return 'HER2+ and PR+';
-      }
-    }
-    // ER+ and HER2- and FGFR amplifications
+    // Triple Negative and RB Positive
     for (const tumorMarker of this.tumorMarker) {
       if (
-        this.isERPositive(tumorMarker, 1) &&
         this.isHER2Negative(tumorMarker) &&
-        this.isFGFRAmplification(tumorMarker, 1)
+        this.isPRNegative(tumorMarker, 1) &&
+        this.isERNegative(tumorMarker, 1) &&
+        this.isRBPositive(tumorMarker, 50)
       ) {
-        return 'ER+ and HER2- and FGFR amplifications';
-      }
-    }
-    // PR+ and HER2- and FGFR amplifications
-    for (const tumorMarker of this.tumorMarker) {
-      if (
-        this.isPRPositive(tumorMarker, 1) &&
-        this.isHER2Negative(tumorMarker) &&
-        this.isFGFRAmplification(tumorMarker, 1)
-      ) {
-        return 'PR+ and HER2- and FGFR amplifications';
-      }
-    }
-    // ER+ PR+ HER2-
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1) && this.isERPositive(tumorMarker, 1)) {
-        return 'ER+ PR+ HER2-';
-      }
-    }
-    // Triple Negative
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1)) {
-        return 'Triple Negative';
+        return 'TRIPLE_NEGATIVE_AND_RB_POSITIVE';
       }
     }
     // Triple Negative-10
@@ -624,22 +574,73 @@ export class extractedMCODE {
         this.isPRNegative(tumorMarker, 10) &&
         this.isERNegative(tumorMarker, 10)
       ) {
-        return 'Triple Negative-10';
+        return 'TRIPLE_NEGATIVE_MINUS_10';
       }
     }
-    // Triple Negative and RB Positive
+    // Triple Negative
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1)) {
+        return 'TRIPLE_NEGATIVE';
+      }
+    }
+    // ER+ PR+ HER2-
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1) && this.isERPositive(tumorMarker, 1)) {
+        return 'ER_PLUS_PR_PLUS_HER2_MINUS';
+      }
+    }
+    // PR+ and HER2- and FGFR amplifications
     for (const tumorMarker of this.tumorMarker) {
       if (
+        this.isPRPositive(tumorMarker, 1) &&
         this.isHER2Negative(tumorMarker) &&
-        this.isPRNegative(tumorMarker, 1) &&
-        this.isERNegative(tumorMarker, 1) &&
-        this.isRBPositive(tumorMarker, 50)
+        this.isFGFRAmplification(tumorMarker, 1)
       ) {
-        return 'Triple Negative and RB Positive';
+        return 'PR_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
+      }
+    }
+    // ER+ and HER2- and FGFR amplifications
+    for (const tumorMarker of this.tumorMarker) {
+      if (
+        this.isERPositive(tumorMarker, 1) &&
+        this.isHER2Negative(tumorMarker) &&
+        this.isFGFRAmplification(tumorMarker, 1)
+      ) {
+        return 'ER_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
+      }
+    }
+    // PR+ and HER2-
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1)) {
+        return 'PR_PLUS_AND_HER2_MINUS';
+      }
+    }
+    // ER+ and HER2-
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Negative(tumorMarker) && this.isERPositive(tumorMarker, 1)) {
+        return 'ER_PLUS_AND_HER2_MINUS';
+      }
+    }
+    // HER2+ and PR+
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Positive(tumorMarker) && this.isPRPositive(tumorMarker, 10)) {
+        return 'HER2_PLUS_AND_PR_PLUS';
+      }
+    }
+    // HER2+ and ER+
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Positive(tumorMarker) && this.isERPositive(tumorMarker, 10)) {
+        return 'HER2+ and ER+';
+      }
+    }
+    // HER2+
+    for (const tumorMarker of this.tumorMarker) {
+      if (this.isHER2Positive(tumorMarker)) {
+        return 'HER2_PLUS';
       }
     }
     // None of the conditions are satisfied.
-    return null;
+    return 'NOT_SURE';
   }
   isHER2Positive(tumorMarker: TumorMarker): boolean {
     console.log(tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')));
@@ -841,7 +842,7 @@ export class extractedMCODE {
   }
   getRadiationProcedureValue(): string {
     if (this.cancerRelatedRadiationProcedure.length == 0) {
-      return null;
+      return 'NOT_SURE';
     }
     for (const cancerRelatedRadiationProcedure of this.cancerRelatedRadiationProcedure) {
       if (
@@ -867,32 +868,32 @@ export class extractedMCODE {
         return 'WBRT';
       }
     }
-    return 'Radiation Therapy';
+    return 'RADIATION_THERAPY';
   }
   getSurgicalProcedureValue(): string {
     if (this.cancerRelatedSurgicalProcedure.length == 0) {
-      return null;
+      return 'NOT_SURE';
     }
     if (this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Resection-Brain'))) {
-      return 'Resection';
+      return 'RESECTION';
     } else if (
       this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Splenectomy'))
     ) {
-      return 'Splenectomy';
+      return 'SPLENECTOMY';
     } else {
-      return null;
+      return 'NOT_SURE';
     }
   }
   getMedicationStatementValue(): string {
     if (this.cancerRelatedMedicationStatement.length == 0) {
-      return null;
+      return 'NOT_SURE';
     }
     if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuzumab')) &&
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pertuzumab')) &&
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))
     ) {
-      return 'DrugCombo-1';
+      return 'DRUGCOMBO_1';
     } else if (
       (this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor')
@@ -902,55 +903,55 @@ export class extractedMCODE {
         )) &&
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine Therapy'))
     ) {
-      return 'CDK4/6-mTOR and Endocrine ';
+      return 'CDK4_6_MTOR_AND_ENDOCRINE';
     } else if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))) {
-      return 'T-DM1';
+      return 'T_DM1';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor'))
     ) {
-      return 'CDK4/6 inhibitor';
+      return 'CDK4_6_INHIBITOR';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pembrolizumab'))
     ) {
-      return 'Pembrolizumab';
+      return 'PEMBROLIZUMAB';
     } else if (
       this.cancerRelatedMedicationStatement.some(
         (coding) => this.normalizeCodeSystem(coding.system) == 'NIH' && coding.code == '#C1198'
       )
     ) {
-      return 'Poly ICLC';
+      return 'POLY_ICLC';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-mTOR Inhibitor'))
     ) {
-      return 'mTOR inhibitor';
+      return 'MTOR_INHIBITOR';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine Therapy'))
     ) {
-      return 'Concurrent Endocrine Therapy';
+      return 'CONCURRENT_ENDOCRINE_THERAPY';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-Androgen'))
     ) {
-      return 'Anti-androgen ';
+      return 'ANTI_ANDROGEN';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-HER2'))
     ) {
-      return 'anti-HER2';
+      return 'ANTI_HER2';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-Tyrosine Kinase Inhib')
       )
     ) {
-      return 'Tyrosine Kinase Inhibitor';
+      return 'TYROSINE_KINASE_INHIBITOR';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-P13K Inhibitor'))
     ) {
-      return 'P13K inhibitor';
+      return 'P13K_INHIBITOR';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1, PDL2')
       )
     ) {
-      return 'anti-PD';
+      return 'ANTI_PD';
     } else {
       return null;
     }
