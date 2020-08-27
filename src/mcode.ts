@@ -294,6 +294,9 @@ export class extractedMCODE {
   }
   // Primary Cancer Value
   getPrimaryCancerValue(): string {
+    if (this.primaryCancerCondition.length == 0) {
+      return null;
+    }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // Cycle through each of the primary Cancer condition's codes independently due to code-dependent conditions
@@ -313,6 +316,16 @@ export class extractedMCODE {
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
+      // 4. Locally Recurrent
+      if (
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
+      ) {
+        return 'Locally Recurrent';
+      }
+    }
+    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 1. Breast Cancer
       if (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))) {
         return 'Breast Cancer';
@@ -322,7 +335,7 @@ export class extractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
@@ -336,12 +349,16 @@ export class extractedMCODE {
     }
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
-      // 4. Locally Recurrent
+      // 5. Other malignancy - except skin or cervical
       if (
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
-        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
+        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')) ||
+        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Cervical')) &&
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
+          (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
+            this.TNMPathologicalStageGroup.some((coding) => this.profilesContainCode(coding, 'Stage-0'))))
       ) {
-        return 'Locally Recurrent';
+        return 'Other malignancy - except skin or cervical';
       }
     }
     // None of the conditions are satisfied.
@@ -349,6 +366,9 @@ export class extractedMCODE {
   }
   // Secondary Cancer Value
   getSecondaryCancerValue(): string {
+    if (this.secondaryCancerCondition.length == 0) {
+      return null;
+    }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 1. Brain Metastasis
@@ -359,25 +379,22 @@ export class extractedMCODE {
         return 'Brain metastasis';
       }
     }
-    if (!this.TNMClinicalStageGroup || !this.TNMPathologicalStageGroup) {
-      return null;
-    }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 2. Invasive Breast Cancer and Metastatics
       if (
-        (this.primaryCancerCondition.some((primCanCond) =>
+        ((this.primaryCancerCondition.some((primCanCond) =>
           primCanCond.histologyMorphologyBehavior.some((histMorphBehav) =>
             this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
           )
-        ) ||
+        ) &&
+          this.primaryCancerCondition.some((primCanCond) =>
+            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer Breast'))
+          )) ||
           this.primaryCancerCondition.some((primCanCond) =>
             primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))
           )) &&
-        this.primaryCancerCondition.some((primCanCond) =>
-          primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer Breast'))
-        ) &&
-        (secondaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'ANYCODE')) ||
+        (secondaryCancerCondition.coding.length != 0 ||
           this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
           this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')))
       ) {
@@ -387,8 +404,11 @@ export class extractedMCODE {
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 3. Leptomeningeal metastatic disease
-      if (secondaryCancerCondition.bodySite.some((bdySte) => bdySte == 'SNOMED#8935007')) {
-        // obviously this is wrong
+      if (
+        secondaryCancerCondition.bodySite.some(
+          (bdySte) => this.normalizeCodeSystem(bdySte.system) == 'SNOMED' && bdySte.code == '8935007'
+        )
+      ) {
         return 'Leptomeningeal metastatic disease';
       }
     }
@@ -396,7 +416,7 @@ export class extractedMCODE {
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 4. Metastatic
       if (
-        secondaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'ANYCODE')) ||
+        secondaryCancerCondition.coding.length != 0 ||
         this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
         this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
       ) {
@@ -408,6 +428,9 @@ export class extractedMCODE {
   }
   // Histology Morphology Value
   getHistologyMorphologyValue(): string {
+    if (this.primaryCancerCondition.length == 0) {
+      return null;
+    }
     // 1. Invasive Carcinoma
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
@@ -438,7 +461,13 @@ export class extractedMCODE {
     return null;
   }
   getStageValue(): string {
-    // this.TNMClinicalStageGroup.some(code => console.log(code));
+    if (
+      this.primaryCancerCondition.length == 0 &&
+      this.TNMClinicalStageGroup.length == 0 &&
+      this.TNMPathologicalStageGroup.length == 0
+    ) {
+      return null;
+    }
     // 1. Invasive Breast Cancer and Locally Advanced
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) => console.log(histMorphBehav));
@@ -462,13 +491,6 @@ export class extractedMCODE {
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
     ) {
       return 'Non-Invasive';
-    }
-    // 3. Locally Advanced
-    if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
-    ) {
-      return 'Locally Advanced';
     }
     // 4. Stage 0
     if (
@@ -505,6 +527,13 @@ export class extractedMCODE {
     ) {
       return 'Stage 4';
     }
+    // 3. Locally Advanced
+    if (
+      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
+    ) {
+      return 'Locally Advanced';
+    }
     // None of the conditions are satisfied.
     return null;
   }
@@ -522,7 +551,9 @@ export class extractedMCODE {
     return millisecondsAge > milliseconds18Years ? '18 Or Over' : 'Under 18';
   }
   getTumorMarkerValue(): string {
-    // add return if tumorMarker is empty
+    if (this.tumorMarker.length == 0) {
+      return null;
+    }
     // these definitely aren't in a most specific to least specific order, so we'll need to rearrange them
     // HER2+
     for (const tumorMarker of this.tumorMarker) {
@@ -617,34 +648,15 @@ export class extractedMCODE {
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-        tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
-        tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['3', '3+'], '=')))
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'POS' || interp.code == 'DET' || interp.code == 'H') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        ) ||
+        tumorMarker.valueQuantity.some((valQuant) =>
+          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['3', '3+'], '=')
+        ))
     );
-  }
-  quantityMatch(quantValue: string | number, quantComparator: string, quantUnit: string, metricValues: string[] | number[], metricComparator: string, metricUnit?: string) {
-    if ((!quantComparator && metricComparator != '=') || (quantComparator && quantComparator != metricComparator)) {
-      console.log("incompatible comparators");
-      return false;
-    }
-    if ((!quantUnit && metricUnit) || (quantUnit && !metricUnit) || (quantUnit != metricUnit)) {
-      console.log("incompatible units")
-      return false;
-    }
-
-    if (metricComparator == '=') {
-      quantValue = typeof quantValue == 'string' ? quantValue: quantValue.toString(); // we're doing string comparisons for these
-      return metricValues.some(value => quantValue == value);
-    } else if (metricComparator == '>=') {
-      return quantValue >= metricValues[0];
-    } else if (metricComparator == '<') {
-      return quantValue < metricValues[0];
-    } else if (metricComparator == '>') {
-      return quantValue > metricValues[0];
-    } else {
-      console.log("err unknown operator");
-      return false;
-    }
-
   }
   isHER2Negative(tumorMarker: TumorMarker): boolean {
     tumorMarker.interpretation.some((interp) => console.log(interp));
@@ -652,51 +664,87 @@ export class extractedMCODE {
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
       ) ||
-        tumorMarker.interpretation.some((interp) => (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||  // Information on Interpretation values can be found at: http://hl7.org/fhir/R4/valueset-observation-interpretation.html
-        tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['0', '1', '2', '1+', '2+'], '=') )) &&
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        ) || // Information on Interpretation values can be found at: http://hl7.org/fhir/R4/valueset-observation-interpretation.html
+        tumorMarker.valueQuantity.some((valQuant) =>
+          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['0', '1', '2', '1+', '2+'], '=')
+        )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'))
     );
   }
   isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
-      tumorMarker.valueCodeableConcept.some(
+      (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
-      (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR')))
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'POS' || interp.code == 'DET' || interp.code == 'H') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        ) ||
+        tumorMarker.valueQuantity.some((valQuant) =>
+          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')
+        ) ||
+        tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>='))) &&
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))
     );
   }
   isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
-      tumorMarker.valueCodeableConcept.some(
+      (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
-      (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
-                                                    this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR')))
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        ) ||
+        tumorMarker.valueQuantity.some(
+          (valQuant) =>
+            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
+            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')
+        ) ||
+        tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '<'))) &&
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))
     );
   }
   isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
-      tumorMarker.valueCodeableConcept.some(
+      (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
-      (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER')))
+        tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>=')) ||
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'POS' || interp.code == 'DET' || interp.code == 'H') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        ) ||
+        tumorMarker.valueQuantity.some((valQuant) =>
+          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')
+        )) &&
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))
     );
   }
   isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
-      tumorMarker.valueCodeableConcept.some(
+      (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
       ) ||
-      tumorMarker.interpretation.some((interp) => (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
-      (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
-                                                    this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')) &&
-        tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER')))
+        tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '<')) ||
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'L' || interp.code == 'N' || interp.code == 'NEG' || interp.code == 'ND') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        ) ||
+        tumorMarker.valueQuantity.some(
+          (valQuant) =>
+            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
+            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')
+        )) &&
+      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))
     );
   }
   isFGFRAmplification(tumorMarker: TumorMarker, metric: number): boolean {
@@ -704,20 +752,92 @@ export class extractedMCODE {
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
-        tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html') ||
-        tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%'))) &&
+        tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>=')) ||
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'POS' || interp.code == 'DET' || interp.code == 'H') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        ) ||
+        tumorMarker.valueQuantity.some((valQuant) =>
+          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')
+        )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-FGFR'))
     );
   }
   isRBPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
-      (tumorMarker.valueQuantity.some((valQuant) => this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>', '%')) ||
+      (tumorMarker.valueQuantity.some((valQuant) =>
+        this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>', '%')
+      ) ||
         tumorMarker.valueCodeableConcept.some(
           (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
         ) ||
-        tumorMarker.interpretation.some((interp) => (interp.code ==  'POS' || interp.code ==  'DET' || interp.code == 'H') && interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html')) &&
+        tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>')) ||
+        tumorMarker.interpretation.some(
+          (interp) =>
+            (interp.code == 'POS' || interp.code == 'DET' || interp.code == 'H') &&
+            interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
+        )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-RB'))
     );
+  }
+  quantityMatch(
+    quantValue: string | number,
+    quantComparator: string,
+    quantUnit: string,
+    metricValues: string[] | number[],
+    metricComparator: string,
+    metricUnit?: string
+  ) {
+    if ((!quantComparator && metricComparator != '=') || (quantComparator && quantComparator != metricComparator)) {
+      console.log('incompatible comparators');
+      return false;
+    }
+    if ((!quantUnit && metricUnit) || (quantUnit && !metricUnit) || quantUnit != metricUnit) {
+      console.log('incompatible units');
+      return false;
+    }
+
+    if (metricComparator == '=') {
+      quantValue = typeof quantValue == 'string' ? quantValue : quantValue.toString(); // we're doing string comparisons for these
+      return metricValues.some((value) => quantValue == value);
+    } else if (metricComparator == '>=') {
+      return quantValue >= metricValues[0];
+    } else if (metricComparator == '<') {
+      return quantValue < metricValues[0];
+    } else if (metricComparator == '>') {
+      return quantValue > metricValues[0];
+    } else {
+      console.log('err unknown operator');
+      return false;
+    }
+  }
+  ratioMatch(numerator: Quantity, denominator: Quantity, metricValue: number, metricComparator: string) {
+    if (
+      !numerator ||
+      !denominator ||
+      !numerator.value ||
+      !denominator.value ||
+      !numerator.comparator ||
+      !denominator.comparator ||
+      !(numerator.comparator == denominator.comparator && numerator.comparator == metricComparator)
+    ) {
+      console.log('missing info for ratio comparison');
+      return false;
+    }
+    const num: number = typeof numerator.value == 'number' ? numerator.value : Number(numerator.value);
+    const den: number = typeof denominator.value == 'number' ? denominator.value : Number(denominator.value);
+    const percentage = (num / den) * 100;
+    if (metricComparator == '>=') {
+      return percentage >= metricValue;
+    } else if (metricComparator == '<') {
+      return percentage < metricValue;
+    } else if (metricComparator == '>') {
+      return percentage > metricValue;
+    } else {
+      console.log('err unknown operator');
+      return false;
+    }
   }
   getRadiationProcedureValue(): string {
     if (this.cancerRelatedRadiationProcedure.length == 0) {
