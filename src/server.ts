@@ -1,94 +1,79 @@
 import express from 'express';
-import { runTrialScopeQuery } from './trialscope';
+import TrialScopeQueryRunner from './trialscope';
 import * as mapping from './mapping';
-import bodyParser from 'body-parser';
-import Configuration from './env';
-import { isBundle } from './bundle';
-import { SearchSet } from './searchset';
-import RequestError from './request-error';
 
-const app = express();
+import {
+  fhir,
+  ClinicalTrialGovService,
+  ClinicalTrialMatchingService,
+  configFromEnv
+} from 'clinical-trial-matching-service';
+import * as dotenv from 'dotenv-flow';
 
-const environment = new Configuration().defaultEnvObject();
+export class TrialScopeService extends ClinicalTrialMatchingService {
+  queryRunner: TrialScopeQueryRunner;
+  backupService: ClinicalTrialGovService;
 
-app.use(
-  bodyParser.json({
-    // Need to increase the payload limit to receive patient bundles
-    limit: '10MB'
-  })
-);
+  constructor(config: Record<string, string | number>) {
+    super((patientBundle: fhir.Bundle) => {
+      return this.queryRunner.runQuery(patientBundle);
+    }, config);
 
-app.use(function (_req, res, next) {
-  // Website you wish to allow to connect
-  res.setHeader('Access-Control-Allow-Origin', '*');
+    // Create the query runner if possible
+    if (!config.endpoint) throw new Error('Missing configuration value for TRIALSCOPE_ENDPOINT');
+    if (!config.token) throw new Error('Missing configuration value for TRIALSCOPE_TOKEN');
 
-  // Request methods you wish to allow
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    // TODO: Make this configurable
+    this.backupService = new ClinicalTrialGovService('clinicaltrial-backup-cache');
+    this.queryRunner = new TrialScopeQueryRunner(
+      config.endpoint.toString(),
+      config.token.toString(),
+      this.backupService
+    );
 
-  // Request headers you wish to allow
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With, WU-Api-Key, WU-Api-Secret'
-  );
+    // Add our customizations
 
-  next();
-});
+    /* get trialscope conditions (str) list from code (str) list */
+    this.app.post('/getConditions', function (req, res) {
+      const codeList = req.body as string[];
+      const conditions = mapping.mapConditions(codeList);
+      const result = JSON.stringify(Array.from(conditions));
+      res.status(200).send(result);
+    });
 
-/* Default call*/
-app.get('/', function (_req, res) {
-  res.status(200).send('Hello from Clinical Trial');
-});
-
-/* get trialscope conditions (str) list from code (str) list */
-app.post('/getConditions', function (req, res) {
-  const codeList = req.body as string[];
-  const conditions = mapping.mapConditions(codeList);
-  const result = JSON.stringify(Array.from(conditions));
-  res.status(200).send(result);
-});
-
-/**
- * Get clinical trial results (the "main" API).
- */
-app.post('/getClinicalTrial', function (req, res) {
-  const postBody = req.body as Record<string, unknown>;
-  if ('patientData' in postBody) {
-    const patientBundle = (typeof postBody.patientData === 'string'
-      ? JSON.parse(postBody.patientData)
-      : postBody.patientData) as Record<string, unknown>;
-    if (isBundle(patientBundle)) {
-      try {
-        runTrialScopeQuery(patientBundle)
-          .then((result) => {
-            const fhirResult = new SearchSet(result);
-            // For debugging: dump the result out
-            // console.log(JSON.stringify(fhirResult, null, 2));
-            res.status(200).send(JSON.stringify(fhirResult));
-          })
-          .catch((error) => {
-            console.error(error);
-            res
-              .status(500)
-              .send({ error: 'Error from server', exception: Object.prototype.toString.call(error) as string });
-          });
-      } catch (ex) {
-        if (ex instanceof RequestError) {
-          res.status(ex.httpStatus).send({ error: ex.message });
-        } else {
-          res.status(500).send({ error: 'Internal server error' });
-          console.log(ex);
-        }
-      }
-    } else {
-      res.status(400).send({ error: 'Invalid patientBundle' });
-    }
-  } else {
-    // request missing json fields
-    res.status(400).send({ error: 'Request missing required fields' });
+    this.app.use(express.static('public'));
   }
-});
 
-app.use(express.static('public'));
-console.log(`Starting server on port ${environment.port}...`);
-export const server = app.listen(environment.port);
-export default server;
+  init(): Promise<this> {
+    return new Promise<this>((resolve, reject) => {
+      this.backupService.init().then(() => {
+        resolve(this);
+      }, reject);
+    });
+  }
+}
+
+export function start(): Promise<TrialScopeService> {
+  return new Promise((resolve, reject) => {
+    // Use dotenv-flow to load local configuration from .env files
+    dotenv.config({
+      // The environment variable to use to set the environment
+      node_env: process.env.NODE_ENV,
+      // The default environment to use if none is set
+      default_node_env: 'development'
+    });
+    const service = new TrialScopeService(configFromEnv('TRIALSCOPE_'));
+    service.init().then(() => {
+      service.listen();
+      resolve(service);
+    }, reject);
+  });
+}
+
+/* istanbul ignore next: can't exactly load this directly via test case */
+if (module.parent === null) {
+  start().catch((error) => {
+    console.error('Could not start service:');
+    console.error(error);
+  });
+}

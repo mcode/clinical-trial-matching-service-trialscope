@@ -1,56 +1,93 @@
 import request from 'supertest';
 
-import server from '../src/server';
-import * as trialscope from '../src/trialscope';
+import { TrialScopeService, start } from '../src/server';
+import http from 'http';
+import { SearchSet } from 'clinical-trial-matching-service';
 
-describe('server', () => {
-  // Reset the request generator after each test (currently gets modified only
-  // in one test)
-  afterEach(() => {
-    trialscope.setRequestGenerator();
-  });
-  it('responds to /', () => {
-    return request(server).get('/').set('Accept', 'application/json').expect(200);
-  });
-
-  it('responds to / with hello from clinical trial', () => {
-    return request(server)
-      .get('/')
-      .set('Accept', 'application/json')
-      .expect(200)
-      .then((res) => {
-        expect(res.text).toBe('Hello from Clinical Trial');
+describe('TrailScopeService', () => {
+  describe('when listening', () => {
+    let service: TrialScopeService;
+    let server: http.Server;
+    beforeAll(() => {
+      service = new TrialScopeService({ endpoint: 'http://localhost/', token: 'ignored', port: 0 });
+      return service.init().then(() => {
+        server = service.listen();
       });
+    });
+    afterAll(() => {
+      service.close();
+    });
+
+    it('responds to /', () => {
+      return request(server).get('/').set('Accept', 'application/json').expect(200);
+    });
+
+    it('responds to /getConditions', () => {
+      return request(server).post('/getConditions').set('Accept', 'application/json').expect(200);
+    });
+
+    it('uses the query runner', (done) => {
+      const runQuery = spyOn(service.queryRunner, 'runQuery').and.callFake(() => {
+        return Promise.resolve(new SearchSet([]));
+      });
+      return request(server)
+        .post('/getClinicalTrial')
+        .send({ patientData: { resourceType: 'Bundle', type: 'collection', entry: [] } })
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(() => {
+          expect(runQuery).toHaveBeenCalled();
+          done();
+        });
+    });
   });
 
-  it('responds to /getConditions', () => {
-    return request(server).post('/getConditions').set('Accept', 'application/json').expect(200);
-  });
+  describe('constructor', () => {
+    it("raises an error if the endpoint isn't given", () => {
+      expect(() => {
+        new TrialScopeService({});
+      }).toThrowError('Missing configuration value for TRIALSCOPE_ENDPOINT');
+    });
 
-  it('responds to /getClinicalTrial with improper patient bundle', () => {
-    return request(server)
-      .post('/getClinicalTrial')
-      .send({ patientData: {} })
-      .set('Accept', 'application/json')
-      .expect(400);
+    it("raises an error if the token isn't given", () => {
+      expect(() => {
+        new TrialScopeService({ endpoint: 'http://www.example.com/' });
+      }).toThrowError('Missing configuration value for TRIALSCOPE_TOKEN');
+    });
   });
+});
 
-  it('responds to /getClinicalTrial with no patientBundle param', () => {
-    return request(server).post('/getClinicalTrial').send({}).set('Accept', 'application/json').expect(400);
+describe('start()', () => {
+  const testedValues = ['NODE_ENV', 'TRIALSCOPE_ENDPOINT', 'TRIALSCOPE_TOKEN', 'TRIALSCOPE_PORT'];
+  const initialEnv: Record<string, string | undefined> = {};
+  beforeAll(() => {
+    // Store the environment variables we're going to clobber in these tests
+    for (const key of testedValues) {
+      if (key in process.env) initialEnv[key] = process.env[key];
+    }
   });
-
-  it('handles request failing', () => {
-    trialscope.setRequestGenerator(jasmine.createSpy('https.request').and.throwError('Example request error'));
-    return request(server)
-      .post('/getClinicalTrial')
-      .send({
-        patientData: {
-          resourceType: 'Bundle',
-          type: 'collection',
-          entry: []
-        }
+  afterAll(() => {
+    // Restore the environment variables we clobbered
+    for (const key of testedValues) {
+      if (key in initialEnv) {
+        process.env[key] = initialEnv[key];
+      } else {
+        delete process.env[key];
+      }
+    }
+  });
+  it('loads configuration via dotenv-flow', () => {
+    process.env.NODE_ENV = 'test';
+    process.env.TRIALSCOPE_ENDPOINT = 'https://www.example.com/test/endpoint';
+    process.env.TRIALSCOPE_PORT = '0';
+    process.env.TRIALSCOPE_TOKEN = 'an example token';
+    return expectAsync(
+      start().then((service) => {
+        expect(service.port).toEqual(0);
+        expect(service.queryRunner.endpoint).toEqual('https://www.example.com/test/endpoint');
+        // Intentially bypass private for testing purposes
+        expect(service.queryRunner['token']).toEqual('an example token');
       })
-      .set('Accept', 'application/json')
-      .expect(500);
+    ).toBeResolved();
   });
 });
