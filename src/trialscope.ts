@@ -7,7 +7,7 @@ import http from 'http';
 import { mapConditions } from './mapping';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
-import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
+import { RequestError, SearchSet, SearchBundleEntry, fhir } from 'clinical-trial-matching-service';
 import * as fs from 'fs';
 import path from 'path';
 import * as mcode from './mcode';
@@ -402,7 +402,7 @@ export class TrialScopeQueryRunner {
         .catch(reject);
     }).then<SearchSet>((trialscopeResponse) => {
       // Convert to SearchSet
-      const studies: fhir.ResearchStudy[] = [];
+      const bundleEntries: SearchBundleEntry[] = [];
       let index = 0;
       const backupIds: string[] = [];
       for (const node of trialscopeResponse.data.advancedMatches.edges) {
@@ -412,17 +412,17 @@ export class TrialScopeQueryRunner {
         if (!study.description || !study.enrollment || !study.phase || !study.category) {
           backupIds.push(trial.nctId);
         }
-        studies.push(study);
+        bundleEntries.push({resource: study, search: {score: matchScore, mode: 'match'}});
         index++;
       }
       if (backupIds.length == 0) {
-        return new SearchSet(studies); // add match scores
+        return new SearchSet(bundleEntries);
       } else {
         return this.backupService.downloadTrials(backupIds).then(() => {
-          for (let study of studies) {
+          for (let entry of bundleEntries) {
             // console.log(study.identifier[0].value);
-            if (backupIds.includes(study.identifier[0].value)) {
-              study = this.backupService.updateTrial(study);
+            if (backupIds.includes((entry.resource as fhir.ResearchStudy).identifier[0].value)) {
+              entry.resource = this.backupService.updateTrial(entry.resource as fhir.ResearchStudy);
             }
           }
 
@@ -434,7 +434,7 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-          return new SearchSet(studies); // remember to include scores
+          return new SearchSet(bundleEntries);
         });
       }
     });
