@@ -190,7 +190,7 @@ describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Metastatic Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '313046007', display: 'N/A'} as Coding; // Any code on Stage-4
+  tnmPathological[0] = {system: 'snomed', code: '313046007', display: 'N/A'} as Coding; // Any code in Stage-4
   scc.coding[0] = {system: 'http://snomed.info/sct', code: '285641009', display: 'N/A'} as Coding;  // Any code
 
   extractedMCODE.secondaryCancerCondition[0] = scc;
@@ -198,5 +198,45 @@ describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
 
   it('Test Metastatic Filter', () => {
     expect(extractedMCODE.getSecondaryCancerValue()).toBe("METASTATIC");
+  });
+});
+
+describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = new Array();
+  pcc.coding = new Array();
+  pcc.histologyMorphologyBehavior = new Array();
+
+  // Invasive Carcinoma Filter Attributes
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in Cancer-Breast
+  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding; // Any code in Morphology-Invasive_Carcinoma
+
+  extractedMCODE.primaryCancerCondition[0] = pcc;
+
+  it('Test Invasive Carcinoma Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe("INVASIVE_CARCINOMA");
+  });
+});
+
+describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = new Array();
+  pcc.coding = new Array();
+  pcc.histologyMorphologyBehavior = new Array();
+
+  // Invasive Breast Cancer Filter Attributes
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in Cancer-Breast
+  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '703594003', display: 'N/A'} as Coding; // Any code in Morphology-Invasive
+
+  extractedMCODE.primaryCancerCondition[0] = pcc;
+
+  it('Test Invasive Breast Cancer Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe("INVASIVE_BREAST_CANCER");
   });
 });

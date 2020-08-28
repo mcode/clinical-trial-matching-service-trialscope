@@ -441,9 +441,9 @@ export class extractedMCODE {
       if (
         (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
-            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive-Carcinoma')
+            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive_Carcinoma')
           )) ||
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive Carcinoma'))
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Carcinoma'))
       ) {
         return 'INVASIVE_CARCINOMA';
       }
@@ -984,7 +984,7 @@ export class extractedMCODE {
     } else if (codeSystem.includes('rxnorm')) {
       return 'RxNorm';
     } else if (codeSystem.includes('icd-10')) {
-      return 'ICD10';
+      return 'ICD-10';
     } else if (codeSystem.includes('ajcc')) {
       return 'AJCC';
     } else if (codeSystem.includes('loinc')) {

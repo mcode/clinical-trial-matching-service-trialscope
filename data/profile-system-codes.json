@@ -2155,7 +2155,7 @@
       "code" : "261613009"
     } ]
   },
-  "Morphology-Invasive Carcinoma" : {
+  "Morphology-Invasive_Carcinoma" : {
     "SNOMED" : [ {
       "code" : "734075007"
     }, {
@@ -3984,7 +3984,7 @@
       "code" : "21731-5"
     } ]
   },
-  "Cancer-Invasive Carcinoma" : {
+  "Cancer-Invasive_Carcinoma" : {
     "SNOMED" : [ {
       "code" : "1.08034E+15"
     }, {
