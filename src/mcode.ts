@@ -375,16 +375,6 @@ export class extractedMCODE {
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
-      // 1. Brain Metastasis
-      if (
-        secondaryCancerCondition.coding.some((coding) => this.profilesContainCode(coding, 'Metastasis-Brain')) &&
-        secondaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
-      ) {
-        return 'BRAIN_METASTASIS';
-      }
-    }
-    // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
-    for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 2. Invasive Breast Cancer and Metastatics
       if (
         ((this.primaryCancerCondition.some((primCanCond) =>
@@ -393,7 +383,7 @@ export class extractedMCODE {
           )
         ) &&
           this.primaryCancerCondition.some((primCanCond) =>
-            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer Breast'))
+            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))
           )) ||
           this.primaryCancerCondition.some((primCanCond) =>
             primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))
@@ -403,6 +393,16 @@ export class extractedMCODE {
           this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')))
       ) {
         return 'INVASIVE_BREAST_CANCER_AND_METASTATIC';
+      }
+    }
+    // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
+    for (const secondaryCancerCondition of this.secondaryCancerCondition) {
+      // 1. Brain Metastasis
+      if (
+        secondaryCancerCondition.coding.some((coding) => this.profilesContainCode(coding, 'Metastasis-Brain')) &&
+        secondaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
+      ) {
+        return 'BRAIN_METASTASIS';
       }
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
