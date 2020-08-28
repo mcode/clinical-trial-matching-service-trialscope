@@ -1,6 +1,6 @@
 import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
-import { fhir } from 'clinical-trial-matching-service';
+import { fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
 
 import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
 import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
@@ -69,146 +69,150 @@ export class extractedMCODE {
   cancerRelatedMedicationStatement: Coding[]; // this too
 
   constructor(patientBundle: fhir.Bundle) {
-    for (const entry of patientBundle.entry) {
-      if (!('resource' in entry)) {
-        // Skip bad entries
-        continue;
-      }
-      const resource = entry.resource;
+    if(patientBundle != null){
+      for (const entry of patientBundle.entry) {
+        if (!('resource' in entry)) {
+          // Skip bad entries
+          continue;
+        }
+        const resource = entry.resource;
 
-      if (
-        resource.resourceType === 'Condition' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-primary-cancer-condition')
-      ) {
-        const tempPrimaryCancerCondition: PrimaryCancerCondition = {};
-        tempPrimaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
-        tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
-        if (this.lookup(resource, 'extension').length !== 0) {
-          let count = 0;
-          for (const extension of this.lookup(resource, 'extension')) {
-            // yeah really not sure you can even do this - not sure how to test this either
-            if (this.lookup(resource, `extension[${count}].url`).includes('mcode-histology-morphology-behavior')) {
-              tempPrimaryCancerCondition.histologyMorphologyBehavior = this.lookup(
-                resource,
-                `extension[${count}].valueCodeableConcept.coding`
-              ) as Coding[];
+        if (
+          resource.resourceType === 'Condition' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-primary-cancer-condition')
+        ) {
+          const tempPrimaryCancerCondition: PrimaryCancerCondition = {};
+          console.log("---");
+          console.log(this.lookup(resource, 'code.coding'));
+          tempPrimaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
+          tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
+          if (this.lookup(resource, 'extension').length !== 0) {
+            let count = 0;
+            for (const extension of this.lookup(resource, 'extension')) {
+              // yeah really not sure you can even do this - not sure how to test this either
+              if (this.lookup(resource, `extension[${count}].url`).includes('mcode-histology-morphology-behavior')) {
+                tempPrimaryCancerCondition.histologyMorphologyBehavior = this.lookup(
+                  resource,
+                  `extension[${count}].valueCodeableConcept.coding`
+                ) as Coding[];
+              }
+              count++;
             }
-            count++;
+          }
+          if (!tempPrimaryCancerCondition.histologyMorphologyBehavior) {
+            tempPrimaryCancerCondition.histologyMorphologyBehavior = [] as Coding[];
+          }
+
+          if (this.primaryCancerCondition) {
+            this.primaryCancerCondition.push(tempPrimaryCancerCondition); // needs specific de-dup helper function
+          } else {
+            this.primaryCancerCondition = [tempPrimaryCancerCondition];
           }
         }
-        if (!tempPrimaryCancerCondition.histologyMorphologyBehavior) {
-          tempPrimaryCancerCondition.histologyMorphologyBehavior = [] as Coding[];
+
+        if (
+          resource.resourceType === 'Observation' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tnm-clinical-stage-group')
+        ) {
+          this.TNMClinicalStageGroup = this.addCoding(
+            this.TNMClinicalStageGroup,
+            this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
+          );
         }
 
-        if (this.primaryCancerCondition) {
-          this.primaryCancerCondition.push(tempPrimaryCancerCondition); // needs specific de-dup helper function
-        } else {
-          this.primaryCancerCondition = [tempPrimaryCancerCondition];
+        if (
+          resource.resourceType === 'Observation' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tnm-pathological-stage-group')
+        ) {
+          this.TNMPathologicalStageGroup = this.addCoding(
+            this.TNMPathologicalStageGroup,
+            this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
+          );
         }
-      }
 
-      if (
-        resource.resourceType === 'Observation' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tnm-clinical-stage-group')
-      ) {
-        this.TNMClinicalStageGroup = this.addCoding(
-          this.TNMClinicalStageGroup,
-          this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
-        );
-      }
-
-      if (
-        resource.resourceType === 'Observation' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tnm-pathological-stage-group')
-      ) {
-        this.TNMPathologicalStageGroup = this.addCoding(
-          this.TNMPathologicalStageGroup,
-          this.lookup(resource, 'valueCodeableConcept.coding') as Coding[]
-        );
-      }
-
-      if (
-        resource.resourceType === 'Condition' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-secondary-cancer-condition')
-      ) {
-        const tempSecondaryCancerCondition: SecondaryCancerCondition = {};
-        tempSecondaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
-        tempSecondaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
-        tempSecondaryCancerCondition.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
-        if (this.secondaryCancerCondition) {
-          this.secondaryCancerCondition.push(tempSecondaryCancerCondition); // needs specific de-dup helper function
-        } else {
-          this.secondaryCancerCondition = [tempSecondaryCancerCondition];
-        }
-      }
-
-      if (
-        resource.resourceType === 'Patient' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-patient')
-      ) {
-        if (this.lookup(resource, 'birthDate').length !== 0) {
-          this.birthDate = this.lookup(resource, 'birthDate')[0] as string;
-        } else {
-          this.birthDate = 'NA';
-        }
-      }
-
-      if (
-        resource.resourceType === 'Observation' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tumor-marker')
-      ) {
-        const tempTumorMarker: TumorMarker = {};
-        tempTumorMarker.code = this.lookup(resource, 'code.coding') as Coding[];
-        tempTumorMarker.valueQuantity = this.lookup(resource, 'valueQuantity') as Quantity[];
-        tempTumorMarker.valueRatio = this.lookup(resource, 'valueRatio') as Ratio[];
-        tempTumorMarker.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
-        tempTumorMarker.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
-        if (this.tumorMarker) {
-          this.tumorMarker.push(tempTumorMarker);
-        } else {
-          this.tumorMarker = [tempTumorMarker];
-        }
-      }
-
-      if (
-        resource.resourceType === 'Procedure' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
-      ) {
-        const tempCancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure = {};
-        tempCancerRelatedRadiationProcedure.coding = this.lookup(resource, 'code.coding') as Coding[];
-        tempCancerRelatedRadiationProcedure.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
-        if (this.cancerRelatedRadiationProcedure) {
-          if (
-            !this.listContainsRadiationProcedure(
-              this.cancerRelatedRadiationProcedure,
-              tempCancerRelatedRadiationProcedure
-            )
-          ) {
-            this.cancerRelatedRadiationProcedure.push(tempCancerRelatedRadiationProcedure);
+        if (
+          resource.resourceType === 'Condition' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-secondary-cancer-condition')
+        ) {
+          const tempSecondaryCancerCondition: SecondaryCancerCondition = {};
+          tempSecondaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
+          tempSecondaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
+          tempSecondaryCancerCondition.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
+          if (this.secondaryCancerCondition) {
+            this.secondaryCancerCondition.push(tempSecondaryCancerCondition); // needs specific de-dup helper function
+          } else {
+            this.secondaryCancerCondition = [tempSecondaryCancerCondition];
           }
-        } else {
-          this.cancerRelatedRadiationProcedure = [tempCancerRelatedRadiationProcedure];
         }
-      }
 
-      if (
-        resource.resourceType === 'Procedure' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-surgical-procedure')
-      ) {
-        this.cancerRelatedSurgicalProcedure = this.addCoding(
-          this.cancerRelatedSurgicalProcedure,
-          this.lookup(resource, 'code.coding') as Coding[]
-        );
-      }
+        if (
+          resource.resourceType === 'Patient' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-patient')
+        ) {
+          if (this.lookup(resource, 'birthDate').length !== 0) {
+            this.birthDate = this.lookup(resource, 'birthDate')[0] as string;
+          } else {
+            this.birthDate = 'NA';
+          }
+        }
 
-      if (
-        resource.resourceType === 'MedicationStatement' &&
-        this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-medication-statement')
-      ) {
-        this.cancerRelatedMedicationStatement = this.addCoding(
-          this.cancerRelatedMedicationStatement,
-          this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[]
-        );
+        if (
+          resource.resourceType === 'Observation' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-tumor-marker')
+        ) {
+          const tempTumorMarker: TumorMarker = {};
+          tempTumorMarker.code = this.lookup(resource, 'code.coding') as Coding[];
+          tempTumorMarker.valueQuantity = this.lookup(resource, 'valueQuantity') as Quantity[];
+          tempTumorMarker.valueRatio = this.lookup(resource, 'valueRatio') as Ratio[];
+          tempTumorMarker.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+          tempTumorMarker.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
+          if (this.tumorMarker) {
+            this.tumorMarker.push(tempTumorMarker);
+          } else {
+            this.tumorMarker = [tempTumorMarker];
+          }
+        }
+
+        if (
+          resource.resourceType === 'Procedure' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
+        ) {
+          const tempCancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure = {};
+          tempCancerRelatedRadiationProcedure.coding = this.lookup(resource, 'code.coding') as Coding[];
+          tempCancerRelatedRadiationProcedure.bodySite = this.lookup(resource, 'bodySite.coding') as Coding[];
+          if (this.cancerRelatedRadiationProcedure) {
+            if (
+              !this.listContainsRadiationProcedure(
+                this.cancerRelatedRadiationProcedure,
+                tempCancerRelatedRadiationProcedure
+              )
+            ) {
+              this.cancerRelatedRadiationProcedure.push(tempCancerRelatedRadiationProcedure);
+            }
+          } else {
+            this.cancerRelatedRadiationProcedure = [tempCancerRelatedRadiationProcedure];
+          }
+        }
+
+        if (
+          resource.resourceType === 'Procedure' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-surgical-procedure')
+        ) {
+          this.cancerRelatedSurgicalProcedure = this.addCoding(
+            this.cancerRelatedSurgicalProcedure,
+            this.lookup(resource, 'code.coding') as Coding[]
+          );
+        }
+
+        if (
+          resource.resourceType === 'MedicationStatement' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-medication-statement')
+        ) {
+          this.cancerRelatedMedicationStatement = this.addCoding(
+            this.cancerRelatedMedicationStatement,
+            this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[]
+          );
+        }
       }
     }
     // add empty fields if they are not yet undefined
@@ -308,7 +312,7 @@ export class extractedMCODE {
           ) ||
             this.profilesContainCode(currentCoding, 'Cancer-Invasive_Breast')) &&
           this.profilesContainCode(currentCoding, 'Cancer-Breast') &&
-          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrence')
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrent')
         ) {
           return 'INVASIVE_BREAST_CANCER_AND_RECURRENT';
         }
@@ -319,7 +323,7 @@ export class extractedMCODE {
       // 4. Locally Recurrent
       if (
         primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
-        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrent')
       ) {
         return 'LOCALLY_RECURRENT';
       }
@@ -335,13 +339,13 @@ export class extractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
-        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
+        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current')) &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
         ) ||
-          this.TNMPathologicalStageGroup.some((coding) =>
-            this.profilesContainCode(coding, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
+          this.TNMPathologicalStageGroup.some((code) =>
+            this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
           ))
       ) {
         return 'CONCOMITANT_INVASIVE_MALIGNANCIES';
@@ -352,9 +356,9 @@ export class extractedMCODE {
       // 5. Other malignancy - except skin or cervical
       if (
         (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
-          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')) ||
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current')) ||
         (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Cervical')) &&
-          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current') &&
           (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
             this.TNMPathologicalStageGroup.some((coding) => this.profilesContainCode(coding, 'Stage-0'))))
       ) {
