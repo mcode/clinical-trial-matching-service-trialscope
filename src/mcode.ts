@@ -1,7 +1,6 @@
 import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
-import { Bundle } from './bundle'; // replace this with type from shared library
-//import { fhir } from 'clinical-trial-matching-service';
+import { fhir } from 'clinical-trial-matching-service';
 
 import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
 import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
@@ -69,7 +68,7 @@ export class extractedMCODE {
   cancerRelatedSurgicalProcedure: Coding[]; // would also be better as a set
   cancerRelatedMedicationStatement: Coding[]; // this too
 
-  constructor(patientBundle: Bundle) { // fhir.Bundle
+  constructor(patientBundle: fhir.Bundle) {
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
