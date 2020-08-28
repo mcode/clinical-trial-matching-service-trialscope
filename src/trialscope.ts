@@ -270,39 +270,60 @@ export class TrialScopeQuery {
   getTrialScopeConditions(): Set<string> {
     return mapConditions(Array.from(this.conditions));
   }
+  // Get the mCODE filters as an array of strings
+  getmCODEFilters(): string[]{
+    let filterArray: string[] = new Array();
+    filterArray.push("primaryCancer: " + this.mcode.primaryCancer);
+    filterArray.push("secondaryCancer: " + this.mcode.secondaryCancer);
+    filterArray.push("histologyMorphology: " + this.mcode.histologyMorphology);
+    filterArray.push("stage: " + this.mcode.stage);
+    filterArray.push("tumorMarker: " + this.mcode.tumorMarker);
+    filterArray.push("radiationProcedure: " + this.mcode.radiationProcedure);
+    filterArray.push("surgicalProcedure: " + this.mcode.surgicalProcedure);
+    filterArray.push("medicationStatement: " + this.mcode.medicationStatement);
+    return filterArray
+  }
   /**
    * Create a TrialScope query.
    * @return {string} the TrialScope GraphQL query
    */
   toQuery(): string {
-    let baseMatches =
-      'conditions:[' +
-      Array.from(this.getTrialScopeConditions()).join(', ') +
-      `], baseFilters: { zipCode: "${this.zipCode}"`;
+    // mCODE Filters
+    let advancedMatches =
+      'mcode:{' +
+      Array.from(this.getmCODEFilters()).join(', ') + '},';
+    // matchQuality
+    advancedMatches += 'matchQuality:{' + new Array() + '}, ';
+    // Start of Base filters
+    advancedMatches += `baseFilters: { zipCode: \"${this.zipCode}\"`;
+    // Travel Radius
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
-      baseMatches += ',travelRadius: ' + this.travelRadius.toString();
+      advancedMatches += ',travelRadius: ' + this.travelRadius.toString();
     }
+    // Phase
     if (this.phase !== 'any') {
-      baseMatches += ',phase:' + this.phase;
+      advancedMatches += ',phase:' + this.phase;
     }
+    // Recruitment Status
     if (this.recruitmentStatus !== null) {
       // Recruitment status can conceptually be an array
       if (Array.isArray(this.recruitmentStatus)) {
-        baseMatches += `,recruitmentStatus:[${this.recruitmentStatus.join(', ')}]`;
+        advancedMatches += `,recruitmentStatus:[${this.recruitmentStatus.join(', ')}]`;
       } else {
-        baseMatches += ',recruitmentStatus:' + this.recruitmentStatus;
+        advancedMatches += ',recruitmentStatus:' + this.recruitmentStatus;
       }
     }
-    baseMatches += ' }';
+    advancedMatches += ' }';
+    // Before and After
     if (this.first !== null) {
-      baseMatches += ', first: ' + this.first.toString();
+      advancedMatches += ', first: ' + this.first.toString();
     }
     if (this.after !== null) {
-      baseMatches += ', after: ' + JSON.stringify(this.after);
+      advancedMatches += ', after: ' + JSON.stringify(this.after);
     }
     // prettier-ignore
-    const query = `{ baseMatches(${baseMatches}) {` +
+    const query = `{ advancedMatches(${advancedMatches}) {` +
       'totalCount edges {' +
         'node {' + this.trialFields.join(' ') +
           ' sites { ' +
