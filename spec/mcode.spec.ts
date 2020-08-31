@@ -431,3 +431,33 @@ describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
     expect(extractedMCODE.getRadiationProcedureValue()).toBe("RADIATION_THERAPY");
   });
 });
+
+describe('checkSurgicalProcedureFilterLogic-Resection', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let sp: Coding[] = new Array();
+
+  // Resection Filter Attributes
+  sp[0] = {system: 'http://snomed.info/sct', code: '446103006', display: 'N/A'} as Coding; // Any code in 'Treatment-Resection-Brain'
+  extractedMCODE.cancerRelatedSurgicalProcedure = sp;
+
+  it('Test Resection Filter', () => {
+    expect(extractedMCODE.getSurgicalProcedureValue()).toBe("RESECTION");
+  });
+});
+
+describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let sp: Coding[] = new Array();
+
+  // Splenectomy Filter Attributes
+  sp[0] = {system: 'http://snomed.info/sct', code: '67097003', display: 'N/A'} as Coding; // Any code in 'Treatment-Splenectomy'
+  extractedMCODE.cancerRelatedSurgicalProcedure = sp;
+
+  it('Test Splenectomy Filter', () => {
+    expect(extractedMCODE.getSurgicalProcedureValue()).toBe("SPLENECTOMY");
+  });
+});
