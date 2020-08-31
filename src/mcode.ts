@@ -56,17 +56,17 @@ export interface TumorMarker {
   interpretation?: Coding[];
 }
 
-// extracted MCODE info?? WIP
+// extracted MCODE info
 export class extractedMCODE {
-  primaryCancerCondition: PrimaryCancerCondition[]; // wava has 1 resource - need histology extension
-  TNMClinicalStageGroup: Coding[]; // wava has 1 resource
-  TNMPathologicalStageGroup: Coding[]; // wava has 0 resources
-  secondaryCancerCondition: SecondaryCancerCondition[]; // wava has 0 resources
+  primaryCancerCondition: PrimaryCancerCondition[];
+  TNMClinicalStageGroup: Coding[];
+  TNMPathologicalStageGroup: Coding[];
+  secondaryCancerCondition: SecondaryCancerCondition[];
   birthDate: string;
   tumorMarker: TumorMarker[];
-  cancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure[]; // can this be a set - wava has 34 of these put they're all the same
-  cancerRelatedSurgicalProcedure: Coding[]; // would also be better as a set
-  cancerRelatedMedicationStatement: Coding[]; // this too
+  cancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure[];
+  cancerRelatedSurgicalProcedure: Coding[];
+  cancerRelatedMedicationStatement: Coding[];
 
   constructor(patientBundle: fhir.Bundle) {
     if(patientBundle != null){
@@ -82,14 +82,12 @@ export class extractedMCODE {
           this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-primary-cancer-condition')
         ) {
           const tempPrimaryCancerCondition: PrimaryCancerCondition = {};
-          console.log("---");
-          console.log(this.lookup(resource, 'code.coding'));
           tempPrimaryCancerCondition.coding = this.lookup(resource, 'code.coding') as Coding[];
           tempPrimaryCancerCondition.clinicalStatus = this.lookup(resource, 'clinicalStatus.coding') as Coding[];
           if (this.lookup(resource, 'extension').length !== 0) {
             let count = 0;
             for (const extension of this.lookup(resource, 'extension')) {
-              // yeah really not sure you can even do this - not sure how to test this either
+              // Not sure this is correct
               if (this.lookup(resource, `extension[${count}].url`).includes('mcode-histology-morphology-behavior')) {
                 tempPrimaryCancerCondition.histologyMorphologyBehavior = this.lookup(
                   resource,
@@ -104,7 +102,7 @@ export class extractedMCODE {
           }
 
           if (this.primaryCancerCondition) {
-            this.primaryCancerCondition.push(tempPrimaryCancerCondition); // needs specific de-dup helper function
+            this.primaryCancerCondition.push(tempPrimaryCancerCondition);
           } else {
             this.primaryCancerCondition = [tempPrimaryCancerCondition];
           }
@@ -261,7 +259,6 @@ export class extractedMCODE {
     return false;
   }
   contains(coding_list: Coding[], coding: Coding): boolean {
-    // system code
     return coding_list.some((list_coding) => list_coding.system === coding.system && list_coding.code === coding.code);
   }
   addCoding(code_list: Coding[], codes: Coding[]): Coding[] {
@@ -474,9 +471,6 @@ export class extractedMCODE {
     }
     // 1. Invasive Breast Cancer and Locally Advanced
     for (const primaryCancerCondition of this.primaryCancerCondition) {
-      primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) => console.log(histMorphBehav));
-      console.log('---');
-      primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) => console.log(histMorphBehav));
       if (
         ((primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
           this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
@@ -646,7 +640,6 @@ export class extractedMCODE {
     return 'NOT_SURE';
   }
   isHER2Positive(tumorMarker: TumorMarker): boolean {
-    console.log(tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')));
     return (
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')) &&
       (tumorMarker.valueCodeableConcept.some(
@@ -663,7 +656,6 @@ export class extractedMCODE {
     );
   }
   isHER2Negative(tumorMarker: TumorMarker): boolean {
-    tumorMarker.interpretation.some((interp) => console.log(interp));
     return (
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
@@ -967,7 +959,6 @@ export class extractedMCODE {
     if (!codeSet) {
       codeSet = [];
     }
-    //console.log(coding);
     // Check that the current code matches the given code.
     for (const currentCode of codeSet) {
       if (coding.code == currentCode.code) {
