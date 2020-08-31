@@ -310,7 +310,7 @@ export class extractedMCODE {
           (primaryCancerCondition.histologyMorphologyBehavior.some((coding) =>
             this.profilesContainCode(coding, 'Morphology-Invasive')
           ) ||
-            this.profilesContainCode(currentCoding, 'Cancer-Invasive_Breast')) &&
+            this.profilesContainCode(currentCoding, 'Cancer-Invasive-Breast')) &&
           this.profilesContainCode(currentCoding, 'Cancer-Breast') &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrent')
         ) {
@@ -386,7 +386,7 @@ export class extractedMCODE {
             primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))
           )) ||
           this.primaryCancerCondition.some((primCanCond) =>
-            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))
+            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Breast'))
           )) &&
         (secondaryCancerCondition.coding.length != 0 ||
           this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
@@ -441,9 +441,9 @@ export class extractedMCODE {
       if (
         (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
-            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive_Carcinoma')
+            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive-Carcinoma')
           )) ||
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Carcinoma'))
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Carcinoma'))
       ) {
         return 'INVASIVE_CARCINOMA';
       }
@@ -456,7 +456,7 @@ export class extractedMCODE {
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
             this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
           )) ||
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))
+        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Breast'))
       ) {
         return 'INVASIVE_BREAST_CANCER';
       }
@@ -482,7 +482,7 @@ export class extractedMCODE {
           this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
         ) &&
           primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))) ||
-          primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive_Breast'))) &&
+          primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Breast'))) &&
         (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')) ||
           this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')))
       ) {

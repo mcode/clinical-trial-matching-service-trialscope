@@ -232,11 +232,148 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
 
   // Invasive Breast Cancer Filter Attributes
   pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in Cancer-Breast
-  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '703594003', display: 'N/A'} as Coding; // Any code in Morphology-Invasive
+  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '446688004', display: 'N/A'} as Coding; // Any code in Morphology-Invasive
 
   extractedMCODE.primaryCancerCondition[0] = pcc;
 
   it('Test Invasive Breast Cancer Filter', () => {
     expect(extractedMCODE.getHistologyMorphologyValue()).toBe("INVASIVE_BREAST_CANCER");
+  });
+});
+
+describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = new Array();
+  pcc.coding = new Array();
+  pcc.histologyMorphologyBehavior = new Array();
+  let tnmPathological: Coding[] = new Array();
+
+  // Invasive Breast Cancer and Locally Advanced Filter Attributes
+  pcc.clinicalStatus[0] = {system: 'N/A', code: 'N/A', display: 'N/A'} as Coding;
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '722524005', display: 'N/A'} as Coding;  // Any Code in Cancer-Invasive-Breast
+  pcc.histologyMorphologyBehavior[0] = {system: 'N/A', code: 'N/A', display: 'N/A'} as Coding;
+  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code on Stage-3
+
+
+  extractedMCODE.primaryCancerCondition[0] = pcc;
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Invasive Breast Cancer and Locally Advanced Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED");
+  });
+});
+
+describe('checkStageFilterLogic-Non-invasive', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tnmPathological: Coding[] = new Array();
+
+  // Non-invasive Filter Attributes
+  tnmPathological[0] = {system: 'snomed', code: '261645004', display: 'N/A'} as Coding; // Any code on Stage-0
+
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Non-invasive Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("NON_INVASIVE");
+  });
+});
+
+describe('checkStageFilterLogic-Locally advanced', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tnmPathological: Coding[] = new Array();
+
+  // Locally advanced Filter Attributes
+  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code on Stage-3
+
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Locally advanced Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("LOCALLY_ADVANCED");
+  });
+});
+
+describe('checkStageFilterLogic-Stage 0', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tnmPathological: Coding[] = new Array();
+
+  // Stage 0 Filter Attributes
+  tnmPathological[0] = {system: 'snomed', code: '261645004', display: 'N/A'} as Coding; // Any code on Stage-0
+
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Stage 0 Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("ZERO");
+  });
+});
+
+describe('checkStageFilterLogic-Stage 1', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tnmPathological: Coding[] = new Array();
+
+  // Stage 1 Filter Attributes
+  tnmPathological[0] = {system: 'snomed', code: '313112008', display: 'N/A'} as Coding; // Any code on Stage-1
+
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Stage 1 Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("ONE");
+  });
+});
+
+describe('checkStageFilterLogic-Stage 2', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tnmPathological: Coding[] = new Array();
+
+  // Stage 2 Filter Attributes
+  tnmPathological[0] = {system: 'snomed', code: 'Stage 2B (qualifier value)', display: 'N/A'} as Coding; // Any code on Stage-2
+
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Stage 2 Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("TWO");
+  });
+});
+
+describe('checkStageFilterLogic-Stage 3', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tnmPathological: Coding[] = new Array();
+
+  // Stage 3 Filter Attributes
+  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code on Stage-3
+
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Stage 3 Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("THREE");
+  });
+});
+
+describe('checkStageFilterLogic-Stage 4', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tnmPathological: Coding[] = new Array();
+
+  // Stage 4 Filter Attributes
+  tnmPathological[0] = {system: 'snomed', code: '261643006', display: 'N/A'} as Coding; // Any code on Stage-4
+
+  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+
+  it('Test Stage 4 Filter', () => {
+    expect(extractedMCODE.getStageValue()).toBe("FOUR");
   });
 });

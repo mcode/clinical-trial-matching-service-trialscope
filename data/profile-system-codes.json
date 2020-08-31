@@ -1400,7 +1400,7 @@
       "code" : "2267580"
     } ]
   },
-  "Cancer-Invasive_Breast" : {
+  "Cancer-Invasive-Breast" : {
     "SNOMED" : [ {
       "code" : "1.08034E+15"
     }, {
@@ -2147,7 +2147,7 @@
     }, {
       "code" : "0P"
     } ],
-    "UNKOWN" : [ {
+    "SNOMED" : [ {
       "code" : "261645004"
     }, {
       "code" : "261644000"
@@ -2155,7 +2155,7 @@
       "code" : "261613009"
     } ]
   },
-  "Morphology-Invasive_Carcinoma" : {
+  "Morphology-Invasive-Carcinoma" : {
     "SNOMED" : [ {
       "code" : "734075007"
     }, {
@@ -3984,7 +3984,7 @@
       "code" : "21731-5"
     } ]
   },
-  "Cancer-Invasive_Carcinoma" : {
+  "Cancer-Invasive-Carcinoma" : {
     "SNOMED" : [ {
       "code" : "1.08034E+15"
     }, {
