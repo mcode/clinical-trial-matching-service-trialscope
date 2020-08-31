@@ -3,7 +3,6 @@ import { Coding } from '../src/mcode';
 import { PrimaryCancerCondition } from '../src/mcode';
 import { SecondaryCancerCondition } from '../src/mcode';
 
-
 describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
   // Initialize
   const patientBundle = null;
@@ -39,11 +38,11 @@ describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => 
   let tnmPathological: Coding[] = new Array();
 
   // Concomitant invasive malignancies Filter Attributes
-  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '67097003', display: 'N/A'} as Coding; // Any code not in Cancer-Breast
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '67097003', display: 'N/A'} as Coding; // Any code not in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior[0] = {system: 'N/A', code: 'N/A', display: 'N/A'} as Coding;
   pcc.clinicalStatus[0] = {system: 'N/A', code: 'current', display: 'N/A'} as Coding;
-  tnmClinical[0] = {system: 'AJCC', code: 'II', display: 'N/A'} as Coding;  // <- THERE IS SOMETHING WRONG WITH AJCC  // Any code on Stage-2
-  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code on Stage-2
+  tnmClinical[0] = {system: 'AJCC', code: 'II', display: 'N/A'} as Coding;  // <- THERE IS SOMETHING WRONG WITH AJCC  // Any code in 'Stage-2'
+  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code in 'Stage-2'
 
   extractedMCODE.primaryCancerCondition[0] = pcc;
   extractedMCODE.TNMClinicalStageGroup = tnmClinical;
@@ -64,8 +63,8 @@ describe('checkPrimaryCancerFilterLogic-InvasiveBreastCancerandRecurrent', () =>
   pcc.histologyMorphologyBehavior = new Array();
 
   // Invasive Breast Cancer and Recurrent Filter Attributes
-  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in Cancer-Breast
-  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding; // Any code in Morphology-Invasive
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding; // Any code in 'Morphology-Invasive'
   pcc.clinicalStatus[0] = {system: 'N/A', code: 'recurrent', display: 'N/A'} as Coding;
 
   extractedMCODE.primaryCancerCondition[0] = pcc;
@@ -105,7 +104,7 @@ describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', (
   pcc.histologyMorphologyBehavior = new Array();
 
   // Other malignancy - except skin or cervical  Filter Attributes
-  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '67097003', display: 'N/A'} as Coding; // Any code not in Cancer-Breast
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '67097003', display: 'N/A'} as Coding; // Any code not in 'Cancer-Breast'
   pcc.clinicalStatus[0] = {system: 'N/A', code: 'current', display: 'N/A'} as Coding;
 
   extractedMCODE.primaryCancerCondition[0] = pcc;
@@ -125,7 +124,7 @@ describe('checkSecondaryCancerFilterLogic-BrainMetastasis', () => {
   scc.bodySite = new Array();
 
   // Brain Metastasis Filter Attributes
-  scc.coding[0] = {system: 'http://snomed.info/sct', code: '285641009', display: 'N/A'} as Coding;  // Any code in Metastasis-Brain
+  scc.coding[0] = {system: 'http://snomed.info/sct', code: '285641009', display: 'N/A'} as Coding;  // Any code in 'Metastasis-Brain'
   scc.clinicalStatus[0] = {system: 'N/A', code: 'active', display: 'N/A'} as Coding;
 
   extractedMCODE.secondaryCancerCondition[0] = scc;
@@ -149,8 +148,8 @@ describe('checkSecondaryCancerFilterLogic-InvasiveBreastCancerAndMetastatic', ()
   pcc.histologyMorphologyBehavior = new Array();
 
   // Invasive Breast Cancer and Metastatic  Filter Attributes
-  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in Cancer-Breast
-  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding; // Any code in Morphology-Invasive
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding; // Any code in 'Morphology-Invasive'
   scc.coding[0] = {system: 'http://snomed.info/sct', code: '285641009', display: 'N/A'} as Coding;  // Any code
 
   extractedMCODE.secondaryCancerCondition[0] = scc;
@@ -190,7 +189,7 @@ describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Metastatic Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '313046007', display: 'N/A'} as Coding; // Any code in Stage-4
+  tnmPathological[0] = {system: 'snomed', code: '313046007', display: 'N/A'} as Coding; // Any code in 'Stage-4'
   scc.coding[0] = {system: 'http://snomed.info/sct', code: '285641009', display: 'N/A'} as Coding;  // Any code
 
   extractedMCODE.secondaryCancerCondition[0] = scc;
@@ -211,8 +210,8 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
   pcc.histologyMorphologyBehavior = new Array();
 
   // Invasive Carcinoma Filter Attributes
-  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in Cancer-Breast
-  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding; // Any code in Morphology-Invasive_Carcinoma
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding; // Any code in 'Morphology-Invasive_Carcinoma'
 
   extractedMCODE.primaryCancerCondition[0] = pcc;
 
@@ -231,8 +230,8 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
   pcc.histologyMorphologyBehavior = new Array();
 
   // Invasive Breast Cancer Filter Attributes
-  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in Cancer-Breast
-  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '446688004', display: 'N/A'} as Coding; // Any code in Morphology-Invasive
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '783541009', display: 'N/A'} as Coding;  // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior[0] = {system: 'http://snomed.info/sct', code: '446688004', display: 'N/A'} as Coding; // Any code in 'Morphology-Invasive'
 
   extractedMCODE.primaryCancerCondition[0] = pcc;
 
@@ -253,9 +252,9 @@ describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', ()
 
   // Invasive Breast Cancer and Locally Advanced Filter Attributes
   pcc.clinicalStatus[0] = {system: 'N/A', code: 'N/A', display: 'N/A'} as Coding;
-  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '722524005', display: 'N/A'} as Coding;  // Any Code in Cancer-Invasive-Breast
+  pcc.coding[0] = {system: 'http://snomed.info/sct', code: '722524005', display: 'N/A'} as Coding;  // Any Code in 'Cancer-Invasive-Breast'
   pcc.histologyMorphologyBehavior[0] = {system: 'N/A', code: 'N/A', display: 'N/A'} as Coding;
-  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code on Stage-3
+  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code in 'Stage-3'
 
 
   extractedMCODE.primaryCancerCondition[0] = pcc;
@@ -273,7 +272,7 @@ describe('checkStageFilterLogic-Non-invasive', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Non-invasive Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '261645004', display: 'N/A'} as Coding; // Any code on Stage-0
+  tnmPathological[0] = {system: 'snomed', code: '261645004', display: 'N/A'} as Coding; // Any code in 'Stage-0'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -289,7 +288,7 @@ describe('checkStageFilterLogic-Locally advanced', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Locally advanced Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code on Stage-3
+  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code in 'Stage-3'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -305,7 +304,7 @@ describe('checkStageFilterLogic-Stage 0', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Stage 0 Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '261645004', display: 'N/A'} as Coding; // Any code on Stage-0
+  tnmPathological[0] = {system: 'snomed', code: '261645004', display: 'N/A'} as Coding; // Any code in 'Stage-0'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -321,7 +320,7 @@ describe('checkStageFilterLogic-Stage 1', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Stage 1 Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '313112008', display: 'N/A'} as Coding; // Any code on Stage-1
+  tnmPathological[0] = {system: 'snomed', code: '313112008', display: 'N/A'} as Coding; // Any code in 'Stage-1'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -337,7 +336,7 @@ describe('checkStageFilterLogic-Stage 2', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Stage 2 Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: 'Stage 2B (qualifier value)', display: 'N/A'} as Coding; // Any code on Stage-2
+  tnmPathological[0] = {system: 'snomed', code: 'Stage 2B (qualifier value)', display: 'N/A'} as Coding; // Any code in 'Stage-2
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -353,7 +352,7 @@ describe('checkStageFilterLogic-Stage 3', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Stage 3 Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code on Stage-3
+  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code in 'Stage-3'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -369,11 +368,66 @@ describe('checkStageFilterLogic-Stage 4', () => {
   let tnmPathological: Coding[] = new Array();
 
   // Stage 4 Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '261643006', display: 'N/A'} as Coding; // Any code on Stage-4
+  tnmPathological[0] = {system: 'snomed', code: '261643006', display: 'N/A'} as Coding; // Any code in 'Stage-4'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
   it('Test Stage 4 Filter', () => {
     expect(extractedMCODE.getStageValue()).toBe("FOUR");
+  });
+});
+
+describe('checkRadiationProcedureFilterLogic-SRS', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let crrp: mcode.CancerRelatedRadiationProcedure = {};
+  crrp.bodySite = new Array();
+  crrp.coding = new Array();
+
+  // SRS Filter Attributes
+  crrp.coding[0] = {system: 'http://snomed.info/sct', code: '473237008', display: 'N/A'} as Coding; // Any code in 'Treatment-SRS-Brain'
+
+  extractedMCODE.cancerRelatedRadiationProcedure[0] = crrp;
+
+  it('Test SRS Filter', () => {
+    expect(extractedMCODE.getRadiationProcedureValue()).toBe("SRS");
+  });
+});
+
+describe('checkRadiationProcedureFilterLogic-WBRT', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let crrp: mcode.CancerRelatedRadiationProcedure = {};
+  crrp.bodySite = new Array();
+  crrp.coding = new Array();
+
+  // WBRT Filter Attributes
+  crrp.coding[0] = {system: 'http://snomed.info/sct', code: '108290001', display: 'N/A'} as Coding;
+  crrp.bodySite[0] = {system: 'http://snomed.info/sct', code: '12738006', display: 'N/A'} as Coding;
+
+  extractedMCODE.cancerRelatedRadiationProcedure[0] = crrp;
+
+  it('Test WBRT Filter', () => {
+    expect(extractedMCODE.getRadiationProcedureValue()).toBe("WBRT");
+  });
+});
+
+describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let crrp: mcode.CancerRelatedRadiationProcedure = {};
+  crrp.bodySite = new Array();
+  crrp.coding = new Array();
+
+  // Radiation Therapy Filter Attributes
+  crrp.coding[0] = {system: 'http://snomed.info/sct', code: '108290001', display: 'N/A'} as Coding; // Any code
+
+  extractedMCODE.cancerRelatedRadiationProcedure[0] = crrp;
+
+  it('Test Radiation Therapy Filter', () => {
+    expect(extractedMCODE.getRadiationProcedureValue()).toBe("RADIATION_THERAPY");
   });
 });
