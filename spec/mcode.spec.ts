@@ -3,6 +3,49 @@ import { Coding } from '../src/mcode';
 import { PrimaryCancerCondition } from '../src/mcode';
 import { SecondaryCancerCondition } from '../src/mcode';
 
+import fs from 'fs';
+import path from 'path';
+import { fhir } from 'clinical-trial-matching-service';
+//const util = require('util')
+
+describe('extractedMCODE', () => {
+  let sampleData: fhir.Bundle;
+  beforeAll(() => {
+    return new Promise((resolve, reject) => {
+      const patientDataPath = path.join(__dirname, '../../spec/data/patient_data.json');
+      fs.readFile(patientDataPath, { encoding: 'utf8' }, (error, data) => {
+        if (error) {
+          console.error('Could not read spec file');
+          reject(error);
+          return;
+        }
+        try {
+          sampleData = JSON.parse(data) as fhir.Bundle;
+          // The object we resolve to doesn't really matter
+          resolve(sampleData);
+        } catch (ex) {
+          reject(error);
+        }
+      });
+    });
+  });
+
+  it('checksCountOfExtractedProfiles', function () {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    //console.log(util.inspect(extractedData, false, null, true));
+    expect(extractedData.primaryCancerCondition.length).toBe(1);
+    expect(extractedData.TNMClinicalStageGroup.length).toBe(2);
+    expect(extractedData.TNMPathologicalStageGroup.length).toBe(2);
+    expect(extractedData.secondaryCancerCondition.length).toBe(1);
+    expect(extractedData.birthDate != 'NA').toBeTrue();
+    expect(extractedData.tumorMarker.length).toBe(3);
+    expect(extractedData.cancerRelatedRadiationProcedure.length).toBe(2);
+    expect(extractedData.cancerRelatedSurgicalProcedure.length).toBe(2);
+    expect(extractedData.cancerRelatedMedicationStatement.length).toBe(1);
+  });
+
+});
+
 describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
   // Initialize
   const patientBundle = null;
