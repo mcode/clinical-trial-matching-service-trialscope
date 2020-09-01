@@ -265,38 +265,6 @@ describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', ()
   });
 });
 
-describe('checkStageFilterLogic-Non-invasive', () => {
-  // Initialize
-  const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tnmPathological: Coding[] = new Array();
-
-  // Non-invasive Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '261645004', display: 'N/A'} as Coding; // Any code in 'Stage-0'
-
-  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
-
-  it('Test Non-invasive Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe("NON_INVASIVE");
-  });
-});
-
-describe('checkStageFilterLogic-Locally advanced', () => {
-  // Initialize
-  const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tnmPathological: Coding[] = new Array();
-
-  // Locally advanced Filter Attributes
-  tnmPathological[0] = {system: 'snomed', code: '261640009', display: 'N/A'} as Coding; // Any code in 'Stage-3'
-
-  extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
-
-  it('Test Locally advanced Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe("LOCALLY_ADVANCED");
-  });
-});
-
 describe('checkStageFilterLogic-Stage 0', () => {
   // Initialize
   const patientBundle = null;
@@ -459,5 +427,202 @@ describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
 
   it('Test Splenectomy Filter', () => {
     expect(extractedMCODE.getSurgicalProcedureValue()).toBe("SPLENECTOMY");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-T-DM1', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // T-DM1 Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A'} as Coding; // Any code in 'Treatment-T-DM1'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test T-DM1 Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("T_DM1");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-CDK4/6 inhibitor', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // CDK4/6 inhibitor Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A'} as Coding; // Any code in 'Treatment-CDK4_6_Inhibtor'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test CDK4/6 inhibitor Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("CDK4_6_INHIBITOR");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Poly ICLC ', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // Poly ICLC  Filter Attributes
+  ms[0] = {system: 'NIH', code: '#C1198', display: 'N/A'} as Coding;
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Poly ICLC Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("POLY_ICLC");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-DrugCombo-1', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // DrugCombo-1 Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A'} as Coding; // Any code in 'Treatment-Trastuzamab'  and 'Treatment-T-DM1'
+  ms[1] = {system: 'http://rxnorm.info/sct', code: '1298949', display: 'N/A'} as Coding; // Any code in 'Treatment-Pertuzumab'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test DrugCombo-1 Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("DRUGCOMBO_1");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Pembrolizumab', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // Pembrolizumab Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '1547545', display: 'N/A'} as Coding; // Any code in 'Treatment-Pembrolizumab'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Pembrolizumab Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("PEMBROLIZUMAB");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-mTOR inhibitor', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // mTOR inhibitor Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '845509', display: 'N/A'} as Coding; // Any code in 'Treatment-mTOR_Inhibtor'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test mTOR inhibitor Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("MTOR_INHIBITOR");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Concurrent Endocrine Therapy ', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // Concurrent Endocrine Therapy  Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A'} as Coding; // Any code in 'Treatment-Endocrine_Therapy'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Concurrent Endocrine Therapy  Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("CONCURRENT_ENDOCRINE_THERAPY");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Anti-androgen', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // Anti-androgen Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '151495', display: 'N/A'} as Coding; // Any code in 'Treatment-anti-Androgen'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Anti-androgen Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("ANTI_ANDROGEN");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-anti-HER2', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // anti-HER2 Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '101306', display: 'N/A'} as Coding; // Any code in 'Treatment-anti-HER2'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test anti-HER2 Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("ANTI_HER2");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Tyrosine Kinase Inhibitor', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // Tyrosine Kinase Inhibitor Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '1430449', display: 'N/A'} as Coding; // Any code in 'Treatment-Tyrosine_Kinase_Inhib'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Tyrosine Kinase Inhibitor Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("TYROSINE_KINASE_INHIBITOR");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-P13K inhibitor ', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // P13K inhibitor  Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '2169302', display: 'N/A'} as Coding; // Any code in 'Treatment-P13K_Inhibitor'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test P13K inhibitor  Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("P13K_INHIBITOR");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-anti-PD', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // anti-PD Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '1792780', display: 'N/A'} as Coding; // Any code in 'Treatment-anti-PD1,PDL1,PDL2'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test anti-PD Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("ANTI_PD");
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine ', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let ms: Coding[] = new Array();
+
+  // CDK4/6-mTOR and Endocrine  Filter Attributes
+  ms[0] = {system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A'} as Coding; // Any code in 'Treatment-CDK4_6_Inhibtor'
+  ms[1] = {system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A'} as Coding; // Any code in 'Treatment-Endocrine_Therapy'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test CDK4/6-mTOR and Endocrine  Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe("CDK4_6_MTOR_AND_ENDOCRINE");
   });
 });

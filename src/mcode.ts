@@ -469,7 +469,7 @@ export class extractedMCODE {
     ) {
       return 'NOT_SURE';
     }
-    // 1. Invasive Breast Cancer and Locally Advanced
+    // Invasive Breast Cancer and Locally Advanced
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       if (
         ((primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
@@ -483,54 +483,42 @@ export class extractedMCODE {
         return 'INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED';
       }
     }
-    // 2. Non-Invasive
+    // Stage 0
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
     ) {
-      return 'NON_INVASIVE';
-    }
-    // 4. Stage 0
-    if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
-    ) {
+      // This also meets requirements for NON_INVASIVE.
       return 'ZERO';
     }
-    // 5. Stage 1
+    // Stage 1
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1'))
     ) {
       return 'ONE';
     }
-    // 6. Stage 2
+    // Stage 2
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2'))
     ) {
       return 'TWO';
     }
-    // 7. Stage 3
+    // Stage 3
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
     ) {
+      // This also meets requirements for LOCALLY_ADVANCED.
       return 'THREE';
     }
-    // 8. Stage 4
+    // Stage 4
     if (
       this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
       this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
     ) {
       return 'FOUR';
-    }
-    // 3. Locally Advanced
-    if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
-    ) {
-      return 'LOCALLY_ADVANCED';
     }
     // None of the conditions are satisfied.
     return 'NOT_SURE';
@@ -891,18 +879,18 @@ export class extractedMCODE {
       return 'DRUGCOMBO_1';
     } else if (
       (this.cancerRelatedMedicationStatement.some((coding) =>
-        this.codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor')
+        this.codeIsInSheet(coding, 'Treatment-CDK4_6_Inhibtor')
       ) ||
         this.cancerRelatedMedicationStatement.some((coding) =>
-          this.codeIsInSheet(coding, 'Treatment-mTOR Inhibitor')
+          this.codeIsInSheet(coding, 'Treatment-mTOR_Inhibitor')
         )) &&
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine Therapy'))
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine_Therapy'))
     ) {
       return 'CDK4_6_MTOR_AND_ENDOCRINE';
     } else if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))) {
       return 'T_DM1';
     } else if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-CDK4 6 Inhibtor'))
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-CDK4_6_Inhibtor'))
     ) {
       return 'CDK4_6_INHIBITOR';
     } else if (
@@ -916,11 +904,11 @@ export class extractedMCODE {
     ) {
       return 'POLY_ICLC';
     } else if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-mTOR Inhibitor'))
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-mTOR_Inhibitor'))
     ) {
       return 'MTOR_INHIBITOR';
     } else if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine Therapy'))
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine_Therapy'))
     ) {
       return 'CONCURRENT_ENDOCRINE_THERAPY';
     } else if (
@@ -933,22 +921,22 @@ export class extractedMCODE {
       return 'ANTI_HER2';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) =>
-        this.codeIsInSheet(coding, 'Treatment-Tyrosine Kinase Inhib')
+        this.codeIsInSheet(coding, 'Treatment-Tyrosine_Kinase_Inhib')
       )
     ) {
       return 'TYROSINE_KINASE_INHIBITOR';
     } else if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-P13K Inhibitor'))
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-P13K_Inhibitor'))
     ) {
       return 'P13K_INHIBITOR';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) =>
-        this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1, PDL2')
+        this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1,PDL2')
       )
     ) {
       return 'ANTI_PD';
     } else {
-      return null;
+      return 'NOT_SURE';
     }
   }
 
@@ -970,17 +958,17 @@ export class extractedMCODE {
 
   // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
   normalizeCodeSystem(codeSystem: string): string {
-    if (codeSystem.includes('snomed')) {
+    if (codeSystem.toLowerCase().includes('snomed')) {
       return 'SNOMED';
-    } else if (codeSystem.includes('rxnorm')) {
+    } else if (codeSystem.toLowerCase().includes('rxnorm')) {
       return 'RxNorm';
-    } else if (codeSystem.includes('icd-10')) {
+    } else if (codeSystem.toLowerCase().includes('icd-10')) {
       return 'ICD-10';
-    } else if (codeSystem.includes('ajcc')) {
+    } else if (codeSystem.toLowerCase().includes('ajcc')) {
       return 'AJCC';
-    } else if (codeSystem.includes('loinc')) {
+    } else if (codeSystem.toLowerCase().includes('loinc')) {
       return 'LOINC';
-    } else if (codeSystem.includes('nih')) {
+    } else if (codeSystem.toLowerCase().includes('nih')) {
       return 'NIH';
     } else {
       return '';

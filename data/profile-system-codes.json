@@ -1026,7 +1026,7 @@
       "code" : "31632008"
     } ]
   },
-  "Treatment-anti-PD1,PDL1, PDL2" : {
+  "Treatment-anti-PD1,PDL1,PDL2" : {
     "RxNorm" : [ {
       "code" : "1547550"
     }, {
@@ -1549,7 +1549,7 @@
       "code" : "1151126"
     } ]
   },
-  "Treatment-P13K Inhibitor" : {
+  "Treatment-P13K_Inhibitor" : {
     "RxNorm" : [ {
       "code" : "2169302"
     }, {
@@ -2212,7 +2212,7 @@
       "code" : "35232005"
     } ]
   },
-  "Treatment-CDK4 6 Inhibtor" : {
+  "Treatment-CDK4_6_Inhibtor" : {
     "RxNorm" : [ {
       "code" : "1873984"
     }, {
@@ -2713,7 +2713,7 @@
       "code" : "93680004"
     } ]
   },
-  "Treatment-Tyrosine Kinase Inhib" : {
+  "Treatment-Tyrosine_Kinase_Inhib" : {
     "RxNorm" : [ {
       "code" : "480167"
     }, {
@@ -2734,8 +2734,7 @@
       "code" : "1162549"
     }, {
       "code" : "1162550"
-    } ],
-    "RxNorm" : [ {
+    }, {
       "code" : "1940649"
     }, {
       "code" : "1940643"
@@ -2805,7 +2804,7 @@
       "code" : "1430272"
     } ]
   },
-  "Treatment-Endocrine Therapy" : {
+  "Treatment-Endocrine_Therapy" : {
     "RxNorm" : [ {
       "code" : "262485"
     }, {
@@ -3442,8 +3441,7 @@
       "code" : "1298946"
     }, {
       "code" : "1298952"
-    } ],
-    "RxNorm" : [ {
+    }, {
       "code" : "1371046"
     }, {
       "code" : "1649574"
@@ -3503,8 +3501,7 @@
       "code" : "1186914"
     }, {
       "code" : "1186915"
-    } ],
-    "RxNorm" : [ {
+    }, { 
       "code" : "1940649"
     }, {
       "code" : "1940643"
@@ -3532,7 +3529,7 @@
       "code" : "1940653"
     } ]
   },
-  "Treatment-mTOR Inhibitor" : {
+  "Treatment-mTOR_Inhibitor" : {
     "RxNorm" : [ {
       "code" : "845509"
     }, {
