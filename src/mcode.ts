@@ -2,11 +2,9 @@ import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
 import { fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
 
-import { ProfileType, CodingProfile } from '../data/profileSystemLogic';
 import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
 
 import profile_system_codesX from '../data/profile-system-codes.json';
-import { toJson } from 'xml2json';
 
 const profile_system_codes = profile_system_codesX as ProfileSystemCodes;
 
@@ -69,7 +67,7 @@ export class extractedMCODE {
   cancerRelatedMedicationStatement: Coding[];
 
   constructor(patientBundle: fhir.Bundle) {
-    if(patientBundle != null){
+    if (patientBundle != null) {
       for (const entry of patientBundle.entry) {
         if (!('resource' in entry)) {
           // Skip bad entries
@@ -87,7 +85,11 @@ export class extractedMCODE {
           if (this.lookup(resource, 'extension').length !== 0) {
             let count = 0;
             for (const extension of this.lookup(resource, 'extension')) {
-              if ((this.lookup(resource, `extension[${count}].url`)[0] as string).includes('mcode-histology-morphology-behavior')) {
+              if (
+                (this.lookup(resource, `extension[${count}].url`)[0] as string).includes(
+                  'mcode-histology-morphology-behavior'
+                )
+              ) {
                 tempPrimaryCancerCondition.histologyMorphologyBehavior = this.lookup(
                   resource,
                   `extension[${count}].valueCodeableConcept.coding`
@@ -335,8 +337,8 @@ export class extractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
-        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current')) &&
+        primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current') &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
         ) ||
@@ -547,85 +549,83 @@ export class extractedMCODE {
 
     // TRIPLE_NEGATIVE_AND_RB_POSITIVE
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
-      this.tumorMarker.some(tm => this.isPRNegative(tm, 1)) &&
-      this.tumorMarker.some(tm => this.isERNegative(tm, 1)) &&
-      this.tumorMarker.some(tm => this.isRBPositive(tm, 50))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      this.tumorMarker.some((tm) => this.isPRNegative(tm, 1)) &&
+      this.tumorMarker.some((tm) => this.isERNegative(tm, 1)) &&
+      this.tumorMarker.some((tm) => this.isRBPositive(tm, 50))
+    ) {
       return 'TRIPLE_NEGATIVE_AND_RB_POSITIVE';
     }
     // Triple Negative
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
-      this.tumorMarker.some(tm => this.isPRNegative(tm, 1)) &&
-      this.tumorMarker.some(tm => this.isERNegative(tm, 1))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      this.tumorMarker.some((tm) => this.isPRNegative(tm, 1)) &&
+      this.tumorMarker.some((tm) => this.isERNegative(tm, 1))
+    ) {
       return 'TRIPLE_NEGATIVE';
     }
     // Triple Negative-10
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '1+'])) &&
-      this.tumorMarker.some(tm => this.isPRNegative(tm, 10)) &&
-      this.tumorMarker.some(tm => this.isERNegative(tm, 10))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '1+'])) &&
+      this.tumorMarker.some((tm) => this.isPRNegative(tm, 10)) &&
+      this.tumorMarker.some((tm) => this.isERNegative(tm, 10))
+    ) {
       return 'TRIPLE_NEGATIVE_MINUS_10';
     }
     // ER+ PR+ HER2-
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
-      this.tumorMarker.some(tm => this.isPRPositive(tm, 1)) &&
-      this.tumorMarker.some(tm => this.isERPositive(tm, 1))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      this.tumorMarker.some((tm) => this.isPRPositive(tm, 1)) &&
+      this.tumorMarker.some((tm) => this.isERPositive(tm, 1))
+    ) {
       return 'ER_PLUS_PR_PLUS_HER2_MINUS';
     }
     // PR+ and HER2- and FGFR amplifications
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
-      this.tumorMarker.some(tm => this.isPRPositive(tm, 1)) &&
-      this.tumorMarker.some(tm => this.isFGFRAmplification(tm, 1))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      this.tumorMarker.some((tm) => this.isPRPositive(tm, 1)) &&
+      this.tumorMarker.some((tm) => this.isFGFRAmplification(tm, 1))
+    ) {
       return 'PR_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
     }
     // ER+ and HER2- and FGFR amplifications
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
-      this.tumorMarker.some(tm => this.isERPositive(tm, 1)) &&
-      this.tumorMarker.some(tm => this.isFGFRAmplification(tm, 1))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      this.tumorMarker.some((tm) => this.isERPositive(tm, 1)) &&
+      this.tumorMarker.some((tm) => this.isFGFRAmplification(tm, 1))
+    ) {
       return 'ER_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
     }
     // PR+ and HER2-
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
-      this.tumorMarker.some(tm => this.isPRPositive(tm, 1))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      this.tumorMarker.some((tm) => this.isPRPositive(tm, 1))
+    ) {
       return 'PR_PLUS_AND_HER2_MINUS';
     }
     // ER+ and HER2-
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
-      this.tumorMarker.some(tm => this.isERPositive(tm, 1))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      this.tumorMarker.some((tm) => this.isERPositive(tm, 1))
+    ) {
       return 'ER_PLUS_AND_HER2_MINUS';
     }
     // HER2+ and PR+
     if (
-      this.tumorMarker.some(tm => this.isHER2Positive(tm)) &&
-      this.tumorMarker.some(tm => this.isPRPositive(tm, 10))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Positive(tm)) &&
+      this.tumorMarker.some((tm) => this.isPRPositive(tm, 10))
+    ) {
       return 'HER2_PLUS_AND_PR_PLUS';
     }
     // HER2+ and ER+
     if (
-      this.tumorMarker.some(tm => this.isHER2Positive(tm)) &&
-      this.tumorMarker.some(tm => this.isERPositive(tm, 10))
-      ){
+      this.tumorMarker.some((tm) => this.isHER2Positive(tm)) &&
+      this.tumorMarker.some((tm) => this.isERPositive(tm, 10))
+    ) {
       return 'HER2_PLUS_AND_ER_PLUS';
     }
     // HER2+
-    if (
-      this.tumorMarker.some(tm => this.isHER2Positive(tm))
-      ){
+    if (this.tumorMarker.some((tm) => this.isHER2Positive(tm))) {
       return 'HER2_PLUS';
     }
     // None of the conditions are satisfied.
@@ -796,12 +796,7 @@ export class extractedMCODE {
     }
   }
   ratioMatch(numerator: Quantity, denominator: Quantity, metricValue: number, metricComparator: string) {
-    if (
-      !numerator ||
-      !denominator ||
-      !numerator.value ||
-      !denominator.value
-    ) {
+    if (!numerator || !denominator || !numerator.value || !denominator.value) {
       console.log('missing info for ratio comparison');
       return false;
     }
@@ -926,9 +921,7 @@ export class extractedMCODE {
     ) {
       return 'P13K_INHIBITOR';
     } else if (
-      this.cancerRelatedMedicationStatement.some((coding) =>
-        this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1,PDL2')
-      )
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1,PDL2'))
     ) {
       return 'ANTI_PD';
     } else {
