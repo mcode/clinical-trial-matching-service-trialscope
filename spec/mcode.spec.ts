@@ -50,13 +50,11 @@ describe('extractedMCODE', () => {
 describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
-  let tnmClinical: Coding[] = new Array();
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Breast Cancer Filter Attributes
   pcc.clinicalStatus[0] = { system: 'N/A', code: 'N/A', display: 'N/A' } as Coding;
@@ -73,13 +71,13 @@ describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
 describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
-  let tnmClinical: Coding[] = new Array();
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
+  const tnmClinical: Coding[] = [] as Coding[];
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Concomitant invasive malignancies Filter Attributes
   pcc.coding[0] = { system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding; // Any code not in 'Cancer-Breast'
@@ -100,11 +98,11 @@ describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => 
 describe('checkPrimaryCancerFilterLogic-InvasiveBreastCancerandRecurrent', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Invasive Breast Cancer and Recurrent Filter Attributes
   pcc.coding[0] = { system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding; // Any Code in 'Cancer-Breast'
@@ -125,11 +123,11 @@ describe('checkPrimaryCancerFilterLogic-InvasiveBreastCancerandRecurrent', () =>
 describe('checkPrimaryCancerFilterLogic-LocallyRecurrent', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Locally Recurrent Filter Attributes
   pcc.coding[0] = { system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding;
@@ -145,11 +143,11 @@ describe('checkPrimaryCancerFilterLogic-LocallyRecurrent', () => {
 describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Other malignancy - except skin or cervical  Filter Attributes
   pcc.coding[0] = { system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding; // Any code not in 'Cancer-Breast'
@@ -167,11 +165,11 @@ describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', (
 describe('checkSecondaryCancerFilterLogic-BrainMetastasis', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = new Array();
-  scc.coding = new Array();
-  scc.bodySite = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const scc: SecondaryCancerCondition = {};
+  scc.clinicalStatus = [] as Coding[];
+  scc.coding = [] as Coding[];
+  scc.bodySite = [] as Coding[];
 
   // Brain Metastasis Filter Attributes
   scc.coding[0] = { system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding; // Any code in 'Metastasis-Brain'
@@ -187,15 +185,15 @@ describe('checkSecondaryCancerFilterLogic-BrainMetastasis', () => {
 describe('checkSecondaryCancerFilterLogic-InvasiveBreastCancerAndMetastatic', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = new Array();
-  scc.coding = new Array();
-  scc.bodySite = new Array();
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const scc: SecondaryCancerCondition = {};
+  scc.clinicalStatus = [] as Coding[];
+  scc.coding = [] as Coding[];
+  scc.bodySite = [] as Coding[];
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Invasive Breast Cancer and Metastatic  Filter Attributes
   pcc.coding[0] = { system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding; // Any Code in 'Cancer-Breast'
@@ -216,11 +214,11 @@ describe('checkSecondaryCancerFilterLogic-InvasiveBreastCancerAndMetastatic', ()
 describe('checkSecondaryCancerFilterLogic-LeptomeningealMetastaticDisease', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = new Array();
-  scc.coding = new Array();
-  scc.bodySite = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const scc: SecondaryCancerCondition = {};
+  scc.clinicalStatus = [] as Coding[];
+  scc.coding = [] as Coding[];
+  scc.bodySite = [] as Coding[];
 
   // Leptomeningeal metastatic disease Filter Attributes
   scc.bodySite[0] = { system: 'http://snomed.info/sct', code: '8935007', display: 'N/A' } as Coding;
@@ -235,12 +233,12 @@ describe('checkSecondaryCancerFilterLogic-LeptomeningealMetastaticDisease', () =
 describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = new Array();
-  scc.coding = new Array();
-  scc.bodySite = new Array();
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const scc: SecondaryCancerCondition = {};
+  scc.clinicalStatus = [] as Coding[];
+  scc.coding = [] as Coding[];
+  scc.bodySite = [] as Coding[];
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Metastatic Filter Attributes
   tnmPathological[0] = { system: 'snomed', code: '313046007', display: 'N/A' } as Coding; // Any code in 'Stage-4'
@@ -259,11 +257,11 @@ describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
 describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Invasive Carcinoma Filter Attributes
   pcc.coding[0] = { system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding; // Any Code in 'Cancer-Breast'
@@ -283,11 +281,11 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
 describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Invasive Breast Cancer Filter Attributes
   pcc.coding[0] = { system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding; // Any Code in 'Cancer-Breast'
@@ -309,12 +307,12 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
 describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = new Array();
-  pcc.coding = new Array();
-  pcc.histologyMorphologyBehavior = new Array();
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Invasive Breast Cancer and Locally Advanced Filter Attributes
   pcc.clinicalStatus[0] = { system: 'N/A', code: 'N/A', display: 'N/A' } as Coding;
@@ -333,8 +331,8 @@ describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', ()
 describe('checkStageFilterLogic-Stage 0', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 0 Filter Attributes
   tnmPathological[0] = { system: 'snomed', code: '261645004', display: 'N/A' } as Coding; // Any code in 'Stage-0'
@@ -349,8 +347,8 @@ describe('checkStageFilterLogic-Stage 0', () => {
 describe('checkStageFilterLogic-Stage 1', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 1 Filter Attributes
   tnmPathological[0] = { system: 'snomed', code: '313112008', display: 'N/A' } as Coding; // Any code in 'Stage-1'
@@ -365,8 +363,8 @@ describe('checkStageFilterLogic-Stage 1', () => {
 describe('checkStageFilterLogic-Stage 2', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 2 Filter Attributes
   tnmPathological[0] = { system: 'snomed', code: 'Stage 2B (qualifier value)', display: 'N/A' } as Coding; // Any code in 'Stage-2
@@ -381,8 +379,8 @@ describe('checkStageFilterLogic-Stage 2', () => {
 describe('checkStageFilterLogic-Stage 3', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 3 Filter Attributes
   tnmPathological[0] = { system: 'snomed', code: '261640009', display: 'N/A' } as Coding; // Any code in 'Stage-3'
@@ -397,8 +395,8 @@ describe('checkStageFilterLogic-Stage 3', () => {
 describe('checkStageFilterLogic-Stage 4', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tnmPathological: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 4 Filter Attributes
   tnmPathological[0] = { system: 'snomed', code: '261643006', display: 'N/A' } as Coding; // Any code in 'Stage-4'
@@ -415,10 +413,10 @@ describe('checkStageFilterLogic-Stage 4', () => {
 describe('checkRadiationProcedureFilterLogic-SRS', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = new Array();
-  crrp.coding = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const crrp: mcode.CancerRelatedRadiationProcedure = {};
+  crrp.bodySite = [] as Coding[];
+  crrp.coding = [] as Coding[];
 
   // SRS Filter Attributes
   crrp.coding[0] = { system: 'http://snomed.info/sct', code: '473237008', display: 'N/A' } as Coding; // Any code in 'Treatment-SRS-Brain'
@@ -433,10 +431,10 @@ describe('checkRadiationProcedureFilterLogic-SRS', () => {
 describe('checkRadiationProcedureFilterLogic-WBRT', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = new Array();
-  crrp.coding = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const crrp: mcode.CancerRelatedRadiationProcedure = {};
+  crrp.bodySite = [] as Coding[];
+  crrp.coding = [] as Coding[];
 
   // WBRT Filter Attributes
   crrp.coding[0] = { system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding;
@@ -452,10 +450,10 @@ describe('checkRadiationProcedureFilterLogic-WBRT', () => {
 describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = new Array();
-  crrp.coding = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const crrp: mcode.CancerRelatedRadiationProcedure = {};
+  crrp.bodySite = [] as Coding[];
+  crrp.coding = [] as Coding[];
 
   // Radiation Therapy Filter Attributes
   crrp.coding[0] = { system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding; // Any code
@@ -472,8 +470,8 @@ describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
 describe('checkSurgicalProcedureFilterLogic-Resection', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let sp: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const sp: Coding[] = [] as Coding[];
 
   // Resection Filter Attributes
   sp[0] = { system: 'http://snomed.info/sct', code: '446103006', display: 'N/A' } as Coding; // Any code in 'Treatment-Resection-Brain'
@@ -487,8 +485,8 @@ describe('checkSurgicalProcedureFilterLogic-Resection', () => {
 describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let sp: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const sp: Coding[] = [] as Coding[];
 
   // Splenectomy Filter Attributes
   sp[0] = { system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding; // Any code in 'Treatment-Splenectomy'
@@ -504,8 +502,8 @@ describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
 describe('checkMedicationStatementFilterLogic-T-DM1', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // T-DM1 Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A' } as Coding; // Any code in 'Treatment-T-DM1'
@@ -519,8 +517,8 @@ describe('checkMedicationStatementFilterLogic-T-DM1', () => {
 describe('checkMedicationStatementFilterLogic-CDK4/6 inhibitor', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // CDK4/6 inhibitor Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' } as Coding; // Any code in 'Treatment-CDK4_6_Inhibtor'
@@ -534,8 +532,8 @@ describe('checkMedicationStatementFilterLogic-CDK4/6 inhibitor', () => {
 describe('checkMedicationStatementFilterLogic-Poly ICLC ', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // Poly ICLC  Filter Attributes
   ms[0] = { system: 'NIH', code: '#C1198', display: 'N/A' } as Coding;
@@ -549,8 +547,8 @@ describe('checkMedicationStatementFilterLogic-Poly ICLC ', () => {
 describe('checkMedicationStatementFilterLogic-DrugCombo-1', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // DrugCombo-1 Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A' } as Coding; // Any code in 'Treatment-Trastuzamab'  and 'Treatment-T-DM1'
@@ -565,8 +563,8 @@ describe('checkMedicationStatementFilterLogic-DrugCombo-1', () => {
 describe('checkMedicationStatementFilterLogic-Pembrolizumab', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // Pembrolizumab Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '1547545', display: 'N/A' } as Coding; // Any code in 'Treatment-Pembrolizumab'
@@ -580,8 +578,8 @@ describe('checkMedicationStatementFilterLogic-Pembrolizumab', () => {
 describe('checkMedicationStatementFilterLogic-mTOR inhibitor', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // mTOR inhibitor Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '845509', display: 'N/A' } as Coding; // Any code in 'Treatment-mTOR_Inhibtor'
@@ -595,8 +593,8 @@ describe('checkMedicationStatementFilterLogic-mTOR inhibitor', () => {
 describe('checkMedicationStatementFilterLogic-Concurrent Endocrine Therapy ', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // Concurrent Endocrine Therapy  Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' } as Coding; // Any code in 'Treatment-Endocrine_Therapy'
@@ -610,8 +608,8 @@ describe('checkMedicationStatementFilterLogic-Concurrent Endocrine Therapy ', ()
 describe('checkMedicationStatementFilterLogic-Anti-androgen', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // Anti-androgen Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '151495', display: 'N/A' } as Coding; // Any code in 'Treatment-anti-Androgen'
@@ -625,8 +623,8 @@ describe('checkMedicationStatementFilterLogic-Anti-androgen', () => {
 describe('checkMedicationStatementFilterLogic-anti-HER2', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // anti-HER2 Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '101306', display: 'N/A' } as Coding; // Any code in 'Treatment-anti-HER2'
@@ -640,8 +638,8 @@ describe('checkMedicationStatementFilterLogic-anti-HER2', () => {
 describe('checkMedicationStatementFilterLogic-Tyrosine Kinase Inhibitor', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // Tyrosine Kinase Inhibitor Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '1430449', display: 'N/A' } as Coding; // Any code in 'Treatment-Tyrosine_Kinase_Inhib'
@@ -655,8 +653,8 @@ describe('checkMedicationStatementFilterLogic-Tyrosine Kinase Inhibitor', () => 
 describe('checkMedicationStatementFilterLogic-P13K inhibitor ', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // P13K inhibitor  Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '2169302', display: 'N/A' } as Coding; // Any code in 'Treatment-P13K_Inhibitor'
@@ -670,8 +668,8 @@ describe('checkMedicationStatementFilterLogic-P13K inhibitor ', () => {
 describe('checkMedicationStatementFilterLogic-anti-PD', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // anti-PD Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '1792780', display: 'N/A' } as Coding; // Any code in 'Treatment-anti-PD1,PDL1,PDL2'
@@ -685,8 +683,8 @@ describe('checkMedicationStatementFilterLogic-anti-PD', () => {
 describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine ', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let ms: Coding[] = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
 
   // CDK4/6-mTOR and Endocrine  Filter Attributes
   ms[0] = { system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' } as Coding; // Any code in 'Treatment-CDK4_6_Inhibtor'
@@ -703,13 +701,13 @@ describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine ', () =>
 describe('checkTumorMarkerFilterLogic-HER2+', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2+ Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -725,13 +723,13 @@ describe('checkTumorMarkerFilterLogic-HER2+', () => {
 describe('checkTumorMarkerFilterLogic-HER2+ and ER+', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2+ Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -750,13 +748,13 @@ describe('checkTumorMarkerFilterLogic-HER2+ and ER+', () => {
 describe('checkTumorMarkerFilterLogic-HER2+ and PR+', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2+ Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -779,13 +777,13 @@ describe('checkTumorMarkerFilterLogic-HER2+ and PR+', () => {
 describe('checkTumorMarkerFilterLogic-ER+ and HER-+', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -808,13 +806,13 @@ describe('checkTumorMarkerFilterLogic-ER+ and HER-+', () => {
 describe('checkTumorMarkerFilterLogic-PR+ and HER-', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -841,13 +839,13 @@ describe('checkTumorMarkerFilterLogic-PR+ and HER-', () => {
 describe('checkTumorMarkerFilterLogic-ER+ and HER2- and FGFR amplifications', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -873,13 +871,13 @@ describe('checkTumorMarkerFilterLogic-ER+ and HER2- and FGFR amplifications', ()
 describe('checkTumorMarkerFilterLogic-PR+ and HER- and FGFR Amplifications', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -905,13 +903,13 @@ describe('checkTumorMarkerFilterLogic-PR+ and HER- and FGFR Amplifications', () 
 describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -937,13 +935,13 @@ describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
 describe('checkTumorMarkerFilterLogic-Triple negative', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -973,13 +971,13 @@ describe('checkTumorMarkerFilterLogic-Triple negative', () => {
 describe('checkTumorMarkerFilterLogic-Triple negative-10', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
@@ -1005,13 +1003,13 @@ describe('checkTumorMarkerFilterLogic-Triple negative-10', () => {
 describe('checkTumorMarkerFilterLogic-Triple negative and RB Positive', () => {
   // Initialize
   const patientBundle = null;
-  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  let tm: mcode.TumorMarker = {};
-  tm.code = new Array();
-  tm.interpretation = new Array();
-  tm.valueCodeableConcept = new Array();
-  tm.valueQuantity = new Array();
-  tm.valueRatio = new Array();
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm: mcode.TumorMarker = {};
+  tm.code = [] as Coding[];
+  tm.interpretation = [] as Coding[];
+  tm.valueCodeableConcept = [] as Coding[];
+  tm.valueQuantity = [] as mcode.Quantity[];
+  tm.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
