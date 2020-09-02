@@ -87,8 +87,7 @@ export class extractedMCODE {
           if (this.lookup(resource, 'extension').length !== 0) {
             let count = 0;
             for (const extension of this.lookup(resource, 'extension')) {
-              // Not sure this is correct
-              if (this.lookup(resource, `extension[${count}].url`).includes('mcode-histology-morphology-behavior')) {
+              if ((this.lookup(resource, `extension[${count}].url`)[0] as string).includes('mcode-histology-morphology-behavior')) {
                 tempPrimaryCancerCondition.histologyMorphologyBehavior = this.lookup(
                   resource,
                   `extension[${count}].valueCodeableConcept.coding`
