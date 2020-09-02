@@ -3,6 +3,8 @@ import { Coding } from '../src/mcode';
 import { PrimaryCancerCondition } from '../src/mcode';
 import { SecondaryCancerCondition } from '../src/mcode';
 
+/* Primary Cancer Condition Logic Tests */
+
 describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
   // Initialize
   const patientBundle = null;
@@ -114,6 +116,8 @@ describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', (
   });
 });
 
+/* Secondary Cancer Condition Logic Tests */
+
 describe('checkSecondaryCancerFilterLogic-BrainMetastasis', () => {
   // Initialize
   const patientBundle = null;
@@ -200,6 +204,8 @@ describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
   });
 });
 
+/* Histology Morphology Logic Tests */
+
 describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
   // Initialize
   const patientBundle = null;
@@ -239,6 +245,8 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
     expect(extractedMCODE.getHistologyMorphologyValue()).toBe("INVASIVE_BREAST_CANCER");
   });
 });
+
+/* Stage Logic Tests */
 
 describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', () => {
   // Initialize
@@ -345,6 +353,8 @@ describe('checkStageFilterLogic-Stage 4', () => {
   });
 });
 
+/* Radiation Procedure Logic Tests */
+
 describe('checkRadiationProcedureFilterLogic-SRS', () => {
   // Initialize
   const patientBundle = null;
@@ -400,6 +410,8 @@ describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
   });
 });
 
+/* Surgical Procedure Logic Tests */
+
 describe('checkSurgicalProcedureFilterLogic-Resection', () => {
   // Initialize
   const patientBundle = null;
@@ -429,6 +441,8 @@ describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
     expect(extractedMCODE.getSurgicalProcedureValue()).toBe("SPLENECTOMY");
   });
 });
+
+/* Medication Statement Logic Tests */
 
 describe('checkMedicationStatementFilterLogic-T-DM1', () => {
   // Initialize
@@ -624,5 +638,300 @@ describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine ', () =>
 
   it('Test CDK4/6-mTOR and Endocrine  Filter', () => {
     expect(extractedMCODE.getMedicationStatementValue()).toBe("CDK4_6_MTOR_AND_ENDOCRINE");
+  });
+});
+
+/* Tumor Marker Logic Tests */
+
+describe('checkTumorMarkerFilterLogic-HER2+', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2+ Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueQuantity[0] = {value: '3+', comparator: '='} as mcode.Quantity;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test HER2+ Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("HER2_PLUS");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-HER2+ and ER+', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2+ Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueCodeableConcept[0] = {system: 'http://snomed.info/sct', code: '10828004', display: 'N/A'} as Coding;
+  // ER+ Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A'} as Coding; // Any code in 'Biomarker-ER'
+  tm.valueQuantity[1] = {value: '10', comparator: '>=', unit: '%'} as mcode.Quantity;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test HER2+ and ER+ Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("HER2+ and ER+");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-HER2+ and PR+', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2+ Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.interpretation[0] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'POS', display: 'N/A'} as Coding;
+  // PR+ Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A'} as Coding; // Any code in 'Biomarker-PR'
+  tm.valueQuantity[1] = {value: '10', comparator: '>=', unit: '%'} as mcode.Quantity;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test HER2+ and PR+ Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("HER2_PLUS_AND_PR_PLUS");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-ER+ and HER-+', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueQuantity[0] = {value: '2+', comparator: '='} as mcode.Quantity;
+  // ER+ Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A'} as Coding; // Any code in 'Biomarker-ER'
+  tm.interpretation[1] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'DET', display: 'N/A'} as Coding;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test ER+ and HER- Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("ER_PLUS_AND_HER2_MINUS");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-PR+ and HER-', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.interpretation[0] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'NEG', display: 'N/A'} as Coding;
+  // PR+ Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A'} as Coding; // Any code in 'Biomarker-PR'
+  tm.interpretation[0] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'H', display: 'N/A'} as Coding;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test PR+ and HER- Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("HER2_PLUS_AND_PR_PLUS");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-ER+ and HER2- and FGFR amplifications', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.interpretation[0] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'NEG', display: 'N/A'} as Coding;
+  // ER+ Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A'} as Coding; // Any code in 'Biomarker-ER'
+  tm.valueCodeableConcept[1] = {system: 'http://snomed.info/sct', code: '10828004', display: 'N/A'} as Coding;
+  // FGFR Amplifications Attributes
+  tm.code[2] = {system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A'} as Coding; // Any code in 'Biomarker-FGFR'
+  tm.valueQuantity[2] = {value: '1', comparator: '>=', unit: '%'} as mcode.Quantity;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test ER+ and HER- Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("ER_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-PR+ and HER- and FGFR Amplifications', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueCodeableConcept[0] = {system: 'http://snomed.info/sct', code: '260385009', display: 'N/A'} as Coding;
+  // PR+ Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A'} as Coding; // Any code in 'Biomarker-PR'
+  tm.valueCodeableConcept[1] = {system: 'http://snomed.info/sct', code: '10828004', display: 'N/A'} as Coding;
+  // FGFR Amplifications Attributes
+  tm.code[2] = {system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A'} as Coding; // Any code in 'Biomarker-FGFR'
+  tm.interpretation[2] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'POS', display: 'N/A'} as mcode.Quantity;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test PR+ and HER- and FGFR Amplifications Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("PR_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueCodeableConcept[0] = {system: 'http://snomed.info/sct', code: '260385009', display: 'N/A'} as Coding;
+  // PR+ Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A'} as Coding; // Any code in 'Biomarker-PR'
+  tm.valueQuantity[1] = {value: '11', comparator: '>=', unit: '%'} as mcode.Quantity;
+  // ER+ Filter Attributes
+  tm.code[2] = {system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A'} as Coding; // Any code in 'Biomarker-ER'
+  tm.interpretation[2] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'H', display: 'N/A'} as Coding;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test ER+ and PR+ and HER2- Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("ER_PLUS_PR_PLUS_HER2_MINUS");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-Triple negative', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueQuantity[0] = {value: '2+', comparator: '='} as mcode.Quantity;
+  // PR- Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A'} as Coding; // Any code in 'Biomarker-PR'
+  tm.interpretation[1] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'ND', display: 'N/A'} as Coding;
+  // ER- Filter Attributes
+  tm.code[2] = {system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A'} as Coding; // Any code in 'Biomarker-ER'
+  tm.interpretation[2] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'N', display: 'N/A'} as Coding;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test Triple negative Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("TRIPLE_NEGATIVE");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-Triple negative-10', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueQuantity[0] = {value: '1', comparator: '='} as mcode.Quantity;
+  // PR- Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A'} as Coding; // Any code in 'Biomarker-PR'
+  tm.valueQuantity[1] = {value: '9', comparator: '<', unit: '%'} as mcode.Quantity;
+  // ER- Filter Attributes
+  tm.code[2] = {system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A'} as Coding; // Any code in 'Biomarker-ER'
+  tm.interpretation[2] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'N', display: 'N/A'} as Coding;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test Triple negative-10 Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("TRIPLE_NEGATIVE_MINUS_10");
+  });
+});
+
+describe('checkTumorMarkerFilterLogic-Triple negative and RB Positive', () => {
+  // Initialize
+  const patientBundle = null;
+  let extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  let tm: mcode.TumorMarker = {};
+  tm.code = new Array();
+  tm.interpretation = new Array();
+  tm.valueCodeableConcept = new Array();
+  tm.valueQuantity = new Array();
+  tm.valueRatio = new Array();
+
+  // HER2- Filter Attributes
+  tm.code[0] = {system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A'} as Coding; // Any code in 'Biomarker-HER2'
+  tm.valueQuantity[0] = {value: '1', comparator: '='} as mcode.Quantity;
+  // PR- Filter Attributes
+  tm.code[1] = {system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A'} as Coding; // Any code in 'Biomarker-PR'
+  tm.interpretation[1] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'ND', display: 'N/A'} as Coding;
+  // ER- Filter Attributes
+  tm.code[2] = {system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A'} as Coding; // Any code in 'Biomarker-ER'
+  tm.interpretation[2] = {system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html', code: 'N', display: 'N/A'} as Coding;
+  // RB+ Attributes
+  tm.code[3] = {system: 'http://loinc.info/sct', code: '42795-5', display: 'N/A'} as Coding; // Any code in 'Biomarker-RB'
+  tm.valueQuantity[3] = {value: '51', comparator: '>', unit: '%'} as mcode.Quantity;
+
+  extractedMCODE.tumorMarker[0] = tm;
+
+  it('Test Triple negative and RB Positive Filter', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe("TRIPLE_NEGATIVE_AND_RB_POSITIVE");
   });
 });
