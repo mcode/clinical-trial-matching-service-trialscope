@@ -541,6 +541,9 @@ export class extractedMCODE {
     }
     // these definitely aren't in a most specific to least specific order, so we'll need to rearrange them
     // Triple Negative and RB Positive
+    //FIX ME:
+    // so we're cycling through the data wrong - for instance in this first one,
+    //we're actually looking to see if there is one tumor marker that's isHER2Negative, isPRNegative, isERNegative, and isRBPositive when it should be if these conditions are met if you look through all the tumor markers
     for (const tumorMarker of this.tumorMarker) {
       if (
         this.isHER2Negative(tumorMarker) &&
@@ -638,7 +641,7 @@ export class extractedMCODE {
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         ) ||
         tumorMarker.valueQuantity.some((valQuant) =>
-          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['3', '3+'], '=')
+          this.quantityMatch(valQuant.value, valQuant.code, ['3', '3+'], '=')
         ))
     );
   }
@@ -653,7 +656,7 @@ export class extractedMCODE {
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         ) || // Information on Interpretation values can be found at: http://hl7.org/fhir/R4/valueset-observation-interpretation.html
         tumorMarker.valueQuantity.some((valQuant) =>
-          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, ['0', '1', '2', '1+', '2+'], '=')
+          this.quantityMatch(valQuant.value, valQuant.code, ['0', '1', '2', '1+', '2+'], '=')
         )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'))
     );
@@ -669,7 +672,7 @@ export class extractedMCODE {
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         ) ||
         tumorMarker.valueQuantity.some((valQuant) =>
-          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')
+          this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%')
         ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>='))) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))
@@ -687,8 +690,8 @@ export class extractedMCODE {
         ) ||
         tumorMarker.valueQuantity.some(
           (valQuant) =>
-            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
-            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')
+            this.quantityMatch(valQuant.value, valQuant.code, [metric], '<', '%') ||
+            this.quantityMatch(valQuant.value, valQuant.code, [0], '=')
         ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '<'))) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))
@@ -706,7 +709,7 @@ export class extractedMCODE {
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         ) ||
         tumorMarker.valueQuantity.some((valQuant) =>
-          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')
+          this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%')
         )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))
     );
@@ -724,8 +727,8 @@ export class extractedMCODE {
         ) ||
         tumorMarker.valueQuantity.some(
           (valQuant) =>
-            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '<', '%') ||
-            this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [0], '=')
+            this.quantityMatch(valQuant.value, valQuant.code, [metric], '<', '%') ||
+            this.quantityMatch(valQuant.value, valQuant.code, [0], '=')
         )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))
     );
@@ -742,7 +745,7 @@ export class extractedMCODE {
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         ) ||
         tumorMarker.valueQuantity.some((valQuant) =>
-          this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>=', '%')
+          this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%')
         )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-FGFR'))
     );
@@ -750,7 +753,7 @@ export class extractedMCODE {
   isRBPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueQuantity.some((valQuant) =>
-        this.quantityMatch(valQuant.value, valQuant.comparator, valQuant.code, [metric], '>', '%')
+        this.quantityMatch(valQuant.value, valQuant.code, [metric], '>', '%')
       ) ||
         tumorMarker.valueCodeableConcept.some(
           (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
@@ -766,16 +769,11 @@ export class extractedMCODE {
   }
   quantityMatch(
     quantValue: string | number,
-    quantComparator: string,
     quantUnit: string,
     metricValues: string[] | number[],
     metricComparator: string,
     metricUnit?: string
   ) {
-    if ((!quantComparator && metricComparator != '=') || (quantComparator && quantComparator != metricComparator)) {
-      console.log('incompatible comparators');
-      return false;
-    }
     if ((!quantUnit && metricUnit) || (quantUnit && !metricUnit) || quantUnit != metricUnit) {
       console.log('incompatible units');
       return false;
@@ -800,10 +798,7 @@ export class extractedMCODE {
       !numerator ||
       !denominator ||
       !numerator.value ||
-      !denominator.value ||
-      !numerator.comparator ||
-      !denominator.comparator ||
-      !(numerator.comparator == denominator.comparator && numerator.comparator == metricComparator)
+      !denominator.value
     ) {
       console.log('missing info for ratio comparison');
       return false;

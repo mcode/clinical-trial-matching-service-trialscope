@@ -37,12 +37,71 @@ describe('extractedMCODE', () => {
     expect(extractedData.TNMClinicalStageGroup.length).toBe(2);
     expect(extractedData.TNMPathologicalStageGroup.length).toBe(2);
     expect(extractedData.secondaryCancerCondition.length).toBe(1);
-    expect(extractedData.birthDate != 'NA').toBeTrue();
+    expect(extractedData.birthDate).toBe('1966-08-03');
     expect(extractedData.tumorMarker.length).toBe(3);
     expect(extractedData.cancerRelatedRadiationProcedure.length).toBe(2);
     expect(extractedData.cancerRelatedSurgicalProcedure.length).toBe(2);
     expect(extractedData.cancerRelatedMedicationStatement.length).toBe(1);
   });
+
+  it('checkExtractedPrimaryCancerCondition', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    expect(extractedData.primaryCancerCondition[0].clinicalStatus[0].code).toBe('active');
+    expect(extractedData.primaryCancerCondition[0].coding[0].code).toBe('254837009');
+    expect(extractedData.primaryCancerCondition[0].histologyMorphologyBehavior[0].code).toBe('367651003');
+  });
+
+  it('checkExtractedTNMClinicalStageGroup', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    expect(extractedData.TNMClinicalStageGroup[0].code).toBe('261638004');
+    expect(extractedData.TNMClinicalStageGroup[1].code).toBe('c3A');
+  });
+
+  it('checkExtractedTNMPathologicalStageGroup', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    expect(extractedData.TNMPathologicalStageGroup[0].code).toBe('261638004');
+    expect(extractedData.TNMPathologicalStageGroup[1].code).toBe('c3A');
+  });
+
+  it('checkExtractedSecondaryCancerCondition', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    expect(extractedData.secondaryCancerCondition[0].clinicalStatus[0].code).toBe('active');
+    expect(extractedData.secondaryCancerCondition[0].coding[0].code).toBe('128462008');
+    expect(extractedData.secondaryCancerCondition[0].bodySite[0].code).toBe('8935007');
+  });
+
+  it('checkExtractedTumorMarker', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    //console.log(util.inspect(extractedData.tumorMarker, false, null, true));
+    expect(extractedData.tumorMarker.some( marker => marker.valueCodeableConcept[0].code == '10828004' &&
+      marker.valueQuantity[0].value == 3 && marker.valueRatio.length == 0 && marker.code[0].code == '48676-1' &&
+      marker.code[1].code == '85319-2' && marker.interpretation[0].code == 'POS')).toBeTrue();
+    expect(extractedData.tumorMarker.some( marker => marker.valueCodeableConcept[0].code == '10828004' &&
+      marker.valueQuantity.length == 0 && marker.valueRatio[0].numerator.value == 1 && marker.valueRatio[0].numerator.comparator == '>=' && marker.valueRatio[0].denominator.value == 100 && marker.code[0].code == '48676-1' &&
+      marker.code[1].code == '85318-4' && marker.interpretation.length == 0)).toBeTrue();
+    expect(extractedData.tumorMarker.some( marker => marker.valueCodeableConcept[0].code == '10828004' && marker.valueQuantity.length > 0 &&
+      marker.valueQuantity[0].value == 10 && marker.valueQuantity[0].comparator == '>=' && marker.valueQuantity[0].unit == '%' && marker.valueRatio.length == 0 && marker.code[0].code == '16112-5' &&
+      marker.code[1].code == '85337-4' && marker.interpretation.length == 0)).toBeTrue();
+  });
+
+
+  it('checkExtractedCancerRelatedRadiationProcedure', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    expect(extractedData.cancerRelatedRadiationProcedure.some( procedure => procedure.coding[0].code == '448385000' && procedure.bodySite.length == 0)).toBeTrue();
+    expect(extractedData.cancerRelatedRadiationProcedure.some( procedure => procedure.coding[0].code == '448385000' && procedure.bodySite.length != 0 && procedure.bodySite[0].code == '12738006')).toBeTrue();
+  });
+
+  it('checkExtractedCancerRelatedSurgicalProcedure', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    expect(extractedData.cancerRelatedSurgicalProcedure.some( procedure => procedure.code == '396487001')).toBeTrue();
+    expect(extractedData.cancerRelatedSurgicalProcedure.some( procedure => procedure.code == '443497002')).toBeTrue();
+  });
+
+  it('checkExtractedCancerRelatedMedicationStatement', function() {
+    const extractedData = new mcode.extractedMCODE(sampleData);
+    expect(extractedData.cancerRelatedMedicationStatement[0].code).toBe('583214');
+  });
+
 });
 
 /* Primary Cancer Condition Logic Tests */
@@ -911,6 +970,10 @@ describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
   tm.valueQuantity = [] as mcode.Quantity[];
   tm.valueRatio = [] as mcode.Ratio[];
 
+  // FIX ME:
+  // okay so we have lots of codes for different tumor markers going into one tumor marker when they should be separate tumor markers (this goes for all tumor marker test cases)
+  // and then out getTumorMarkerValue function should look for the requirements across all tumor markers, not just one at a time
+
   // HER2- Filter Attributes
   tm.code[0] = { system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding; // Any code in 'Biomarker-HER2'
   tm.valueCodeableConcept[0] = { system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' } as Coding;
@@ -928,6 +991,9 @@ describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
   extractedMCODE.tumorMarker[0] = tm;
 
   it('Test ER+ and PR+ and HER2- Filter', () => {
+    console.log(extractedData.isHER2Negative(tm));
+    console.log();
+    console.log();
     expect(extractedMCODE.getTumorMarkerValue()).toBe('ER_PLUS_PR_PLUS_HER2_MINUS');
   });
 });
