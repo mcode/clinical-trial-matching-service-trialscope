@@ -544,87 +544,89 @@ export class extractedMCODE {
     //FIX ME:
     // so we're cycling through the data wrong - for instance in this first one,
     //we're actually looking to see if there is one tumor marker that's isHER2Negative, isPRNegative, isERNegative, and isRBPositive when it should be if these conditions are met if you look through all the tumor markers
-    for (const tumorMarker of this.tumorMarker) {
-      if (
-        this.isHER2Negative(tumorMarker) &&
-        this.isPRNegative(tumorMarker, 1) &&
-        this.isERNegative(tumorMarker, 1) &&
-        this.isRBPositive(tumorMarker, 50)
-      ) {
-        return 'TRIPLE_NEGATIVE_AND_RB_POSITIVE';
-      }
+
+    // TRIPLE_NEGATIVE_AND_RB_POSITIVE
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isPRNegative(tm, 1)) &&
+      this.tumorMarker.some(tm => this.isERNegative(tm, 1)) &&
+      this.tumorMarker.some(tm => this.isRBPositive(tm, 50))
+      ){
+      return 'TRIPLE_NEGATIVE_AND_RB_POSITIVE';
     }
     // Triple Negative-10
-    for (const tumorMarker of this.tumorMarker) {
-      if (
-        this.isHER2Negative(tumorMarker) &&
-        this.isPRNegative(tumorMarker, 10) &&
-        this.isERNegative(tumorMarker, 10)
-      ) {
-        return 'TRIPLE_NEGATIVE_MINUS_10';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isPRNegative(tm, 10)) &&
+      this.tumorMarker.some(tm => this.isERNegative(tm, 10))
+      ){
+      return 'TRIPLE_NEGATIVE_MINUS_10';
     }
     // Triple Negative
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isPRNegative(tumorMarker, 1) && this.isERNegative(tumorMarker, 1)) {
-        return 'TRIPLE_NEGATIVE';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isPRNegative(tm, 1)) &&
+      this.tumorMarker.some(tm => this.isERNegative(tm, 1))
+      ){
+      return 'TRIPLE_NEGATIVE';
     }
     // ER+ PR+ HER2-
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1) && this.isERPositive(tumorMarker, 1)) {
-        return 'ER_PLUS_PR_PLUS_HER2_MINUS';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isPRPositive(tm, 1)) &&
+      this.tumorMarker.some(tm => this.isERPositive(tm, 1))
+      ){
+      return 'ER_PLUS_PR_PLUS_HER2_MINUS';
     }
     // PR+ and HER2- and FGFR amplifications
-    for (const tumorMarker of this.tumorMarker) {
-      if (
-        this.isPRPositive(tumorMarker, 1) &&
-        this.isHER2Negative(tumorMarker) &&
-        this.isFGFRAmplification(tumorMarker, 1)
-      ) {
-        return 'PR_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isPRPositive(tm, 1)) &&
+      this.tumorMarker.some(tm => this.isFGFRAmplification(tm, 1))
+      ){
+      return 'PR_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
     }
     // ER+ and HER2- and FGFR amplifications
-    for (const tumorMarker of this.tumorMarker) {
-      if (
-        this.isERPositive(tumorMarker, 1) &&
-        this.isHER2Negative(tumorMarker) &&
-        this.isFGFRAmplification(tumorMarker, 1)
-      ) {
-        return 'ER_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isERPositive(tm, 1)) &&
+      this.tumorMarker.some(tm => this.isFGFRAmplification(tm, 1))
+      ){
+      return 'ER_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
     }
     // PR+ and HER2-
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isPRPositive(tumorMarker, 1)) {
-        return 'PR_PLUS_AND_HER2_MINUS';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isPRPositive(tm, 1))
+      ){
+      return 'PR_PLUS_AND_HER2_MINUS';
     }
     // ER+ and HER2-
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Negative(tumorMarker) && this.isERPositive(tumorMarker, 1)) {
-        return 'ER_PLUS_AND_HER2_MINUS';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isERPositive(tm, 1))
+      ){
+      return 'ER_PLUS_AND_HER2_MINUS';
     }
     // HER2+ and PR+
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker) && this.isPRPositive(tumorMarker, 10)) {
-        return 'HER2_PLUS_AND_PR_PLUS';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Positive(tm)) &&
+      this.tumorMarker.some(tm => this.isPRPositive(tm, 10))
+      ){
+      return 'HER2_PLUS_AND_PR_PLUS';
     }
     // HER2+ and ER+
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker) && this.isERPositive(tumorMarker, 10)) {
-        return 'HER2+ and ER+';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Positive(tm)) &&
+      this.tumorMarker.some(tm => this.isERPositive(tm, 10))
+      ){
+      return 'HER2_PLUS_AND_ER_PLUS';
     }
     // HER2+
-    for (const tumorMarker of this.tumorMarker) {
-      if (this.isHER2Positive(tumorMarker)) {
-        return 'HER2_PLUS';
-      }
+    if (
+      this.tumorMarker.some(tm => this.isHER2Positive(tm))
+      ){
+      return 'HER2_PLUS';
     }
     // None of the conditions are satisfied.
     return 'NOT_SURE';
