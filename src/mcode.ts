@@ -547,32 +547,32 @@ export class extractedMCODE {
 
     // TRIPLE_NEGATIVE_AND_RB_POSITIVE
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
       this.tumorMarker.some(tm => this.isPRNegative(tm, 1)) &&
       this.tumorMarker.some(tm => this.isERNegative(tm, 1)) &&
       this.tumorMarker.some(tm => this.isRBPositive(tm, 50))
       ){
       return 'TRIPLE_NEGATIVE_AND_RB_POSITIVE';
     }
-    // Triple Negative-10
-    if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
-      this.tumorMarker.some(tm => this.isPRNegative(tm, 10)) &&
-      this.tumorMarker.some(tm => this.isERNegative(tm, 10))
-      ){
-      return 'TRIPLE_NEGATIVE_MINUS_10';
-    }
     // Triple Negative
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
       this.tumorMarker.some(tm => this.isPRNegative(tm, 1)) &&
       this.tumorMarker.some(tm => this.isERNegative(tm, 1))
       ){
       return 'TRIPLE_NEGATIVE';
     }
+    // Triple Negative-10
+    if (
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '1+'])) &&
+      this.tumorMarker.some(tm => this.isPRNegative(tm, 10)) &&
+      this.tumorMarker.some(tm => this.isERNegative(tm, 10))
+      ){
+      return 'TRIPLE_NEGATIVE_MINUS_10';
+    }
     // ER+ PR+ HER2-
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
       this.tumorMarker.some(tm => this.isPRPositive(tm, 1)) &&
       this.tumorMarker.some(tm => this.isERPositive(tm, 1))
       ){
@@ -580,7 +580,7 @@ export class extractedMCODE {
     }
     // PR+ and HER2- and FGFR amplifications
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
       this.tumorMarker.some(tm => this.isPRPositive(tm, 1)) &&
       this.tumorMarker.some(tm => this.isFGFRAmplification(tm, 1))
       ){
@@ -588,7 +588,7 @@ export class extractedMCODE {
     }
     // ER+ and HER2- and FGFR amplifications
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
       this.tumorMarker.some(tm => this.isERPositive(tm, 1)) &&
       this.tumorMarker.some(tm => this.isFGFRAmplification(tm, 1))
       ){
@@ -596,14 +596,14 @@ export class extractedMCODE {
     }
     // PR+ and HER2-
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
       this.tumorMarker.some(tm => this.isPRPositive(tm, 1))
       ){
       return 'PR_PLUS_AND_HER2_MINUS';
     }
     // ER+ and HER2-
     if (
-      this.tumorMarker.some(tm => this.isHER2Negative(tm)) &&
+      this.tumorMarker.some(tm => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
       this.tumorMarker.some(tm => this.isERPositive(tm, 1))
       ){
       return 'ER_PLUS_AND_HER2_MINUS';
@@ -647,7 +647,7 @@ export class extractedMCODE {
         ))
     );
   }
-  isHER2Negative(tumorMarker: TumorMarker): boolean {
+  isHER2Negative(tumorMarker: TumorMarker, quantities: string[]): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
@@ -658,7 +658,7 @@ export class extractedMCODE {
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         ) || // Information on Interpretation values can be found at: http://hl7.org/fhir/R4/valueset-observation-interpretation.html
         tumorMarker.valueQuantity.some((valQuant) =>
-          this.quantityMatch(valQuant.value, valQuant.code, ['0', '1', '2', '1+', '2+'], '=')
+          this.quantityMatch(valQuant.value, valQuant.code, quantities, '=')
         )) &&
       tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'))
     );

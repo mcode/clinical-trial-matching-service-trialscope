@@ -801,7 +801,7 @@ describe('checkTumorMarkerFilterLogic-HER2+ and ER+', () => {
   tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
   // ER+ Filter Attributes
   tm2.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
-  tm2.valueQuantity.push({ value: '10', comparator: '>=', unit: '%' } as mcode.Quantity);
+  tm2.valueQuantity.push({ value: '11', comparator: '>=', unit: '%' , code: '%'} as mcode.Quantity);
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1081,11 +1081,7 @@ describe('checkTumorMarkerFilterLogic-Triple negative', () => {
   tm1.valueQuantity.push({ value: '2+', comparator: '=' } as mcode.Quantity);
   // PR- Filter Attributes
   tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
-  tm2.interpretation.push({
-    system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
-    code: 'ND',
-    display: 'N/A'
-  } as Coding);
+  tm2.valueQuantity.push({ value: '0', comparator: '<', unit: '%', code: '%' } as mcode.Quantity);
   // ER- Filter Attributes
   tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
   tm3.interpretation.push({
