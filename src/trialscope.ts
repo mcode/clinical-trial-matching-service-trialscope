@@ -416,8 +416,7 @@ export class TrialScopeQueryRunner {
         index++;
       }
       if (backupIds.length == 0) {
-        //return new SearchSet(bundleEntries);
-        return null;
+        return new SearchSet(bundleEntries);
       } else {
         return this.backupService.downloadTrials(backupIds).then(() => {
           for (const entry of bundleEntries) {
@@ -435,8 +434,7 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-          //return new SearchSet(bundleEntries);
-          return null;
+          return new SearchSet(bundleEntries);
         });
       }
     });
