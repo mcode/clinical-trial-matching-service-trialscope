@@ -301,6 +301,7 @@ describe('checkSecondaryCancerFilterLogic-InvasiveBreastCancerAndMetastatic', ()
   } as Coding); // Any code in 'Morphology-Invasive'
   scc.coding.push({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding); // Any code
 
+  extractedMCODE.primaryCancerCondition.push(pcc);
   extractedMCODE.secondaryCancerCondition.push(scc);
 
   it('Test Invasive Breast Cancer and Metastatic Filter', () => {
@@ -1062,10 +1063,6 @@ describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
   tm3.valueCodeableConcept = [] as Coding[];
   tm3.valueQuantity = [] as mcode.Quantity[];
   tm3.valueRatio = [] as mcode.Ratio[];
-
-  // FIX ME:
-  // okay so we have lots of codes for different tumor markers going into one tumor marker when they should be separate tumor markers (this goes for all tumor marker test cases)
-  // and then out getTumorMarkerValue function should look for the requirements across all tumor markers, not just one at a time
 
   // HER2- Filter Attributes
   tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'

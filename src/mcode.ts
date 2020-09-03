@@ -543,9 +543,6 @@ export class extractedMCODE {
     }
     // these definitely aren't in a most specific to least specific order, so we'll need to rearrange them
     // Triple Negative and RB Positive
-    //FIX ME:
-    // so we're cycling through the data wrong - for instance in this first one,
-    //we're actually looking to see if there is one tumor marker that's isHER2Negative, isPRNegative, isERNegative, and isRBPositive when it should be if these conditions are met if you look through all the tumor markers
 
     // TRIPLE_NEGATIVE_AND_RB_POSITIVE
     if (
@@ -777,7 +774,7 @@ export class extractedMCODE {
     metricUnit?: string
   ) {
     if ((!quantUnit && metricUnit) || (quantUnit && !metricUnit) || quantUnit != metricUnit) {
-      console.log('incompatible units');
+      //console.log('incompatible units');
       return false;
     }
 
@@ -797,7 +794,7 @@ export class extractedMCODE {
   }
   ratioMatch(numerator: Quantity, denominator: Quantity, metricValue: number, metricComparator: string) {
     if (!numerator || !denominator || !numerator.value || !denominator.value) {
-      console.log('missing info for ratio comparison');
+      //console.log('missing info for ratio comparison');
       return false;
     }
     const num: number = typeof numerator.value == 'number' ? numerator.value : Number(numerator.value);

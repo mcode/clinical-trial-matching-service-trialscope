@@ -65,7 +65,7 @@ export interface TrialScopeResponse {
   data: {
     advancedMatches: {
       totalCount: number;
-      edges: { node: TrialScopeTrial; cursor: string, matchQuality: string }[];
+      edges: { node: TrialScopeTrial; cursor: string; matchQuality: string }[];
       pageInfo: {
         endCursor: string;
         hasNextPage: boolean;
@@ -163,12 +163,13 @@ function parseRecruitmentStatus(status: string): string | null {
   }
 }
 
-function parseMatchQuality(matchQuality: string) : number {
+function parseMatchQuality(matchQuality: string): number {
   if (matchQuality == 'HIGH_LIKELIHOOD') {
     return 1;
   } else if (matchQuality == 'POSSIBLE') {
     return 0.5;
-  } else { // matchQuality == 'POSSIBLE_NON_MATCH'
+  } else {
+    // matchQuality == 'POSSIBLE_NON_MATCH'
     return 0;
   }
 }
@@ -276,17 +277,17 @@ export class TrialScopeQuery {
   }
   */
   // Get the mCODE filters as an array of strings
-  getmCODEFilters(): string[]{
-    let filterArray: string[] = new Array();
-    filterArray.push("primaryCancer: " + this.mcode.primaryCancer);
-    filterArray.push("secondaryCancer: " + this.mcode.secondaryCancer);
-    filterArray.push("histologyMorphology: " + this.mcode.histologyMorphology);
-    filterArray.push("stage: " + this.mcode.stage);
-    filterArray.push("tumorMarker: " + this.mcode.tumorMarker);
-    filterArray.push("radiationProcedure: " + this.mcode.radiationProcedure);
-    filterArray.push("surgicalProcedure: " + this.mcode.surgicalProcedure);
-    filterArray.push("medicationStatement: " + this.mcode.medicationStatement);
-    return filterArray
+  getmCODEFilters(): string[] {
+    const filterArray: string[] = [];
+    filterArray.push('primaryCancer: ' + this.mcode.primaryCancer);
+    filterArray.push('secondaryCancer: ' + this.mcode.secondaryCancer);
+    filterArray.push('histologyMorphology: ' + this.mcode.histologyMorphology);
+    filterArray.push('stage: ' + this.mcode.stage);
+    filterArray.push('tumorMarker: ' + this.mcode.tumorMarker);
+    filterArray.push('radiationProcedure: ' + this.mcode.radiationProcedure);
+    filterArray.push('surgicalProcedure: ' + this.mcode.surgicalProcedure);
+    filterArray.push('medicationStatement: ' + this.mcode.medicationStatement);
+    return filterArray;
   }
   /**
    * Create a TrialScope query.
@@ -294,11 +295,9 @@ export class TrialScopeQuery {
    */
   toQuery(): string {
     // mCODE Filters
-    let advancedMatches =
-      'mcode:{' +
-      Array.from(this.getmCODEFilters()).join(', ') + '},';
+    let advancedMatches = 'mcode:{' + Array.from(this.getmCODEFilters()).join(', ') + '},';
     // Start of Base filters
-    advancedMatches += `baseFilters: { zipCode: \"${this.zipCode}\"`;
+    advancedMatches += `baseFilters: { zipCode: "${this.zipCode}"`;
     // Travel Radius
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
@@ -364,7 +363,8 @@ export class TrialScopeQueryRunner {
     this.generateRequest = requestGenerator;
   }
 
-  runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> { // update for advanced matches query
+  runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
+    // update for advanced matches query
     return new Promise<TrialScopeResponse>((resolve, reject) => {
       const query = new TrialScopeQuery(patientBundle);
       this.sendQuery(query.toQuery())
@@ -412,7 +412,7 @@ export class TrialScopeQueryRunner {
         if (!study.description || !study.enrollment || !study.phase || !study.category) {
           backupIds.push(trial.nctId);
         }
-        bundleEntries.push({resource: study, search: {score: matchScore, mode: 'match'}});
+        bundleEntries.push({ resource: study, search: { score: matchScore, mode: 'match' } });
         index++;
       }
       if (backupIds.length == 0) {
@@ -420,7 +420,7 @@ export class TrialScopeQueryRunner {
         return null;
       } else {
         return this.backupService.downloadTrials(backupIds).then(() => {
-          for (let entry of bundleEntries) {
+          for (const entry of bundleEntries) {
             // console.log(study.identifier[0].value);
             if (backupIds.includes((entry.resource as fhir.ResearchStudy).identifier[0].value)) {
               entry.resource = this.backupService.updateTrial(entry.resource as fhir.ResearchStudy);
