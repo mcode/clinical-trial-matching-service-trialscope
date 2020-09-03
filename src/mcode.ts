@@ -1,12 +1,12 @@
 import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
-import { fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
 
 import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
 
-import profile_system_codesX from '../data/profile-system-codes.json';
+import profile_system_codes_json from '../data/profile-system-codes-json.json';
+import { fhir } from 'clinical-trial-matching-service';
 
-const profile_system_codes = profile_system_codesX as ProfileSystemCodes;
+const profile_system_codes = profile_system_codes_json as ProfileSystemCodes;
 
 export type FHIRPath = string;
 
@@ -306,10 +306,10 @@ export class extractedMCODE {
         // 3. Invasive Breast Cancer and Recurrent
         if (
           (primaryCancerCondition.histologyMorphologyBehavior.some((coding) =>
-            this.profilesContainCode(coding, 'Morphology-Invasive')
+            this.codeIsInSheet(coding, 'Morphology-Invasive')
           ) ||
-            this.profilesContainCode(currentCoding, 'Cancer-Invasive-Breast')) &&
-          this.profilesContainCode(currentCoding, 'Cancer-Breast') &&
+            this.codeIsInSheet(currentCoding, 'Cancer-Invasive-Breast')) &&
+          this.codeIsInSheet(currentCoding, 'Cancer-Breast') &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrent')
         ) {
           return 'INVASIVE_BREAST_CANCER_AND_RECURRENT';
@@ -320,7 +320,7 @@ export class extractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 4. Locally Recurrent
       if (
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrent')
       ) {
         return 'LOCALLY_RECURRENT';
@@ -329,7 +329,7 @@ export class extractedMCODE {
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 1. Breast Cancer
-      if (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))) {
+      if (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast'))) {
         return 'BREAST_CANCER';
       }
     }
@@ -340,10 +340,10 @@ export class extractedMCODE {
         primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current') &&
         (this.TNMClinicalStageGroup.some((code) =>
-          this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
+          this.codeIsInSheet(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
         ) ||
           this.TNMPathologicalStageGroup.some((code) =>
-            this.profilesContainCode(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
+            this.codeIsInSheet(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
           ))
       ) {
         return 'CONCOMITANT_INVASIVE_MALIGNANCIES';
@@ -357,8 +357,8 @@ export class extractedMCODE {
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current')) ||
         (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Cervical')) &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current') &&
-          (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
-            this.TNMPathologicalStageGroup.some((coding) => this.profilesContainCode(coding, 'Stage-0'))))
+          (this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-0')) ||
+            this.TNMPathologicalStageGroup.some((coding) => this.codeIsInSheet(coding, 'Stage-0'))))
       ) {
         return 'OTHER_MALIGNANCY_EXCEPT_SKIN_OR_CERVICAL';
       }
@@ -377,18 +377,18 @@ export class extractedMCODE {
       if (
         ((this.primaryCancerCondition.some((primCanCond) =>
           primCanCond.histologyMorphologyBehavior.some((histMorphBehav) =>
-            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive')
           )
         ) &&
           this.primaryCancerCondition.some((primCanCond) =>
-            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))
+            primCanCond.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast'))
           )) ||
           this.primaryCancerCondition.some((primCanCond) =>
-            primCanCond.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Breast'))
+            primCanCond.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))
           )) &&
         (secondaryCancerCondition.coding.length != 0 ||
-          this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
-          this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')))
+          this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4')) ||
+          this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4')))
       ) {
         return 'INVASIVE_BREAST_CANCER_AND_METASTATIC';
       }
@@ -397,7 +397,7 @@ export class extractedMCODE {
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
       // 1. Brain Metastasis
       if (
-        secondaryCancerCondition.coding.some((coding) => this.profilesContainCode(coding, 'Metastasis-Brain')) &&
+        secondaryCancerCondition.coding.some((coding) => this.codeIsInSheet(coding, 'Metastasis-Brain')) &&
         secondaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')
       ) {
         return 'BRAIN_METASTASIS';
@@ -419,8 +419,8 @@ export class extractedMCODE {
       // 4. Metastatic
       if (
         secondaryCancerCondition.coding.length != 0 ||
-        this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
-        this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
+        this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4')) ||
+        this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4'))
       ) {
         return 'METASTATIC';
       }
@@ -437,11 +437,11 @@ export class extractedMCODE {
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       if (
-        (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
-            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive-Carcinoma')
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive-Carcinoma')
           )) ||
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Carcinoma'))
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Carcinoma'))
       ) {
         return 'INVASIVE_CARCINOMA';
       }
@@ -450,11 +450,11 @@ export class extractedMCODE {
     // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       if (
-        (primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast')) &&
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
-            this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive')
           )) ||
-        primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Breast'))
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))
       ) {
         return 'INVASIVE_BREAST_CANCER';
       }
@@ -474,50 +474,50 @@ export class extractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       if (
         ((primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
-          this.profilesContainCode(histMorphBehav, 'Morphology-Invasive')
+          this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive')
         ) &&
-          primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Breast'))) ||
-          primaryCancerCondition.coding.some((code) => this.profilesContainCode(code, 'Cancer-Invasive-Breast'))) &&
-        (this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')) ||
-          this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3', 'Stage-4')))
+          primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast'))) ||
+          primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))) &&
+        (this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-3', 'Stage-4')) ||
+          this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-3', 'Stage-4')))
       ) {
         return 'INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED';
       }
     }
     // Stage 0
     if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-0'))
+      this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-0')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-0'))
     ) {
       // This also meets requirements for NON_INVASIVE.
       return 'ZERO';
     }
     // Stage 1
     if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-1'))
+      this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-1')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-1'))
     ) {
       return 'ONE';
     }
     // Stage 2
     if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-2'))
+      this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-2')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-2'))
     ) {
       return 'TWO';
     }
     // Stage 3
     if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-3'))
+      this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-3')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-3'))
     ) {
       // This also meets requirements for LOCALLY_ADVANCED.
       return 'THREE';
     }
     // Stage 4
     if (
-      this.TNMClinicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4')) ||
-      this.TNMPathologicalStageGroup.some((code) => this.profilesContainCode(code, 'Stage-4'))
+      this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4')) ||
+      this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4'))
     ) {
       return 'FOUR';
     }
@@ -630,7 +630,7 @@ export class extractedMCODE {
   }
   isHER2Positive(tumorMarker: TumorMarker): boolean {
     return (
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2')) &&
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-HER2')) &&
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
       ) ||
@@ -657,7 +657,7 @@ export class extractedMCODE {
         tumorMarker.valueQuantity.some((valQuant) =>
           this.quantityMatch(valQuant.value, valQuant.code, quantities, '=')
         )) &&
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-HER2'))
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-HER2'))
     );
   }
   isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
@@ -674,7 +674,7 @@ export class extractedMCODE {
           this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%')
         ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>='))) &&
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-PR'))
     );
   }
   isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
@@ -693,7 +693,7 @@ export class extractedMCODE {
             this.quantityMatch(valQuant.value, valQuant.code, [0], '=')
         ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '<'))) &&
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-PR'))
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-PR'))
     );
   }
   isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
@@ -710,7 +710,7 @@ export class extractedMCODE {
         tumorMarker.valueQuantity.some((valQuant) =>
           this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%')
         )) &&
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-ER'))
     );
   }
   isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
@@ -729,7 +729,7 @@ export class extractedMCODE {
             this.quantityMatch(valQuant.value, valQuant.code, [metric], '<', '%') ||
             this.quantityMatch(valQuant.value, valQuant.code, [0], '=')
         )) &&
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-ER'))
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-ER'))
     );
   }
   isFGFRAmplification(tumorMarker: TumorMarker, metric: number): boolean {
@@ -746,7 +746,7 @@ export class extractedMCODE {
         tumorMarker.valueQuantity.some((valQuant) =>
           this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%')
         )) &&
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-FGFR'))
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-FGFR'))
     );
   }
   isRBPositive(tumorMarker: TumorMarker, metric: number): boolean {
@@ -763,7 +763,7 @@ export class extractedMCODE {
             (interp.code == 'POS' || interp.code == 'DET' || interp.code == 'H') &&
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         )) &&
-      tumorMarker.code.some((code) => this.profilesContainCode(code, 'Biomarker-RB'))
+      tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-RB'))
     );
   }
   quantityMatch(
@@ -772,7 +772,7 @@ export class extractedMCODE {
     metricValues: string[] | number[],
     metricComparator: string,
     metricUnit?: string
-  ) {
+  ): boolean {
     if ((!quantUnit && metricUnit) || (quantUnit && !metricUnit) || quantUnit != metricUnit) {
       //console.log('incompatible units');
       return false;
@@ -792,7 +792,7 @@ export class extractedMCODE {
       return false;
     }
   }
-  ratioMatch(numerator: Quantity, denominator: Quantity, metricValue: number, metricComparator: string) {
+  ratioMatch(numerator: Quantity, denominator: Quantity, metricValue: number, metricComparator: string): boolean {
     if (!numerator || !denominator || !numerator.value || !denominator.value) {
       //console.log('missing info for ratio comparison');
       return false;
@@ -926,17 +926,19 @@ export class extractedMCODE {
     }
   }
 
-  codeIsInSheet(coding: Coding, sheetName: string): boolean {
-    const code = coding.code;
+  // Return whether any of the codes in a given coding exist in the given profiles (sheets).
+  codeIsInSheet(coding: Coding, ...sheetNames: string[]): boolean {
     const system = this.normalizeCodeSystem(coding.system);
-    let codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
-    if (!codeSet) {
-      codeSet = [];
-    }
-    // Check that the current code matches the given code.
-    for (const currentCode of codeSet) {
-      if (coding.code == currentCode.code) {
-        return true;
+    for (const sheetName of sheetNames) {
+      let codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
+      if (!codeSet) {
+        codeSet = [];
+      }
+      // Check that the current code matches the given code.
+      for (const currentCode of codeSet) {
+        if (coding.code == currentCode.code) {
+          return true;
+        }
       }
     }
     return false;
@@ -961,34 +963,12 @@ export class extractedMCODE {
     }
   }
 
-  // Return whether any of the codes in a given coding exist in the given profiles.
-  profilesContainCode(coding: Coding, ...profiles: string[]): boolean {
-    // Cycle through the profiles
-    for (const profile of profiles) {
-      // Pull out the relevant codes from the relevant code system.
-      const currentCodeSystem: string = this.normalizeCodeSystem(coding.system);
-      let codeSet: { code: string }[] = (profile_system_codes[profile] as CodeProfile)[currentCodeSystem] as {
-        code: string;
-      }[];
-      if (!codeSet) {
-        codeSet = [];
-      }
-      // Check that the current code matches the given code.
-      for (const currentCode of codeSet) {
-        if (coding.code == currentCode.code) {
-          return true;
-        }
-      }
-    }
-    // If we reach here, there were no codes in the given profile.
-    return false;
-  }
   // Returns whether the given code is any code not in the given profile.
   profileDoesNotContainCode(coding: Coding, profile: string): boolean {
     if (coding.code == undefined || coding.code == null) {
       return false;
     } else {
-      return !this.profilesContainCode(coding, profile);
+      return !this.codeIsInSheet(coding, profile);
     }
   }
 }
