@@ -526,8 +526,8 @@ export class extractedMCODE {
   }
   // Age (18 or younger/older)
   getAgeValue(): string {
-    if (this.birthDate == 'NA') {
-      return null;
+    if (this.birthDate == 'NA' || this.birthDate == null || this.birthDate == undefined) {
+      return 'NOT_SURE';
     }
     // Birthdate is in format: '1966-08-03'
     const today: Date = new Date();
@@ -535,7 +535,7 @@ export class extractedMCODE {
     // Time Difference (Milliseconds)
     const millisecondsAge = today.getTime() - checkDate.getTime();
     const milliseconds18Years = 1000 * 60 * 60 * 24 * 365 * 18;
-    return millisecondsAge > milliseconds18Years ? '18 Or Over' : 'Under 18';
+    return millisecondsAge > milliseconds18Years ? '18_OR_OVER' : 'UNDER_18';
   }
   getTumorMarkerValue(): string {
     if (this.tumorMarker.length == 0) {

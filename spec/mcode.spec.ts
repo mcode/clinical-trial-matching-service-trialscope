@@ -877,7 +877,10 @@ describe('checkTumorMarkerFilterLogic-HER2+ and PR+', () => {
   } as Coding);
   // PR+ Filter Attributes
   tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
-  tm2.valueQuantity.push({ value: '10', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity);
+  tm2.valueRatio.push({
+    numerator: { value: '30', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity,
+    denominator: { value: '2', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity
+  } as mcode.Ratio);
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1069,7 +1072,10 @@ describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
   tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' } as Coding);
   // PR+ Filter Attributes
   tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
-  tm2.valueQuantity.push({ value: '11', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity);
+  tm2.valueRatio.push({
+    numerator: { value: '100', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity,
+    denominator: { value: '3', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity
+  } as mcode.Ratio);
   // ER+ Filter Attributes
   tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
   tm3.interpretation.push({
@@ -1115,7 +1121,10 @@ describe('checkTumorMarkerFilterLogic-Triple negative', () => {
   tm1.valueQuantity.push({ value: '2+', comparator: '=' } as mcode.Quantity);
   // PR- Filter Attributes
   tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
-  tm2.valueQuantity.push({ value: '0', comparator: '<', unit: '%', code: '%' } as mcode.Quantity);
+  tm2.valueRatio.push({
+    numerator: { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
+    denominator: { value: '110', comparator: '<', unit: '%', code: '%' } as mcode.Quantity
+  } as mcode.Ratio);
   // ER- Filter Attributes
   tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
   tm3.interpretation.push({
@@ -1183,13 +1192,7 @@ describe('checkTumorMarkerFilterLogic-Triple negative and RB Positive', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  const tm1: mcode.TumorMarker = {
-    code: [] as Coding[],
-    interpretation: [] as Coding[],
-    valueCodeableConcept: [] as Coding[],
-    valueQuantity: [] as mcode.Quantity[],
-    valueRatio: [] as mcode.Ratio[]
-  };
+  const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
   tm1.valueCodeableConcept = [] as Coding[];
@@ -1242,5 +1245,74 @@ describe('checkTumorMarkerFilterLogic-Triple negative and RB Positive', () => {
 
   it('Test Triple negative and RB Positive Filter', () => {
     expect(extractedMCODE.getTumorMarkerValue()).toBe('TRIPLE_NEGATIVE_AND_RB_POSITIVE');
+  });
+});
+
+describe('Ratio and Quantity Error Tests', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const tm1: mcode.TumorMarker = {};
+  tm1.code = [] as Coding[];
+  tm1.interpretation = [] as Coding[];
+  tm1.valueCodeableConcept = [] as Coding[];
+  tm1.valueQuantity = [] as mcode.Quantity[];
+  tm1.valueRatio = [] as mcode.Ratio[];
+
+  // Invalid Operator
+  tm1.valueQuantity.push({ value: '51', comparator: '!=', unit: '%', code: '%' } as mcode.Quantity);
+  // Invalid Operator
+  tm1.valueRatio.push({
+    numerator: { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
+    denominator: { value: '110', comparator: '<', unit: '%', code: '%' } as mcode.Quantity
+  } as mcode.Ratio);
+
+  it('Test Quantity Error', () => {
+    expect(extractedMCODE.quantityMatch(3, '%', [10], '<')).toBe(false);
+  });
+
+  it('Test Ratio Error', () => {
+    expect(
+      extractedMCODE.ratioMatch(
+        { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
+        { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
+        10,
+        '<'
+      )
+    ).toBe(false);
+  });
+});
+
+describe('checkAgeFilterLogic', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+
+  it('Test Age is over 18 Filter', () => {
+    extractedMCODE.birthDate = '2000-06-11';
+    expect(extractedMCODE.getAgeValue()).toBe('18_OR_OVER');
+  });
+
+  it('Test Age is under 18 Filter', () => {
+    extractedMCODE.birthDate = '2020-06-11';
+    expect(extractedMCODE.getAgeValue()).toBe('UNDER_18');
+  });
+});
+
+describe('NotSureTests', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+
+  it('Test NOT_SURE returns for null inputs', () => {
+    expect(extractedMCODE.getPrimaryCancerValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getSecondaryCancerValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getMedicationStatementValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getRadiationProcedureValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getSurgicalProcedureValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getStageValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getTumorMarkerValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getAgeValue()).toBe('NOT_SURE');
   });
 });
