@@ -1,7 +1,7 @@
 import { fhirclient } from 'fhirclient/lib/types';
 import * as fhirpath from 'fhirpath';
 
-import { CodeProfile, ProfileSystemCodes } from '../data/profileSystemLogic';
+import { CodeProfile, ProfileSystemCodes } from './profileSystemLogic';
 
 import profile_system_codes_json from '../data/profile-system-codes-json.json';
 import { fhir } from 'clinical-trial-matching-service';

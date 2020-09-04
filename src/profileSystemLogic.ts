@@ -1,4 +1,4 @@
-import { Coding } from '../src/mcode';
+import { Coding } from './mcode';
 
 export interface ProfileType {
   types: string[];
