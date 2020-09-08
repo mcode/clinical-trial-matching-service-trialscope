@@ -22,10 +22,6 @@ describe('TrailScopeService', () => {
       return request(server).get('/').set('Accept', 'application/json').expect(200);
     });
 
-    it('responds to /getConditions', () => {
-      return request(server).post('/getConditions').set('Accept', 'application/json').expect(200);
-    });
-
     it('uses the query runner', (done) => {
       const runQuery = spyOn(service.queryRunner, 'runQuery').and.callFake(() => {
         return Promise.resolve(new SearchSet([]));
