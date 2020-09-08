@@ -179,7 +179,7 @@ describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => 
   // Concomitant invasive malignancies Filter Attributes
   pcc.coding.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'current', display: 'N/A' } as Coding);
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
   tnmClinical.push({ system: 'AJCC', code: 'II', display: 'N/A' } as Coding); // Any code in 'Stage-2'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
@@ -207,7 +207,7 @@ describe('checkPrimaryCancerFilterLogic-InvasiveBreastCancerandRecurrent', () =>
     code: '734075007',
     display: 'N/A'
   } as Coding); // Any code in 'Morphology-Invasive'
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrent', display: 'N/A' } as Coding);
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrence', display: 'N/A' } as Coding);
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -227,7 +227,7 @@ describe('checkPrimaryCancerFilterLogic-LocallyRecurrent', () => {
 
   // Locally Recurrent Filter Attributes
   pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding);
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrent', display: 'N/A' } as Coding);
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrence', display: 'N/A' } as Coding);
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -247,7 +247,7 @@ describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', (
 
   // Other malignancy - except skin or cervical  Filter Attributes
   pcc.coding.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'current', display: 'N/A' } as Coding);
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 

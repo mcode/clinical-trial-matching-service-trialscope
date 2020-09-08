@@ -310,7 +310,7 @@ export class extractedMCODE {
           ) ||
             this.codeIsInSheet(currentCoding, 'Cancer-Invasive-Breast')) &&
           this.codeIsInSheet(currentCoding, 'Cancer-Breast') &&
-          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrent')
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrence')
         ) {
           return 'INVASIVE_BREAST_CANCER_AND_RECURRENT';
         }
@@ -321,7 +321,7 @@ export class extractedMCODE {
       // 4. Locally Recurrent
       if (
         primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
-        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrent')
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'recurrence')
       ) {
         return 'LOCALLY_RECURRENT';
       }
@@ -338,7 +338,7 @@ export class extractedMCODE {
       // 2. Concomitant invasive malignancies
       if (
         primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
-        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current') &&
+        primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.codeIsInSheet(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
         ) ||
@@ -354,9 +354,9 @@ export class extractedMCODE {
       // 5. Other malignancy - except skin or cervical
       if (
         (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
-          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current')) ||
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')) ||
         (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Cervical')) &&
-          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'current') &&
+          primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
           (this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-0')) ||
             this.TNMPathologicalStageGroup.some((coding) => this.codeIsInSheet(coding, 'Stage-0'))))
       ) {
