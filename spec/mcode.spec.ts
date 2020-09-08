@@ -180,8 +180,7 @@ describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => 
   pcc.coding.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
   pcc.clinicalStatus.push({ system: 'N/A', code: 'current', display: 'N/A' } as Coding);
-  tnmClinical.push({ system: 'AJCC', code: 'II', display: 'N/A' } as Coding); // <- THERE IS SOMETHING WRONG WITH AJCC  // Any code in 'Stage-2'
-  tnmPathological.push({ system: 'snomed', code: '261640009', display: 'N/A' } as Coding); // Any code in 'Stage-2'
+  tnmClinical.push({ system: 'AJCC', code: 'II', display: 'N/A' } as Coding); // Any code in 'Stage-2'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
   extractedMCODE.TNMClinicalStageGroup = tnmClinical;
