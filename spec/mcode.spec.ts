@@ -1015,28 +1015,42 @@ describe('checkTumorMarkerFilterLogic-PR+ and HER- and FGFR Amplifications', () 
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.extractedMCODE(patientBundle);
-  const tm: mcode.TumorMarker = {};
-  tm.code = [] as Coding[];
-  tm.interpretation = [] as Coding[];
-  tm.valueCodeableConcept = [] as Coding[];
-  tm.valueQuantity = [] as mcode.Quantity[];
-  tm.valueRatio = [] as mcode.Ratio[];
+  const tm1: mcode.TumorMarker = {};
+  tm1.code = [] as Coding[];
+  tm1.interpretation = [] as Coding[];
+  tm1.valueCodeableConcept = [] as Coding[];
+  tm1.valueQuantity = [] as mcode.Quantity[];
+  tm1.valueRatio = [] as mcode.Ratio[];
+  const tm2: mcode.TumorMarker = {};
+  tm2.code = [] as Coding[];
+  tm2.interpretation = [] as Coding[];
+  tm2.valueCodeableConcept = [] as Coding[];
+  tm2.valueQuantity = [] as mcode.Quantity[];
+  tm2.valueRatio = [] as mcode.Ratio[];
+  const tm3: mcode.TumorMarker = {};
+  tm3.code = [] as Coding[];
+  tm3.interpretation = [] as Coding[];
+  tm3.valueCodeableConcept = [] as Coding[];
+  tm3.valueQuantity = [] as mcode.Quantity[];
+  tm3.valueRatio = [] as mcode.Ratio[];
 
   // HER2- Filter Attributes
-  tm.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' } as Coding);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
+  tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' } as Coding);
   // PR+ Filter Attributes
-  tm.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
-  tm.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
+  tm2.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
   // FGFR Amplifications Attributes
-  tm.code.push({ system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A' } as Coding); // Any code in 'Biomarker-FGFR'
-  tm.interpretation.push({
+  tm3.code.push({ system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A' } as Coding); // Any code in 'Biomarker-FGFR'
+  tm3.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'POS',
     display: 'N/A'
   } as mcode.Quantity);
 
-  extractedMCODE.tumorMarker.push(tm);
+  extractedMCODE.tumorMarker.push(tm1);
+  extractedMCODE.tumorMarker.push(tm2);
+  extractedMCODE.tumorMarker.push(tm3);
 
   it('Test PR+ and HER- and FGFR Amplifications Filter', () => {
     expect(extractedMCODE.getTumorMarkerValue()).toBe('PR_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS');
