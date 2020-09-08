@@ -4,7 +4,6 @@
 import { ClinicalTrialGovService } from 'clinical-trial-matching-service';
 import https from 'https';
 import http from 'http';
-import { mapConditions } from './mapping';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { RequestError, SearchSet, SearchBundleEntry, fhir } from 'clinical-trial-matching-service';
@@ -257,25 +256,8 @@ export class TrialScopeQuery {
           }
         }
       }
-      /*
-      if (resource.resourceType === 'Condition') {
-        this.addCondition(resource);
-      }
-      */
     }
   }
-  /*
-  addCondition(condition: fhir.Condition): void {
-    // Should have a code
-    // TODO: Limit to specific coding systems (maybe)
-    for (const code of condition.code.coding) {
-      this.conditions.add(code.code);
-    }
-  }
-  getTrialScopeConditions(): Set<string> {
-    return mapConditions(Array.from(this.conditions));
-  }
-  */
   // Get the mCODE filters as an array of strings
   getmCODEFilters(): string[] {
     const filterArray: string[] = [];
