@@ -367,10 +367,14 @@ export class TrialScopeQueryRunner {
         return new SearchSet(studies);
       } else {
         return this.backupService.downloadTrials(backupIds).then(() => {
-          for (let study of studies) {
+          const promises: Promise<fhir.ResearchStudy>[] = [];
+          for (const study of studies) {
             // console.log(study.identifier[0].value);
             if (backupIds.includes(study.identifier[0].value)) {
-              study = this.backupService.updateTrial(study);
+              promises.push(this.backupService.updateResearchStudy(study));
+            } else {
+              // Otherwise push the study as it exists
+              promises.push(Promise.resolve(study));
             }
           }
 
@@ -382,7 +386,7 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-          return new SearchSet(studies);
+          return Promise.all(promises).then((studies) => new SearchSet(studies));
         });
       }
     });
