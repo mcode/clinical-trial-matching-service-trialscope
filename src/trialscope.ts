@@ -384,27 +384,33 @@ export class TrialScopeQueryRunner {
         .catch(reject);
     }).then<SearchSet>((trialscopeResponse) => {
       // Convert to SearchSet
-      const bundleEntries: SearchBundleEntry[] = [];
+      const studies: fhir.ResearchStudy[] = [];
+      const matchScores: number[] = [];
       let index = 0;
       const backupIds: string[] = [];
       for (const node of trialscopeResponse.data.advancedMatches.edges) {
         const trial: TrialScopeTrial = node.node;
-        const matchScore: number = parseMatchQuality(node.matchQuality);
+        matchScores.push(parseMatchQuality(node.matchQuality));
         const study = convertTrialScopeToResearchStudy(trial, index);
         if (!study.description || !study.enrollment || !study.phase || !study.category) {
           backupIds.push(trial.nctId);
         }
-        bundleEntries.push({ resource: study, search: { score: matchScore, mode: 'match' } });
+        studies.push(study);
         index++;
       }
       if (backupIds.length == 0) {
-        return new SearchSet(bundleEntries);
+        return new SearchSet(studies);
       } else {
         return this.backupService.downloadTrials(backupIds).then(() => {
-          for (const entry of bundleEntries) {
+          const promises: Promise<fhir.ResearchStudy>[] = [];
+          for (const study of studies) {
             // console.log(study.identifier[0].value);
-            if (backupIds.includes((entry.resource as fhir.ResearchStudy).identifier[0].value)) {
-              entry.resource = this.backupService.updateTrial(entry.resource as fhir.ResearchStudy);
+            if (backupIds.includes(study.identifier[0].value)) {
+              //entry.resource = this.backupService.updateResearchStudy(entry.resource as fhir.ResearchStudy);
+              promises.push(Promise.resolve(study));
+            } else {
+              // Otherwise push the study as it exists
+              promises.push(Promise.resolve(study));
             }
           }
 
@@ -416,8 +422,16 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-          return new SearchSet(bundleEntries);
-        });
+         const searchSet =  new SearchSet();
+         Promise.all(promises).then((studies) => {
+            let count = 0;
+            for (const study of studies) {
+              searchSet.addEntry(study, matchScores[count]);
+              count++;
+            }
+         });
+         return searchSet;
+         });
       }
     });
   }

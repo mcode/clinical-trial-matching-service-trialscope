@@ -13,7 +13,7 @@ const phaseCodeMap = new Map<string, string>([
   ['Phase 4', 'phase-4']
 ]);
 
-const statusMap = new Map<string, string>([
+const statusMap = new Map<string, fhir.ResearchStudyStatus>([
   ['Active, not recruiting', 'closed-to-accrual'],
   ['Approved for marketing', 'approved'],
   ['Available', 'active'],
@@ -22,14 +22,12 @@ const statusMap = new Map<string, string>([
   ['Recruiting', 'active']
 ]);
 
-function convertStatus(tsStatus: string): string {
-  const fhirStatus = statusMap.get(tsStatus);
-  return fhirStatus;
+function convertStatus(tsStatus: string): fhir.ResearchStudyStatus {
+  return statusMap.get(tsStatus);
 }
 
 function convertPhaseCode(tsPhase: string): string {
-  const fhirPhaseCode = phaseCodeMap.get(tsPhase);
-  return fhirPhaseCode;
+  return phaseCodeMap.get(tsPhase);
 }
 
 // ResearchStudy implementation
