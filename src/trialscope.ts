@@ -6,7 +6,7 @@ import https from 'https';
 import http from 'http';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
-import { RequestError, SearchSet, SearchBundleEntry, fhir } from 'clinical-trial-matching-service';
+import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
 import * as fs from 'fs';
 import path from 'path';
 import * as mcode from './mcode';
@@ -422,16 +422,18 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-         const searchSet =  new SearchSet();
-         Promise.all(promises).then((studies) => {
-            let count = 0;
-            for (const study of studies) {
-              searchSet.addEntry(study, matchScores[count]);
-              count++;
-            }
-         });
-         return searchSet;
-         });
+          const searchSet = new SearchSet();
+          Promise.all(promises)
+            .then((studies) => {
+              let count = 0;
+              for (const study of studies) {
+                searchSet.addEntry(study, matchScores[count]);
+                count++;
+              }
+            })
+            .catch((err) => console.log(err));
+          return searchSet;
+        });
       }
     });
   }
