@@ -6,7 +6,7 @@ import https from 'https';
 import http from 'http';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
-import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
+import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
 import * as fs from 'fs';
 import path from 'path';
 import * as mcode from './mcode';
@@ -150,7 +150,7 @@ function parsePhase(phase: string): string | null {
   if (phase in TRIALSCOPE_PHASES) {
     return TRIALSCOPE_PHASES[phase];
   } else {
-    throw new RequestError(`Cannot parse phase: "${phase}"`);
+    throw new ClientError(`Cannot parse phase: "${phase}"`);
   }
 }
 
@@ -158,7 +158,7 @@ function parseRecruitmentStatus(status: string): string | null {
   if (status in TRIALSCOPE_STATUSES) {
     return TRIALSCOPE_STATUSES[status];
   } else {
-    throw new RequestError(`Cannot parse recruitment status: "${status}"`);
+    throw new ClientError(`Cannot parse recruitment status: "${status}"`);
   }
 }
 
