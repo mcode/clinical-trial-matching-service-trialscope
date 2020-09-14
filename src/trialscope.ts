@@ -404,10 +404,8 @@ export class TrialScopeQueryRunner {
         return this.backupService.downloadTrials(backupIds).then(() => {
           const promises: Promise<fhir.ResearchStudy>[] = [];
           for (const study of studies) {
-            // console.log(study.identifier[0].value);
             if (backupIds.includes(study.identifier[0].value)) {
-              //entry.resource = this.backupService.updateResearchStudy(entry.resource as fhir.ResearchStudy);
-              promises.push(Promise.resolve(study));
+              promises.push(this.backupService.updateResearchStudy(study));
             } else {
               // Otherwise push the study as it exists
               promises.push(Promise.resolve(study));
@@ -422,20 +420,20 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-          const searchSet = new SearchSet();
-          Promise.all(promises)
-            .then((studies) => {
-              let count = 0;
-              for (const study of studies) {
-                searchSet.addEntry(study, matchScores[count]);
-                count++;
-              }
-            })
-            .catch((err) => console.log(err));
-          return searchSet;
+          return Promise.all(promises).then((studies) => this.makeSearchSet(studies, matchScores));
         });
       }
     });
+  }
+
+  makeSearchSet(studies: fhir.ResearchStudy[], matchScores: number[]): SearchSet {
+    const searchSet = new SearchSet();
+    let count = 0;
+    for (const study of studies) {
+      searchSet.addEntry(study, matchScores[count]);
+      count++;
+    }
+    return searchSet;
   }
 
   sendQuery(query: string): Promise<TrialScopeResponse> {
