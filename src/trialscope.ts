@@ -173,6 +173,16 @@ function parseMatchQuality(matchQuality: string): number {
   }
 }
 
+export function makeSearchSet(studies: fhir.ResearchStudy[], matchScores: number[]): SearchSet {
+  const searchSet = new SearchSet();
+  let count = 0;
+  for (const study of studies) {
+    searchSet.addEntry(study, matchScores[count]);
+    count++;
+  }
+  return searchSet;
+}
+
 /**
  * Object for storing the various parameters necessary for the TrialScope query
  * based on a patient bundle.
@@ -420,20 +430,10 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-          return Promise.all(promises).then((studies) => this.makeSearchSet(studies, matchScores));
+          return Promise.all(promises).then((studies) => makeSearchSet(studies, matchScores));
         });
       }
     });
-  }
-
-  makeSearchSet(studies: fhir.ResearchStudy[], matchScores: number[]): SearchSet {
-    const searchSet = new SearchSet();
-    let count = 0;
-    for (const study of studies) {
-      searchSet.addEntry(study, matchScores[count]);
-      count++;
-    }
-    return searchSet;
   }
 
   sendQuery(query: string): Promise<TrialScopeResponse> {
