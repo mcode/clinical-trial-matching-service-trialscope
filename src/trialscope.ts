@@ -4,12 +4,12 @@
 import { ClinicalTrialGovService } from 'clinical-trial-matching-service';
 import https from 'https';
 import http from 'http';
-import { mapConditions } from './mapping';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
-import { RequestError, SearchSet, fhir } from 'clinical-trial-matching-service';
+import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
 import * as fs from 'fs';
 import path from 'path';
+import * as mcode from './mcode';
 
 /**
  * Maps FHIR phases to TrialScope phases.
@@ -62,9 +62,9 @@ class TrialScopeServerError extends Error {
 
 export interface TrialScopeResponse {
   data: {
-    baseMatches: {
+    advancedMatches: {
       totalCount: number;
-      edges: { node: TrialScopeTrial; cursor: string }[];
+      edges: { node: TrialScopeTrial; cursor: string; matchQuality: string }[];
       pageInfo: {
         endCursor: string;
         hasNextPage: boolean;
@@ -80,9 +80,9 @@ export function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
   if ('data' in o && typeof o['data'] === 'object' && o['data'] !== null) {
     const possibleResponse = o as TrialScopeResponse;
     return (
-      'baseMatches' in possibleResponse.data &&
-      typeof possibleResponse.data['baseMatches'] === 'object' &&
-      possibleResponse.data['baseMatches'] !== null
+      'advancedMatches' in possibleResponse.data &&
+      typeof possibleResponse.data['advancedMatches'] === 'object' &&
+      possibleResponse.data['advancedMatches'] !== null
     );
   } else {
     return false;
@@ -130,18 +130,11 @@ export interface TrialScopeTrial {
   overallContactEmail?: string;
   countries?: string;
   detailedDescription?: string;
-  armGroups?: ArmGroup[];
   officialTitle?: string;
   criteria?: string;
   sponsor?: string;
   overallOfficialName?: string;
   sites?: Site[];
-}
-
-export interface ArmGroup {
-  description?: string;
-  arm_group_type?: string;
-  arm_group_label?: string;
 }
 
 export interface Site {
@@ -157,7 +150,7 @@ function parsePhase(phase: string): string | null {
   if (phase in TRIALSCOPE_PHASES) {
     return TRIALSCOPE_PHASES[phase];
   } else {
-    throw new RequestError(`Cannot parse phase: "${phase}"`);
+    throw new ClientError(`Cannot parse phase: "${phase}"`);
   }
 }
 
@@ -165,8 +158,29 @@ function parseRecruitmentStatus(status: string): string | null {
   if (status in TRIALSCOPE_STATUSES) {
     return TRIALSCOPE_STATUSES[status];
   } else {
-    throw new RequestError(`Cannot parse recruitment status: "${status}"`);
+    throw new ClientError(`Cannot parse recruitment status: "${status}"`);
   }
+}
+
+function parseMatchQuality(matchQuality: string): number {
+  if (matchQuality == 'HIGH_LIKELIHOOD') {
+    return 1;
+  } else if (matchQuality == 'POSSIBLE') {
+    return 0.5;
+  } else {
+    // matchQuality == 'POSSIBLE_NON_MATCH'
+    return 0;
+  }
+}
+
+export function makeSearchSet(studies: fhir.ResearchStudy[], matchScores: number[]): SearchSet {
+  const searchSet = new SearchSet();
+  let count = 0;
+  for (const study of studies) {
+    searchSet.addEntry(study, matchScores[count]);
+    count++;
+  }
+  return searchSet;
 }
 
 /**
@@ -174,13 +188,24 @@ function parseRecruitmentStatus(status: string): string | null {
  * based on a patient bundle.
  */
 export class TrialScopeQuery {
-  conditions = new Set<string>();
+  //conditions = new Set<string>();
   zipCode?: string = null;
   travelRadius?: number = null;
   phase = 'any';
   recruitmentStatus: string | string[] | null = null;
   after?: string = null;
   first = 30;
+  mcode?: {
+    primaryCancer?: string;
+    secondaryCancer?: string;
+    histologyMorphology?: string;
+    stage?: string;
+    age?: string;
+    tumorMarker?: string;
+    radiationProcedure?: string;
+    surgicalProcedure?: string;
+    medicationStatement?: string;
+  };
   /**
    * The fields that should be returned within the individual trial object.
    */
@@ -200,21 +225,33 @@ export class TrialScopeQuery {
     'overallContactEmail',
     'overallOfficialName',
     'overallStatus',
-    'armGroups',
     'phase',
     'minimumAge',
     'studyType',
     'countries',
     'maximumAge'
   ];
+
   constructor(patientBundle: fhir.Bundle) {
+    const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+    console.log(extractedMCODE);
+    this.mcode = {};
+    this.mcode.primaryCancer = extractedMCODE.getPrimaryCancerValue();
+    this.mcode.secondaryCancer = extractedMCODE.getSecondaryCancerValue();
+    this.mcode.histologyMorphology = extractedMCODE.getHistologyMorphologyValue();
+    this.mcode.stage = extractedMCODE.getStageValue();
+    this.mcode.tumorMarker = extractedMCODE.getTumorMarkerValue();
+    this.mcode.radiationProcedure = extractedMCODE.getRadiationProcedureValue();
+    this.mcode.surgicalProcedure = extractedMCODE.getSurgicalProcedureValue();
+    this.mcode.medicationStatement = extractedMCODE.getMedicationStatementValue();
+    console.log(this.mcode);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
         // Skip bad entries
         continue;
       }
       const resource = entry.resource;
-      console.log(`Checking resource ${resource.resourceType}`);
+      //console.log(`Checking resource ${resource.resourceType}`);
       if (resource.resourceType === 'Parameters') {
         for (const parameter of resource.parameter) {
           console.log(` - Setting parameter ${parameter.name} to ${parameter.valueString}`);
@@ -229,55 +266,60 @@ export class TrialScopeQuery {
           }
         }
       }
-      if (resource.resourceType === 'Condition') {
-        this.addCondition(resource);
-      }
     }
   }
-  addCondition(condition: fhir.Condition): void {
-    // Should have a code
-    // TODO: Limit to specific coding systems (maybe)
-    for (const code of condition.code.coding) {
-      this.conditions.add(code.code);
-    }
-  }
-  getTrialScopeConditions(): Set<string> {
-    return mapConditions(Array.from(this.conditions));
+  // Get the mCODE filters as an array of strings
+  getmCODEFilters(): string[] {
+    const filterArray: string[] = [];
+    filterArray.push('primaryCancer: ' + this.mcode.primaryCancer);
+    filterArray.push('secondaryCancer: ' + this.mcode.secondaryCancer);
+    filterArray.push('histologyMorphology: ' + this.mcode.histologyMorphology);
+    filterArray.push('stage: ' + this.mcode.stage);
+    filterArray.push('tumorMarker: ' + this.mcode.tumorMarker);
+    filterArray.push('radiationProcedure: ' + this.mcode.radiationProcedure);
+    filterArray.push('surgicalProcedure: ' + this.mcode.surgicalProcedure);
+    filterArray.push('medicationStatement: ' + this.mcode.medicationStatement);
+    return filterArray;
   }
   /**
    * Create a TrialScope query.
    * @return {string} the TrialScope GraphQL query
    */
   toQuery(): string {
-    let baseMatches =
-      'conditions:[' +
-      Array.from(this.getTrialScopeConditions()).join(', ') +
-      `], baseFilters: { zipCode: "${this.zipCode}"`;
+    // mCODE Filters
+    let advancedMatches = 'mcode:{' + Array.from(this.getmCODEFilters()).join(', ') + '},';
+    // Start of Base filters
+    advancedMatches += `baseFilters: { zipCode: "${this.zipCode}"`;
+    // Travel Radius
     if (this.travelRadius) {
       // FIXME: Veryify travel radius is a number
-      baseMatches += ',travelRadius: ' + this.travelRadius.toString();
+      advancedMatches += ',travelRadius: ' + this.travelRadius.toString();
     }
+    // Phase
     if (this.phase !== 'any') {
-      baseMatches += ',phase:' + this.phase;
+      advancedMatches += ',phase:' + this.phase;
     }
+    // Recruitment Status
     if (this.recruitmentStatus !== null) {
       // Recruitment status can conceptually be an array
       if (Array.isArray(this.recruitmentStatus)) {
-        baseMatches += `,recruitmentStatus:[${this.recruitmentStatus.join(', ')}]`;
+        advancedMatches += `,recruitmentStatus:[${this.recruitmentStatus.join(', ')}]`;
       } else {
-        baseMatches += ',recruitmentStatus:' + this.recruitmentStatus;
+        advancedMatches += ',recruitmentStatus:' + this.recruitmentStatus;
       }
     }
-    baseMatches += ' }';
+    advancedMatches += ' }';
+    // Before and After
     if (this.first !== null) {
-      baseMatches += ', first: ' + this.first.toString();
+      advancedMatches += ', first: ' + this.first.toString();
     }
     if (this.after !== null) {
-      baseMatches += ', after: ' + JSON.stringify(this.after);
+      advancedMatches += ', after: ' + JSON.stringify(this.after);
     }
     // prettier-ignore
-    const query = `{ baseMatches(${baseMatches}) {` +
+    const query = `{ advancedMatches(${advancedMatches}) {` +
       'totalCount edges {' +
+        'matchQuality ' +
         'node {' + this.trialFields.join(' ') +
           ' sites { ' +
             'facility contactName contactEmail contactPhone latitude longitude ' +
@@ -314,18 +356,19 @@ export class TrialScopeQueryRunner {
   }
 
   runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
+    // update for advanced matches query
     return new Promise<TrialScopeResponse>((resolve, reject) => {
       const query = new TrialScopeQuery(patientBundle);
       this.sendQuery(query.toQuery())
         .then((result) => {
           // Result is a parsed JSON object. See if we need to load more pages.
           const loadNextPage = (previousPage: TrialScopeResponse) => {
-            query.after = previousPage.data.baseMatches.pageInfo.endCursor;
+            query.after = previousPage.data.advancedMatches.pageInfo.endCursor;
             this.sendQuery(query.toQuery())
               .then((nextPage) => {
                 // Append results.
-                result.data.baseMatches.edges.push(...nextPage.data.baseMatches.edges);
-                if (nextPage.data.baseMatches.pageInfo.hasNextPage) {
+                result.data.advancedMatches.edges.push(...nextPage.data.advancedMatches.edges);
+                if (nextPage.data.advancedMatches.pageInfo.hasNextPage) {
                   // Keep going
                   loadNextPage(nextPage);
                 } else {
@@ -339,10 +382,10 @@ export class TrialScopeQueryRunner {
             console.error(result);
             reject(new Error(`Missing "data" in results`));
           }
-          if (result.data.baseMatches.pageInfo.hasNextPage) {
+          if (result.data.advancedMatches.pageInfo.hasNextPage) {
             // Since this result object is the ultimate result, alter it to
             // pretend it doesn't have a next page
-            result.data.baseMatches.pageInfo.hasNextPage = false;
+            result.data.advancedMatches.pageInfo.hasNextPage = false;
             loadNextPage(result);
           } else {
             resolve(result);
@@ -352,10 +395,12 @@ export class TrialScopeQueryRunner {
     }).then<SearchSet>((trialscopeResponse) => {
       // Convert to SearchSet
       const studies: fhir.ResearchStudy[] = [];
+      const matchScores: number[] = [];
       let index = 0;
       const backupIds: string[] = [];
-      for (const node of trialscopeResponse.data.baseMatches.edges) {
+      for (const node of trialscopeResponse.data.advancedMatches.edges) {
         const trial: TrialScopeTrial = node.node;
+        matchScores.push(parseMatchQuality(node.matchQuality));
         const study = convertTrialScopeToResearchStudy(trial, index);
         if (!study.description || !study.enrollment || !study.phase || !study.category) {
           backupIds.push(trial.nctId);
@@ -369,7 +414,6 @@ export class TrialScopeQueryRunner {
         return this.backupService.downloadTrials(backupIds).then(() => {
           const promises: Promise<fhir.ResearchStudy>[] = [];
           for (const study of studies) {
-            // console.log(study.identifier[0].value);
             if (backupIds.includes(study.identifier[0].value)) {
               promises.push(this.backupService.updateResearchStudy(study));
             } else {
@@ -386,7 +430,7 @@ export class TrialScopeQueryRunner {
             if (err) console.log(err);
           });
 
-          return Promise.all(promises).then((studies) => new SearchSet(studies));
+          return Promise.all(promises).then((studies) => makeSearchSet(studies, matchScores));
         });
       }
     });

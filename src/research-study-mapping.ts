@@ -1,5 +1,5 @@
 import { ResearchStudy, fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
-import { TrialScopeTrial, ArmGroup } from './trialscope';
+import { TrialScopeTrial } from './trialscope';
 
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([
@@ -72,10 +72,6 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
   if (trial.detailedDescription) {
     result.description = trial.detailedDescription;
   }
-  if (typeof trial.armGroups[Symbol.iterator] === 'function') {
-    // ts returns {} when empty, which is not iterable
-    result.arm = createArm(trial.armGroups);
-  }
   if (trial.officialTitle) {
     result.objective = [{ name: trial.officialTitle }];
   }
@@ -117,22 +113,4 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
   }
 
   return result;
-}
-
-function createArm(armGroups: ArmGroup[]): fhir.Arm[] {
-  const arms: fhir.Arm[] = [];
-  for (const armgroup of armGroups) {
-    const singleArm: fhir.Arm = {};
-    if (armgroup.arm_group_label) {
-      singleArm.name = armgroup.arm_group_label;
-    }
-    if (armgroup.arm_group_type) {
-      singleArm.type = { text: armgroup.arm_group_type };
-    }
-    if (armgroup.description) {
-      singleArm.description = armgroup.description;
-    }
-    arms.push(singleArm);
-  }
-  return arms;
 }
