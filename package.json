@@ -44,6 +44,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "fhir": "^4.7.9",
     "jasmine": "^3.6.1",
+    "nock": "^13.0.4",
     "nyc": "^15.1.0",
     "prettier": "^2.1.0",
     "supertest": "^4.0.2",

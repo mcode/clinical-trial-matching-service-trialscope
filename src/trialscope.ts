@@ -1,9 +1,8 @@
 /**
  * Module for running queries via TrialScope
  */
-import { ClinicalTrialGovService } from 'clinical-trial-matching-service';
+import { ClinicalTrialGovService, ServerError } from 'clinical-trial-matching-service';
 import https from 'https';
-import http from 'http';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
@@ -54,7 +53,7 @@ const TRIALSCOPE_STATUSES: Record<string, string | null> = {
   // UNKNOWN
 };
 
-class TrialScopeServerError extends Error {
+export class TrialScopeServerError extends ServerError {
   constructor(message: string, public result: IncomingMessage, public body: string) {
     super(message);
   }
@@ -74,7 +73,7 @@ export interface TrialScopeResponse {
 }
 
 export function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
-  if (typeof o !== 'object') {
+  if (typeof o !== 'object' || o === null) {
     return false;
   }
   if ('data' in o && typeof o['data'] === 'object' && o['data'] !== null) {
@@ -104,7 +103,7 @@ export interface TrialScopeErrorResponse {
 }
 
 export function isTrialScopeErrorResponse(o: unknown): o is TrialScopeErrorResponse {
-  if (typeof o !== 'object') {
+  if (typeof o !== 'object' || o === null) {
     return false;
   }
   if ('errors' in o) {
@@ -196,6 +195,7 @@ export class TrialScopeQuery {
   after?: string = null;
   first = 30;
   mcode?: {
+    [key: string]: string;
     primaryCancer?: string;
     secondaryCancer?: string;
     histologyMorphology?: string;
@@ -251,10 +251,8 @@ export class TrialScopeQuery {
         continue;
       }
       const resource = entry.resource;
-      //console.log(`Checking resource ${resource.resourceType}`);
       if (resource.resourceType === 'Parameters') {
         for (const parameter of resource.parameter) {
-          console.log(` - Setting parameter ${parameter.name} to ${parameter.valueString}`);
           if (parameter.name === 'zipCode') {
             this.zipCode = parameter.valueString;
           } else if (parameter.name === 'travelRadius') {
@@ -268,18 +266,17 @@ export class TrialScopeQuery {
       }
     }
   }
-  // Get the mCODE filters as an array of strings
-  getmCODEFilters(): string[] {
-    const filterArray: string[] = [];
-    filterArray.push('primaryCancer: ' + this.mcode.primaryCancer);
-    filterArray.push('secondaryCancer: ' + this.mcode.secondaryCancer);
-    filterArray.push('histologyMorphology: ' + this.mcode.histologyMorphology);
-    filterArray.push('stage: ' + this.mcode.stage);
-    filterArray.push('tumorMarker: ' + this.mcode.tumorMarker);
-    filterArray.push('radiationProcedure: ' + this.mcode.radiationProcedure);
-    filterArray.push('surgicalProcedure: ' + this.mcode.surgicalProcedure);
-    filterArray.push('medicationStatement: ' + this.mcode.medicationStatement);
-    return filterArray;
+  /**
+   * Gets the set of mCode filters as an appropriate GraphQL block, such as
+   * "{primaryCancer: BREAST_CANCER}"
+   */
+  getMCODEFilters(): string {
+    const result: string[] = [];
+    for (const k in this.mcode) {
+      const v = this.mcode[k];
+      if (v) result.push(`${k}: ${v}`);
+    }
+    return '{' + result.join(', ') + '}';
   }
   /**
    * Create a TrialScope query.
@@ -287,7 +284,7 @@ export class TrialScopeQuery {
    */
   toQuery(): string {
     // mCODE Filters
-    let advancedMatches = 'mcode:{' + Array.from(this.getmCODEFilters()).join(', ') + '},';
+    let advancedMatches = `mcode:${this.getMCODEFilters()},`;
     // Start of Base filters
     advancedMatches += `baseFilters: { zipCode: "${this.zipCode}"`;
     // Travel Radius
@@ -338,22 +335,8 @@ export class TrialScopeQuery {
   }
 }
 
-type RequestGeneratorFunction = (
-  url: string | URL,
-  options: https.RequestOptions,
-  callback?: (res: IncomingMessage) => void
-) => http.ClientRequest;
-
 export class TrialScopeQueryRunner {
-  private generateRequest: RequestGeneratorFunction;
-  constructor(
-    public endpoint: string,
-    private token: string,
-    private backupService: ClinicalTrialGovService,
-    requestGenerator: RequestGeneratorFunction = https.request
-  ) {
-    this.generateRequest = requestGenerator;
-  }
+  constructor(public endpoint: string, private token: string, private backupService: ClinicalTrialGovService) {}
 
   runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
     // update for advanced matches query
@@ -439,9 +422,7 @@ export class TrialScopeQueryRunner {
   sendQuery(query: string): Promise<TrialScopeResponse> {
     return new Promise((resolve, reject) => {
       const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
-      console.log('Running raw TrialScope query');
-      console.log(query);
-      const request = this.generateRequest(
+      const request = https.request(
         this.endpoint,
         {
           method: 'POST',
@@ -457,16 +438,11 @@ export class TrialScopeQueryRunner {
             responseBody += chunk;
           });
           result.on('end', () => {
-            console.log('Complete');
             if (result.statusCode === 200) {
-              const json = JSON.parse(responseBody) as unknown;
-              if (isTrialScopeResponse(json)) {
-                resolve(json);
-              } else {
-                // Going to have to be rejected.
-                if (isTrialScopeErrorResponse(json)) {
-                  // TODO: Parse out errors?
-                  reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+              try {
+                const json = JSON.parse(responseBody) as unknown;
+                if (isTrialScopeResponse(json)) {
+                  resolve(json);
                 } else {
                   // Going to have to be rejected.
                   if (isTrialScopeErrorResponse(json)) {
@@ -476,6 +452,8 @@ export class TrialScopeQueryRunner {
                     reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
                   }
                 }
+              } catch (ex) {
+                reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
               }
             } else {
               reject(
@@ -495,17 +473,6 @@ export class TrialScopeQueryRunner {
       request.write(body);
       request.end();
     });
-  }
-
-  /**
-   * Override the request generator used to generate HTTPS requests. This may be
-   * useful in some scenarios where the request needs to be modified. It's
-   * primarily intended to be used in tests.
-   *
-   * @param requestGenerator the request generator to use instead of https.request
-   */
-  setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
-    this.generateRequest = requestGenerator ? requestGenerator : https.request;
   }
 }
 
