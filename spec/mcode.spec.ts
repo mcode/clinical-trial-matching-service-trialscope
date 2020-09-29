@@ -8,7 +8,7 @@ import path from 'path';
 import { fhir } from 'clinical-trial-matching-service';
 //const util = require('util')
 
-describe('extractedMCODE', () => {
+describe('ExtractedMCODE', () => {
   let sampleData: fhir.Bundle;
   beforeAll(() => {
     return new Promise((resolve, reject) => {
@@ -31,7 +31,7 @@ describe('extractedMCODE', () => {
   });
 
   it('checksCountOfExtractedProfiles', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     //console.log(util.inspect(extractedData, false, null, true));
     expect(extractedData.primaryCancerCondition.length).toBe(1);
     expect(extractedData.TNMClinicalStageGroup.length).toBe(2);
@@ -45,33 +45,33 @@ describe('extractedMCODE', () => {
   });
 
   it('checkExtractedPrimaryCancerCondition', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(extractedData.primaryCancerCondition[0].clinicalStatus[0].code).toBe('active');
     expect(extractedData.primaryCancerCondition[0].coding[0].code).toBe('254837009');
     expect(extractedData.primaryCancerCondition[0].histologyMorphologyBehavior[0].code).toBe('367651003');
   });
 
   it('checkExtractedTNMClinicalStageGroup', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(extractedData.TNMClinicalStageGroup[0].code).toBe('261638004');
     expect(extractedData.TNMClinicalStageGroup[1].code).toBe('c3A');
   });
 
   it('checkExtractedTNMPathologicalStageGroup', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(extractedData.TNMPathologicalStageGroup[0].code).toBe('261638004');
     expect(extractedData.TNMPathologicalStageGroup[1].code).toBe('c3A');
   });
 
   it('checkExtractedSecondaryCancerCondition', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(extractedData.secondaryCancerCondition[0].clinicalStatus[0].code).toBe('active');
     expect(extractedData.secondaryCancerCondition[0].coding[0].code).toBe('128462008');
     expect(extractedData.secondaryCancerCondition[0].bodySite[0].code).toBe('8935007');
   });
 
   it('checkExtractedTumorMarker', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     //console.log(util.inspect(extractedData.tumorMarker, false, null, true));
     expect(
       extractedData.tumorMarker.some(
@@ -114,7 +114,7 @@ describe('extractedMCODE', () => {
   });
 
   it('checkExtractedCancerRelatedRadiationProcedure', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(
       extractedData.cancerRelatedRadiationProcedure.some(
         (procedure) => procedure.coding[0].code == '448385000' && procedure.bodySite.length == 0
@@ -131,13 +131,13 @@ describe('extractedMCODE', () => {
   });
 
   it('checkExtractedCancerRelatedSurgicalProcedure', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(extractedData.cancerRelatedSurgicalProcedure.some((procedure) => procedure.code == '396487001')).toBeTrue();
     expect(extractedData.cancerRelatedSurgicalProcedure.some((procedure) => procedure.code == '443497002')).toBeTrue();
   });
 
   it('checkExtractedCancerRelatedMedicationStatement', function () {
-    const extractedData = new mcode.extractedMCODE(sampleData);
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(extractedData.cancerRelatedMedicationStatement[0].code).toBe('583214');
   });
 });
@@ -147,7 +147,7 @@ describe('extractedMCODE', () => {
 describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -168,7 +168,7 @@ describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
 describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -194,7 +194,7 @@ describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => 
 describe('checkPrimaryCancerFilterLogic-InvasiveBreastCancerandRecurrent', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -219,7 +219,7 @@ describe('checkPrimaryCancerFilterLogic-InvasiveBreastCancerandRecurrent', () =>
 describe('checkPrimaryCancerFilterLogic-LocallyRecurrent', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -239,7 +239,7 @@ describe('checkPrimaryCancerFilterLogic-LocallyRecurrent', () => {
 describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -261,7 +261,7 @@ describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', (
 describe('checkSecondaryCancerFilterLogic-BrainMetastasis', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
   scc.clinicalStatus = [] as Coding[];
   scc.coding = [] as Coding[];
@@ -281,7 +281,7 @@ describe('checkSecondaryCancerFilterLogic-BrainMetastasis', () => {
 describe('checkSecondaryCancerFilterLogic-InvasiveBreastCancerAndMetastatic', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
   scc.clinicalStatus = [] as Coding[];
   scc.coding = [] as Coding[];
@@ -311,7 +311,7 @@ describe('checkSecondaryCancerFilterLogic-InvasiveBreastCancerAndMetastatic', ()
 describe('checkSecondaryCancerFilterLogic-LeptomeningealMetastaticDisease', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
   scc.clinicalStatus = [] as Coding[];
   scc.coding = [] as Coding[];
@@ -330,7 +330,7 @@ describe('checkSecondaryCancerFilterLogic-LeptomeningealMetastaticDisease', () =
 describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
   scc.clinicalStatus = [] as Coding[];
   scc.coding = [] as Coding[];
@@ -354,7 +354,7 @@ describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
 describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -378,7 +378,7 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
 describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -404,7 +404,7 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
 describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
@@ -428,7 +428,7 @@ describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', ()
 describe('checkStageFilterLogic-Stage 0', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 0 Filter Attributes
@@ -444,7 +444,7 @@ describe('checkStageFilterLogic-Stage 0', () => {
 describe('checkStageFilterLogic-Stage 1', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 1 Filter Attributes
@@ -460,7 +460,7 @@ describe('checkStageFilterLogic-Stage 1', () => {
 describe('checkStageFilterLogic-Stage 2', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 2 Filter Attributes
@@ -476,7 +476,7 @@ describe('checkStageFilterLogic-Stage 2', () => {
 describe('checkStageFilterLogic-Stage 3', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 3 Filter Attributes
@@ -492,7 +492,7 @@ describe('checkStageFilterLogic-Stage 3', () => {
 describe('checkStageFilterLogic-Stage 4', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tnmPathological: Coding[] = [] as Coding[];
 
   // Stage 4 Filter Attributes
@@ -510,7 +510,7 @@ describe('checkStageFilterLogic-Stage 4', () => {
 describe('checkRadiationProcedureFilterLogic-SRS', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const crrp: mcode.CancerRelatedRadiationProcedure = {};
   crrp.bodySite = [] as Coding[];
   crrp.coding = [] as Coding[];
@@ -528,7 +528,7 @@ describe('checkRadiationProcedureFilterLogic-SRS', () => {
 describe('checkRadiationProcedureFilterLogic-WBRT', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const crrp: mcode.CancerRelatedRadiationProcedure = {};
   crrp.bodySite = [] as Coding[];
   crrp.coding = [] as Coding[];
@@ -547,7 +547,7 @@ describe('checkRadiationProcedureFilterLogic-WBRT', () => {
 describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const crrp: mcode.CancerRelatedRadiationProcedure = {};
   crrp.bodySite = [] as Coding[];
   crrp.coding = [] as Coding[];
@@ -567,7 +567,7 @@ describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
 describe('checkSurgicalProcedureFilterLogic-Resection', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const sp: Coding[] = [] as Coding[];
 
   // Resection Filter Attributes
@@ -582,7 +582,7 @@ describe('checkSurgicalProcedureFilterLogic-Resection', () => {
 describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const sp: Coding[] = [] as Coding[];
 
   // Splenectomy Filter Attributes
@@ -599,7 +599,7 @@ describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
 describe('checkMedicationStatementFilterLogic-T-DM1', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // T-DM1 Filter Attributes
@@ -614,7 +614,7 @@ describe('checkMedicationStatementFilterLogic-T-DM1', () => {
 describe('checkMedicationStatementFilterLogic-CDK4/6 inhibitor', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // CDK4/6 inhibitor Filter Attributes
@@ -629,7 +629,7 @@ describe('checkMedicationStatementFilterLogic-CDK4/6 inhibitor', () => {
 describe('checkMedicationStatementFilterLogic-Poly ICLC ', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // Poly ICLC  Filter Attributes
@@ -644,7 +644,7 @@ describe('checkMedicationStatementFilterLogic-Poly ICLC ', () => {
 describe('checkMedicationStatementFilterLogic-DrugCombo-1', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // DrugCombo-1 Filter Attributes
@@ -660,7 +660,7 @@ describe('checkMedicationStatementFilterLogic-DrugCombo-1', () => {
 describe('checkMedicationStatementFilterLogic-Pembrolizumab', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // Pembrolizumab Filter Attributes
@@ -675,7 +675,7 @@ describe('checkMedicationStatementFilterLogic-Pembrolizumab', () => {
 describe('checkMedicationStatementFilterLogic-mTOR inhibitor', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // mTOR inhibitor Filter Attributes
@@ -690,7 +690,7 @@ describe('checkMedicationStatementFilterLogic-mTOR inhibitor', () => {
 describe('checkMedicationStatementFilterLogic-Concurrent Endocrine Therapy ', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // Concurrent Endocrine Therapy  Filter Attributes
@@ -705,7 +705,7 @@ describe('checkMedicationStatementFilterLogic-Concurrent Endocrine Therapy ', ()
 describe('checkMedicationStatementFilterLogic-Anti-androgen', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // Anti-androgen Filter Attributes
@@ -720,7 +720,7 @@ describe('checkMedicationStatementFilterLogic-Anti-androgen', () => {
 describe('checkMedicationStatementFilterLogic-anti-HER2', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // anti-HER2 Filter Attributes
@@ -735,7 +735,7 @@ describe('checkMedicationStatementFilterLogic-anti-HER2', () => {
 describe('checkMedicationStatementFilterLogic-Tyrosine Kinase Inhibitor', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // Tyrosine Kinase Inhibitor Filter Attributes
@@ -750,7 +750,7 @@ describe('checkMedicationStatementFilterLogic-Tyrosine Kinase Inhibitor', () => 
 describe('checkMedicationStatementFilterLogic-P13K inhibitor ', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // P13K inhibitor  Filter Attributes
@@ -765,7 +765,7 @@ describe('checkMedicationStatementFilterLogic-P13K inhibitor ', () => {
 describe('checkMedicationStatementFilterLogic-anti-PD', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // anti-PD Filter Attributes
@@ -780,7 +780,7 @@ describe('checkMedicationStatementFilterLogic-anti-PD', () => {
 describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine ', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
   // CDK4/6-mTOR and Endocrine  Filter Attributes
@@ -798,7 +798,7 @@ describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine ', () =>
 describe('checkTumorMarkerFilterLogic-HER2+', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm: mcode.TumorMarker = {};
   tm.code = [] as Coding[];
   tm.interpretation = [] as Coding[];
@@ -820,7 +820,7 @@ describe('checkTumorMarkerFilterLogic-HER2+', () => {
 describe('checkTumorMarkerFilterLogic-HER2+ and ER+', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -852,7 +852,7 @@ describe('checkTumorMarkerFilterLogic-HER2+ and ER+', () => {
 describe('checkTumorMarkerFilterLogic-HER2+ and PR+', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   extractedMCODE.tumorMarker = [] as mcode.TumorMarker[];
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
@@ -892,7 +892,7 @@ describe('checkTumorMarkerFilterLogic-HER2+ and PR+', () => {
 describe('checkTumorMarkerFilterLogic-ER+ and HER-+', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -928,7 +928,7 @@ describe('checkTumorMarkerFilterLogic-ER+ and HER-+', () => {
 describe('checkTumorMarkerFilterLogic-PR+ and HER-', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -968,7 +968,7 @@ describe('checkTumorMarkerFilterLogic-PR+ and HER-', () => {
 describe('checkTumorMarkerFilterLogic-ER+ and HER2- and FGFR amplifications', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -1014,7 +1014,7 @@ describe('checkTumorMarkerFilterLogic-ER+ and HER2- and FGFR amplifications', ()
 describe('checkTumorMarkerFilterLogic-PR+ and HER- and FGFR Amplifications', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -1060,7 +1060,7 @@ describe('checkTumorMarkerFilterLogic-PR+ and HER- and FGFR Amplifications', () 
 describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -1109,7 +1109,7 @@ describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
 describe('checkTumorMarkerFilterLogic-Triple negative', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -1158,7 +1158,7 @@ describe('checkTumorMarkerFilterLogic-Triple negative', () => {
 describe('checkTumorMarkerFilterLogic-Triple negative-10', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -1204,7 +1204,7 @@ describe('checkTumorMarkerFilterLogic-Triple negative-10', () => {
 describe('checkTumorMarkerFilterLogic-Triple negative and RB Positive', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -1264,7 +1264,7 @@ describe('checkTumorMarkerFilterLogic-Triple negative and RB Positive', () => {
 describe('Ratio and Quantity Error Tests', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
   tm1.code = [] as Coding[];
   tm1.interpretation = [] as Coding[];
@@ -1299,7 +1299,7 @@ describe('Ratio and Quantity Error Tests', () => {
 describe('checkAgeFilterLogic', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
 
   it('Test Age is over 18 Filter', () => {
     extractedMCODE.birthDate = '2000-06-11';
@@ -1315,7 +1315,7 @@ describe('checkAgeFilterLogic', () => {
 describe('NotSureTests', () => {
   // Initialize
   const patientBundle = null;
-  const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
 
   it('Test NOT_SURE returns for null inputs', () => {
     expect(extractedMCODE.getPrimaryCancerValue()).toBe('NOT_SURE');

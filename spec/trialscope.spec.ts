@@ -114,16 +114,145 @@ describe('TrialScopeQuery', () => {
       });
     }).toThrowError('Cannot parse recruitment status: "totally invalid"');
   });
+
+  it('toString() calls toQuery()', () => {
+    // This test is sort of pointless but might as well be inclusive
+    const query = new TrialScopeQuery({ resourceType: 'Bundle', type: 'collection', entry: [] });
+    expect(query.toString()).toEqual(query.toQuery());
+  });
+
+  it('generates a query', () => {
+    // TypeScript assumes extra fields are an error, although in this case the
+    // FHIR types supplies are somewhat intentionally sparse as they're not a
+    // full definition
+    const condition: fhir.Resource = {
+      resourceType: 'Condition',
+      meta: {
+        profile: [
+          'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition',
+          'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
+        ]
+      },
+      clinicalStatus: {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+            code: 'active'
+          }
+        ]
+      },
+      category: [
+        {
+          coding: [
+            {
+              system: 'http://snomed.info/sct',
+              code: '64572001',
+              display: 'Disease (disorder)'
+            }
+          ]
+        }
+      ],
+      code: {
+        coding: [
+          {
+            system: 'http://snomed.info/sct',
+            code: '254837009'
+          }
+        ]
+      },
+      extension: [
+        {
+          url: 'http://hl7.org/fhir/us/mcode/ValueSet/mcode-histology-morphology-behavior-vs',
+          valueCodeableConcept: {
+            coding: [
+              {
+                system: 'http://snomed.info/sct',
+                code: '367651003'
+              }
+            ]
+          }
+        }
+      ]
+    } as fhir.Resource;
+    const query = new TrialScopeQuery({
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: [
+        {
+          resource: {
+            resourceType: 'Parameters',
+            parameter: [
+              { name: 'zipCode', valueString: '01234' },
+              { name: 'travelRadius', valueString: '15' },
+              { name: 'phase', valueString: 'phase-1' },
+              { name: 'recruitmentStatus', valueString: 'active' }
+            ]
+          }
+        },
+        {
+          resource: condition
+        }
+      ]
+    });
+    // For now, just check to make sure the parameters and MCode values made
+    // it out
+    const graphQL = query.toQuery();
+    // It's important to note that the regexps only work assuming neither the
+    // mcode or baseFilters sections ever include child objects, which is
+    // currently the case
+    let m = /mcode:\s*{(.*?)}/.exec(graphQL);
+    expect(m).toBeTruthy();
+    const mcodeFilters = m[1];
+    expect(mcodeFilters).toMatch(/primaryCancer:\s*BREAST_CANCER/);
+    m = /baseFilters:\s*{(.*?)}/.exec(graphQL);
+    expect(m).toBeTruthy();
+    const baseFilters = m[1];
+    expect(baseFilters).toMatch(/zipCode:\s*"01234"/);
+    expect(baseFilters).toMatch(/travelRadius:\s*15\b/);
+    expect(baseFilters).toMatch(/phase:\s*PHASE_1\b/);
+    expect(baseFilters).toMatch(/recruitmentStatus:\s*RECRUITING\b/);
+  });
+
+  it("excludes parameters that weren't included", () => {
+    // The only required parameter is the zipcode
+    const query = new TrialScopeQuery({
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: [
+        {
+          resource: {
+            resourceType: 'Parameters',
+            parameter: [{ name: 'zipCode', valueString: '98765' }]
+          }
+        }
+      ]
+    });
+    const graphQL = query.toQuery();
+    const m = /baseFilters:\s*{(.*?)}/.exec(graphQL);
+    expect(m).toBeTruthy();
+    const baseFilters = m[1];
+    expect(baseFilters).toMatch(/zipCode:\s*"98765"/);
+    expect(baseFilters).not.toMatch('travelRadius');
+    expect(baseFilters).not.toMatch('phase');
+    expect(baseFilters).not.toMatch('recruitmentStatus');
+  });
 });
 
 describe('TrialScopeQueryRunner', () => {
   let queryRunner: TrialScopeQueryRunner;
   let backupService: ClinicalTrialGovService;
+  let scope: nock.Scope;
   let interceptor: nock.Interceptor;
   beforeEach(() => {
     backupService = new ClinicalTrialGovService('tmp');
     queryRunner = new TrialScopeQueryRunner('https://example.com/trialscope', 'token', backupService);
-    interceptor = nock('https://example.com').post('/trialscope');
+    scope = nock('https://example.com');
+    interceptor = scope.post('/trialscope');
+  });
+  afterEach(() => {
+    expect(scope.isDone()).toBeTrue();
+    interceptor = null;
+    scope = null;
   });
 
   it('handles an empty response', () => {
@@ -151,10 +280,16 @@ describe('TrialScopeQueryRunner', () => {
   });
 
   it('handles a TrialScope error response', () => {
-    interceptor.reply(
-      200,
-      '{"errors":[{"message":"\\"unimportant\\" is not a valid query","locations":{"line":1,"column":1},"path":[],"extensions":{}}]}'
-    );
+    interceptor.reply(200, {
+      errors: [
+        {
+          message: '"unimportant" is not a valid query',
+          locations: { line: 1, column: 1 },
+          path: [],
+          extensions: {}
+        }
+      ]
+    });
     return expectAsync(queryRunner.sendQuery('unimportant')).toBeRejectedWithError(
       TrialScopeServerError,
       'Server indicates invalid query'

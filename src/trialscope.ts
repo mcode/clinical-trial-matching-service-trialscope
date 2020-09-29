@@ -190,21 +190,22 @@ export class TrialScopeQuery {
   //conditions = new Set<string>();
   zipCode?: string = null;
   travelRadius?: number = null;
+  // Any is a "special" value here meaning "not specified"
   phase = 'any';
-  recruitmentStatus: string | string[] | null = null;
+  recruitmentStatus: string | null = null;
   after?: string = null;
   first = 30;
   mcode?: {
     [key: string]: string;
-    primaryCancer?: string;
-    secondaryCancer?: string;
-    histologyMorphology?: string;
-    stage?: string;
-    age?: string;
-    tumorMarker?: string;
-    radiationProcedure?: string;
-    surgicalProcedure?: string;
-    medicationStatement?: string;
+    primaryCancer: string;
+    secondaryCancer: string;
+    histologyMorphology: string;
+    stage: string;
+    age: string;
+    tumorMarker: string;
+    radiationProcedure: string;
+    surgicalProcedure: string;
+    medicationStatement: string;
   };
   /**
    * The fields that should be returned within the individual trial object.
@@ -233,17 +234,19 @@ export class TrialScopeQuery {
   ];
 
   constructor(patientBundle: fhir.Bundle) {
-    const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+    const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
     console.log(extractedMCODE);
-    this.mcode = {};
-    this.mcode.primaryCancer = extractedMCODE.getPrimaryCancerValue();
-    this.mcode.secondaryCancer = extractedMCODE.getSecondaryCancerValue();
-    this.mcode.histologyMorphology = extractedMCODE.getHistologyMorphologyValue();
-    this.mcode.stage = extractedMCODE.getStageValue();
-    this.mcode.tumorMarker = extractedMCODE.getTumorMarkerValue();
-    this.mcode.radiationProcedure = extractedMCODE.getRadiationProcedureValue();
-    this.mcode.surgicalProcedure = extractedMCODE.getSurgicalProcedureValue();
-    this.mcode.medicationStatement = extractedMCODE.getMedicationStatementValue();
+    this.mcode = {
+      primaryCancer: extractedMCODE.getPrimaryCancerValue(),
+      secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
+      histologyMorphology: extractedMCODE.getHistologyMorphologyValue(),
+      stage: extractedMCODE.getStageValue(),
+      age: extractedMCODE.getAgeValue(),
+      tumorMarker: extractedMCODE.getTumorMarkerValue(),
+      radiationProcedure: extractedMCODE.getRadiationProcedureValue(),
+      surgicalProcedure: extractedMCODE.getSurgicalProcedureValue(),
+      medicationStatement: extractedMCODE.getMedicationStatementValue()
+    };
     console.log(this.mcode);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
@@ -273,8 +276,7 @@ export class TrialScopeQuery {
   getMCODEFilters(): string {
     const result: string[] = [];
     for (const k in this.mcode) {
-      const v = this.mcode[k];
-      if (v) result.push(`${k}: ${v}`);
+      result.push(`${k}: ${this.mcode[k]}`);
     }
     return '{' + result.join(', ') + '}';
   }
@@ -298,12 +300,7 @@ export class TrialScopeQuery {
     }
     // Recruitment Status
     if (this.recruitmentStatus !== null) {
-      // Recruitment status can conceptually be an array
-      if (Array.isArray(this.recruitmentStatus)) {
-        advancedMatches += `,recruitmentStatus:[${this.recruitmentStatus.join(', ')}]`;
-      } else {
-        advancedMatches += ',recruitmentStatus:' + this.recruitmentStatus;
-      }
+      advancedMatches += ',recruitmentStatus:' + this.recruitmentStatus;
     }
     advancedMatches += ' }';
     // Before and After
@@ -326,8 +323,6 @@ export class TrialScopeQuery {
       '} ' +
       'pageInfo { endCursor hasNextPage }' +
     '} }';
-    console.log('Generated query:');
-    console.log(query);
     return query;
   }
   toString(): string {
