@@ -89,6 +89,7 @@ describe('convertTrialScopeToResearchStudy', () => {
     expect(researchStudy.sponsor).toEqual({ reference: '#org-study-1', type: 'Organization' });
     expect(researchStudy.contained).toContain({ resourceType: 'Organization', id: 'org-study-1', name: 'Sponsor' });
   });
+
   it('converts an empty trial', () => {
     const researchStudy = convertTrialScopeToResearchStudy({}, 1);
     expect(researchStudy.identifier).not.toBeDefined();

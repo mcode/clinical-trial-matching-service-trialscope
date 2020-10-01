@@ -4,9 +4,12 @@ import {
   makeSearchSet,
   TrialScopeQuery,
   TrialScopeQueryRunner,
-  TrialScopeServerError
+  TrialScopeServerError,
+  TrialScopeTrial
 } from '../src/trialscope';
-import { SearchSet, fhir, ClinicalTrialGovService } from 'clinical-trial-matching-service';
+import { SearchSet, fhir, ClinicalTrialGovService, ResearchStudy } from 'clinical-trial-matching-service';
+// For spying purposes:
+import fs from 'fs';
 import nock from 'nock';
 
 describe('isTrialScopeResponse', () => {
@@ -227,6 +230,9 @@ describe('TrialScopeQuery', () => {
         }
       ]
     });
+    // Also blank out first - not sure why this is allowed but apparently it is?
+    // Fairly certain this is never used.
+    query.first = null;
     const graphQL = query.toQuery();
     const m = /baseFilters:\s*{(.*?)}/.exec(graphQL);
     expect(m).toBeTruthy();
@@ -243,6 +249,7 @@ describe('TrialScopeQueryRunner', () => {
   let backupService: ClinicalTrialGovService;
   let scope: nock.Scope;
   let interceptor: nock.Interceptor;
+
   beforeEach(() => {
     backupService = new ClinicalTrialGovService('tmp');
     queryRunner = new TrialScopeQueryRunner('https://example.com/trialscope', 'token', backupService);
@@ -300,6 +307,260 @@ describe('TrialScopeQueryRunner', () => {
     // This triggers the error handler on the stream, it does not generate a server error
     interceptor.replyWithError('oops');
     return expectAsync(queryRunner.sendQuery('unimportant')).toBeRejectedWithError('oops');
+  });
+
+  describe('runQuery', () => {
+    let patientBundle: fhir.Bundle;
+    beforeEach(() => {
+      // This is basically the minimum bundle required to run a query
+      patientBundle = {
+        resourceType: 'Bundle',
+        type: 'collection',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Parameters',
+              parameter: [{ name: 'zipCode', valueString: '01234' }]
+            }
+          }
+        ]
+      };
+    });
+
+    it('resolves results on success', () => {
+      interceptor.reply(200, {
+        data: {
+          advancedMatches: {
+            totalCount: 2,
+            edges: [],
+            pageInfo: {
+              endCursor: 'A',
+              hasNextPage: false
+            }
+          }
+        }
+      });
+      return expectAsync(queryRunner.runQuery(patientBundle)).toBeResolved();
+    });
+
+    it('loads multiple pages', () => {
+      interceptor
+        .reply(200, {
+          data: {
+            advancedMatches: {
+              totalCount: 3,
+              edges: [],
+              pageInfo: {
+                endCursor: 'A',
+                hasNextPage: true
+              }
+            }
+          }
+        })
+        .post('/trialscope')
+        .reply(200, {
+          data: {
+            advancedMatches: {
+              totalCount: 3,
+              edges: [],
+              pageInfo: {
+                endCursor: 'B',
+                hasNextPage: true
+              }
+            }
+          }
+        })
+        .post('/trialscope')
+        .reply(200, {
+          data: {
+            advancedMatches: {
+              totalCount: 3,
+              edges: [],
+              pageInfo: {
+                endCursor: 'C',
+                hasNextPage: false
+              }
+            }
+          }
+        });
+      return expectAsync(queryRunner.runQuery(patientBundle)).toBeResolved();
+    });
+  });
+
+  describe('convertToSearchSet', () => {
+    let backupServiceSpy: jasmine.Spy;
+    beforeEach(() => {
+      backupServiceSpy = spyOn(backupService, 'downloadTrials');
+    });
+
+    it('converts a response to a SearchSet', () => {
+      // Miminum trial that won't trigger the backup service
+      const minimalTrial: TrialScopeTrial = {
+        detailedDescription: 'Detailed description',
+        criteria: 'Trial Criteria',
+        phase: 'Phase 2',
+        studyType: 'Type'
+      };
+      return expectAsync(
+        queryRunner
+          .convertToSearchSet({
+            data: {
+              advancedMatches: {
+                totalCount: 3,
+                edges: [
+                  {
+                    node: minimalTrial,
+                    cursor: 'A',
+                    matchQuality: 'HIGH_LIKELIHOOD'
+                  },
+                  {
+                    node: minimalTrial,
+                    cursor: 'B',
+                    matchQuality: 'POSSIBLE'
+                  },
+                  {
+                    node: minimalTrial,
+                    cursor: 'C',
+                    matchQuality: 'POSSIBLE_NON_MATCH'
+                  }
+                ],
+                pageInfo: { endCursor: 'D', hasNextPage: false }
+              }
+            }
+          })
+          .then((actual) => {
+            expect(backupServiceSpy).not.toHaveBeenCalled();
+            expect(actual.total).toEqual(3);
+            expect(actual.entry.length).toEqual(3);
+            for (let i = 0; i < 3; i++) {
+              const expected = new ResearchStudy(i);
+              expected.phase = {
+                coding: [
+                  {
+                    system: 'http://terminology.hl7.org/CodeSystem/research-study-phase',
+                    code: 'phase-2',
+                    display: 'Phase 2'
+                  }
+                ],
+                text: 'Phase 2'
+              };
+              expected.category = [{ text: 'Type' }];
+              expected.description = 'Detailed description';
+              const reference = expected.addContainedResource({
+                resourceType: 'Group',
+                id: 'group-' + expected.id,
+                type: 'person',
+                actual: false
+              });
+              reference.display = 'Trial Criteria';
+              expected.enrollment = [reference];
+              // For the sake of this test, kill the createResourceId functions
+              // (it shouldn't be enumerable anyway)
+              expected.createReferenceId = null;
+              (actual.entry[i].resource as ResearchStudy).createReferenceId = null;
+              expect(actual.entry[i].resource).toEqual(expected);
+            }
+            expect(actual.entry[0].search.score).toEqual(1);
+            expect(actual.entry[1].search.score).toEqual(0.5);
+            expect(actual.entry[2].search.score).toEqual(0);
+          })
+      ).toBeResolved();
+    });
+
+    it('invokes the backup service when necessary', () => {
+      backupServiceSpy.and.callFake(() => {
+        return Promise.resolve();
+      });
+      const updateTrialSpy = spyOn(backupService, 'updateResearchStudy').and.callFake((researchStudy) => {
+        return Promise.resolve(researchStudy);
+      });
+      // These are not complete spies as that would involve implementing Promisify
+      ((spyOn(fs, 'unlink') as unknown) as jasmine.Spy<
+        (path: string, callback: (err?: Error) => void) => void
+      >).and.callFake((_path, cb) => {
+        cb(undefined);
+      });
+      // This is technically wrong since it doesn't support options being optional
+      ((spyOn(fs, 'rmdir') as unknown) as jasmine.Spy<
+        (path: string, options: Record<string, unknown>, callback: (err?: Error) => void) => void
+      >).and.callFake((_path, _options, cb) => {
+        cb(undefined);
+      });
+      return expectAsync(
+        queryRunner
+          .convertToSearchSet({
+            data: {
+              advancedMatches: {
+                totalCount: 3,
+                edges: [
+                  {
+                    node: { nctId: 'NCT11111111' },
+                    cursor: 'A',
+                    matchQuality: 'HIGH_LIKELIHOOD'
+                  },
+                  {
+                    // Make this one "complete" so it doesn't get passed to the
+                    // backup service
+                    node: {
+                      nctId: 'NCT22222222',
+                      detailedDescription: 'Detailed description',
+                      criteria: 'Trial Criteria',
+                      phase: 'Phase 2',
+                      studyType: 'Type'
+                    },
+                    cursor: 'B',
+                    matchQuality: 'POSSIBLE'
+                  },
+                  {
+                    node: { nctId: 'NCT33333333' },
+                    cursor: 'C',
+                    matchQuality: 'POSSIBLE_NON_MATCH'
+                  }
+                ],
+                pageInfo: { endCursor: 'D', hasNextPage: false }
+              }
+            }
+          })
+          .then(
+            (actual) => {
+              expect(backupServiceSpy).toHaveBeenCalledWith(['NCT11111111', 'NCT33333333']);
+              expect(updateTrialSpy).toHaveBeenCalledTimes(2);
+              // Only check for the NCT ID in these
+              expect(updateTrialSpy.calls.argsFor(0)[0].identifier).toEqual([
+                { use: 'official', system: 'http://clinicaltrials.gov', value: 'NCT11111111' }
+              ]);
+              expect(updateTrialSpy.calls.argsFor(1)[0].identifier).toEqual([
+                { use: 'official', system: 'http://clinicaltrials.gov', value: 'NCT33333333' }
+              ]);
+              expect(actual.total).toEqual(3);
+            },
+            (error) => {
+              console.log(error);
+              fail(error);
+            }
+          )
+      ).toBeResolved();
+    });
+
+    it('converts an empty response to an empty SearchSet', () => {
+      return expectAsync(
+        queryRunner
+          .convertToSearchSet({
+            data: {
+              advancedMatches: {
+                totalCount: 0,
+                edges: [],
+                pageInfo: { endCursor: 'A', hasNextPage: false }
+              }
+            }
+          })
+          .then((actual) => {
+            expect(backupServiceSpy).not.toHaveBeenCalled();
+            expect(actual.total).toEqual(0);
+            expect(actual.entry).toEqual([]);
+          })
+      ).toBeResolved();
+    });
   });
 });
 
