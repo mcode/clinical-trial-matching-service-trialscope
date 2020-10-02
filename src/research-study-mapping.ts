@@ -1,4 +1,4 @@
-import { ResearchStudy, fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
+import { ResearchStudy, fhir, convertStringsToCodeableConcept } from 'clinical-trial-matching-service';
 import { TrialScopeTrial } from './trialscope';
 
 // Mappings between trialscope value sets and FHIR value sets
@@ -58,18 +58,18 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
     result.category = [{ text: trial.studyType }];
   }
   if (trial.conditions) {
-    const conditions = convertStringArrayToCodeableConcept(trial.conditions);
+    const conditions = convertStringsToCodeableConcept(trial.conditions);
     if (conditions.length > 0) result.condition = conditions;
   }
   if (trial.overallContactName || trial.overallContactPhone || trial.overallContactEmail) {
     result.addContact(trial.overallContactName, trial.overallContactPhone, trial.overallContactEmail);
   }
   if (trial.keywords) {
-    const keywords = convertStringArrayToCodeableConcept(trial.keywords);
+    const keywords = convertStringsToCodeableConcept(trial.keywords);
     if (keywords.length > 0) result.keyword = keywords;
   }
   if (trial.countries) {
-    const countries = convertStringArrayToCodeableConcept(trial.countries);
+    const countries = convertStringsToCodeableConcept(trial.countries);
     if (countries.length > 0) result.location = countries;
   }
   if (trial.detailedDescription) {
