@@ -1,4 +1,4 @@
-import { ResearchStudy, fhir, convertStringArrayToCodeableConcept } from 'clinical-trial-matching-service';
+import { ResearchStudy, fhir, convertStringsToCodeableConcept } from 'clinical-trial-matching-service';
 import { TrialScopeTrial } from './trialscope';
 
 // Mappings between trialscope value sets and FHIR value sets
@@ -57,17 +57,20 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
   if (trial.studyType) {
     result.category = [{ text: trial.studyType }];
   }
-  if (trial.conditions != '[]') {
-    result.condition = convertStringArrayToCodeableConcept(trial.conditions);
+  if (trial.conditions) {
+    const conditions = convertStringsToCodeableConcept(trial.conditions);
+    if (conditions.length > 0) result.condition = conditions;
   }
   if (trial.overallContactName || trial.overallContactPhone || trial.overallContactEmail) {
     result.addContact(trial.overallContactName, trial.overallContactPhone, trial.overallContactEmail);
   }
-  if (trial.keywords && trial.keywords != '[]') {
-    result.keyword = convertStringArrayToCodeableConcept(trial.keywords);
+  if (trial.keywords) {
+    const keywords = convertStringsToCodeableConcept(trial.keywords);
+    if (keywords.length > 0) result.keyword = keywords;
   }
-  if (trial.countries && trial.countries != '[]') {
-    result.location = convertStringArrayToCodeableConcept(trial.countries);
+  if (trial.countries) {
+    const countries = convertStringsToCodeableConcept(trial.countries);
+    if (countries.length > 0) result.location = countries;
   }
   if (trial.detailedDescription) {
     result.description = trial.detailedDescription;
@@ -76,21 +79,24 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
     result.objective = [{ name: trial.officialTitle }];
   }
   if (trial.overallOfficialName) {
-    result.principalInvestigator = { reference: '#practitioner' + result.id, type: 'Practitioner' };
+    result.principalInvestigator = result.addContainedResource({
+      resourceType: 'Practitioner',
+      id: 'practitioner-' + result.id,
+      name: [{ use: 'official', text: trial.overallOfficialName }]
+    });
   }
   if (trial.sites && trial.sites.length > 0) {
     for (const site of trial.sites) {
-      const location = result.addSite(site.facility, site.contactEmail, site.contactPhone);
+      const location = result.addSite(site.facility, site.contactPhone, site.contactEmail);
       if (site.latitude && site.longitude) {
         location.position = { latitude: site.latitude, longitude: site.longitude };
       }
-      result.addSite(location);
     }
   }
   if (trial.criteria) {
     const reference = result.addContainedResource({
       resourceType: 'Group',
-      id: 'group' + result.id,
+      id: 'group-' + result.id,
       type: 'person',
       actual: false
     });
@@ -100,15 +106,8 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
   if (trial.sponsor) {
     result.sponsor = result.addContainedResource({
       resourceType: 'Organization',
-      id: 'org' + result.id,
+      id: 'org-' + result.id,
       name: trial.sponsor
-    });
-  }
-  if (result.principalInvestigator) {
-    result.addContainedResource({
-      resourceType: 'Practitioner',
-      id: 'practitioner' + result.id,
-      name: [{ use: 'official', text: trial.overallOfficialName }]
     });
   }
 

@@ -55,7 +55,7 @@ export interface TumorMarker {
 }
 
 // extracted MCODE info
-export class extractedMCODE {
+export class ExtractedMCODE {
   primaryCancerCondition: PrimaryCancerCondition[];
   TNMClinicalStageGroup: Coding[];
   TNMPathologicalStageGroup: Coding[];

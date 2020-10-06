@@ -1,9 +1,8 @@
 /**
  * Module for running queries via TrialScope
  */
-import { ClinicalTrialGovService } from 'clinical-trial-matching-service';
+import { ClinicalTrialGovService, ServerError } from 'clinical-trial-matching-service';
 import https from 'https';
-import http from 'http';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
@@ -54,7 +53,7 @@ const TRIALSCOPE_STATUSES: Record<string, string | null> = {
   // UNKNOWN
 };
 
-class TrialScopeServerError extends Error {
+export class TrialScopeServerError extends ServerError {
   constructor(message: string, public result: IncomingMessage, public body: string) {
     super(message);
   }
@@ -74,7 +73,7 @@ export interface TrialScopeResponse {
 }
 
 export function isTrialScopeResponse(o: unknown): o is TrialScopeResponse {
-  if (typeof o !== 'object') {
+  if (typeof o !== 'object' || o === null) {
     return false;
   }
   if ('data' in o && typeof o['data'] === 'object' && o['data'] !== null) {
@@ -104,7 +103,7 @@ export interface TrialScopeErrorResponse {
 }
 
 export function isTrialScopeErrorResponse(o: unknown): o is TrialScopeErrorResponse {
-  if (typeof o !== 'object') {
+  if (typeof o !== 'object' || o === null) {
     return false;
   }
   if ('errors' in o) {
@@ -191,20 +190,21 @@ export class TrialScopeQuery {
   //conditions = new Set<string>();
   zipCode?: string = null;
   travelRadius?: number = null;
+  // Any is a "special" value here meaning "not specified"
   phase = 'any';
-  recruitmentStatus: string | string[] | null = null;
+  recruitmentStatus: string | null = null;
   after?: string = null;
   first = 30;
   mcode?: {
-    primaryCancer?: string;
-    secondaryCancer?: string;
-    histologyMorphology?: string;
-    stage?: string;
-    age?: string;
-    tumorMarker?: string;
-    radiationProcedure?: string;
-    surgicalProcedure?: string;
-    medicationStatement?: string;
+    [key: string]: string;
+    primaryCancer: string;
+    secondaryCancer: string;
+    histologyMorphology: string;
+    stage: string;
+    tumorMarker: string;
+    radiationProcedure: string;
+    surgicalProcedure: string;
+    medicationStatement: string;
   };
   /**
    * The fields that should be returned within the individual trial object.
@@ -233,17 +233,18 @@ export class TrialScopeQuery {
   ];
 
   constructor(patientBundle: fhir.Bundle) {
-    const extractedMCODE = new mcode.extractedMCODE(patientBundle);
+    const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
     console.log(extractedMCODE);
-    this.mcode = {};
-    this.mcode.primaryCancer = extractedMCODE.getPrimaryCancerValue();
-    this.mcode.secondaryCancer = extractedMCODE.getSecondaryCancerValue();
-    this.mcode.histologyMorphology = extractedMCODE.getHistologyMorphologyValue();
-    this.mcode.stage = extractedMCODE.getStageValue();
-    this.mcode.tumorMarker = extractedMCODE.getTumorMarkerValue();
-    this.mcode.radiationProcedure = extractedMCODE.getRadiationProcedureValue();
-    this.mcode.surgicalProcedure = extractedMCODE.getSurgicalProcedureValue();
-    this.mcode.medicationStatement = extractedMCODE.getMedicationStatementValue();
+    this.mcode = {
+      primaryCancer: extractedMCODE.getPrimaryCancerValue(),
+      secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
+      histologyMorphology: extractedMCODE.getHistologyMorphologyValue(),
+      stage: extractedMCODE.getStageValue(),
+      tumorMarker: extractedMCODE.getTumorMarkerValue(),
+      radiationProcedure: extractedMCODE.getRadiationProcedureValue(),
+      surgicalProcedure: extractedMCODE.getSurgicalProcedureValue(),
+      medicationStatement: extractedMCODE.getMedicationStatementValue()
+    };
     console.log(this.mcode);
     for (const entry of patientBundle.entry) {
       if (!('resource' in entry)) {
@@ -251,10 +252,8 @@ export class TrialScopeQuery {
         continue;
       }
       const resource = entry.resource;
-      //console.log(`Checking resource ${resource.resourceType}`);
       if (resource.resourceType === 'Parameters') {
         for (const parameter of resource.parameter) {
-          console.log(` - Setting parameter ${parameter.name} to ${parameter.valueString}`);
           if (parameter.name === 'zipCode') {
             this.zipCode = parameter.valueString;
           } else if (parameter.name === 'travelRadius') {
@@ -268,18 +267,16 @@ export class TrialScopeQuery {
       }
     }
   }
-  // Get the mCODE filters as an array of strings
-  getmCODEFilters(): string[] {
-    const filterArray: string[] = [];
-    filterArray.push('primaryCancer: ' + this.mcode.primaryCancer);
-    filterArray.push('secondaryCancer: ' + this.mcode.secondaryCancer);
-    filterArray.push('histologyMorphology: ' + this.mcode.histologyMorphology);
-    filterArray.push('stage: ' + this.mcode.stage);
-    filterArray.push('tumorMarker: ' + this.mcode.tumorMarker);
-    filterArray.push('radiationProcedure: ' + this.mcode.radiationProcedure);
-    filterArray.push('surgicalProcedure: ' + this.mcode.surgicalProcedure);
-    filterArray.push('medicationStatement: ' + this.mcode.medicationStatement);
-    return filterArray;
+  /**
+   * Gets the set of mCode filters as an appropriate GraphQL block, such as
+   * "{primaryCancer: BREAST_CANCER}"
+   */
+  getMCODEFilters(): string {
+    const result: string[] = [];
+    for (const k in this.mcode) {
+      result.push(`${k}: ${this.mcode[k]}`);
+    }
+    return '{' + result.join(', ') + '}';
   }
   /**
    * Create a TrialScope query.
@@ -287,7 +284,7 @@ export class TrialScopeQuery {
    */
   toQuery(): string {
     // mCODE Filters
-    let advancedMatches = 'mcode:{' + Array.from(this.getmCODEFilters()).join(', ') + '},';
+    let advancedMatches = `mcode:${this.getMCODEFilters()},`;
     // Start of Base filters
     advancedMatches += `baseFilters: { zipCode: "${this.zipCode}"`;
     // Travel Radius
@@ -301,12 +298,7 @@ export class TrialScopeQuery {
     }
     // Recruitment Status
     if (this.recruitmentStatus !== null) {
-      // Recruitment status can conceptually be an array
-      if (Array.isArray(this.recruitmentStatus)) {
-        advancedMatches += `,recruitmentStatus:[${this.recruitmentStatus.join(', ')}]`;
-      } else {
-        advancedMatches += ',recruitmentStatus:' + this.recruitmentStatus;
-      }
+      advancedMatches += ',recruitmentStatus:' + this.recruitmentStatus;
     }
     advancedMatches += ' }';
     // Before and After
@@ -329,8 +321,6 @@ export class TrialScopeQuery {
       '} ' +
       'pageInfo { endCursor hasNextPage }' +
     '} }';
-    console.log('Generated query:');
-    console.log(query);
     return query;
   }
   toString(): string {
@@ -338,27 +328,14 @@ export class TrialScopeQuery {
   }
 }
 
-type RequestGeneratorFunction = (
-  url: string | URL,
-  options: https.RequestOptions,
-  callback?: (res: IncomingMessage) => void
-) => http.ClientRequest;
-
 export class TrialScopeQueryRunner {
-  private generateRequest: RequestGeneratorFunction;
-  constructor(
-    public endpoint: string,
-    private token: string,
-    private backupService: ClinicalTrialGovService,
-    requestGenerator: RequestGeneratorFunction = https.request
-  ) {
-    this.generateRequest = requestGenerator;
-  }
+  constructor(public endpoint: string, private token: string, private backupService: ClinicalTrialGovService) {}
 
   runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
     // update for advanced matches query
     return new Promise<TrialScopeResponse>((resolve, reject) => {
       const query = new TrialScopeQuery(patientBundle);
+      console.log(query);
       this.sendQuery(query.toQuery())
         .then((result) => {
           // Result is a parsed JSON object. See if we need to load more pages.
@@ -377,11 +354,6 @@ export class TrialScopeQueryRunner {
               })
               .catch(reject);
           };
-          if (!('data' in result)) {
-            console.error('Bad response from server. Got:');
-            console.error(result);
-            reject(new Error(`Missing "data" in results`));
-          }
           if (result.data.advancedMatches.pageInfo.hasNextPage) {
             // Since this result object is the ultimate result, alter it to
             // pretend it doesn't have a next page
@@ -393,55 +365,82 @@ export class TrialScopeQueryRunner {
         })
         .catch(reject);
     }).then<SearchSet>((trialscopeResponse) => {
-      // Convert to SearchSet
-      const studies: fhir.ResearchStudy[] = [];
-      const matchScores: number[] = [];
-      let index = 0;
-      const backupIds: string[] = [];
-      for (const node of trialscopeResponse.data.advancedMatches.edges) {
-        const trial: TrialScopeTrial = node.node;
-        matchScores.push(parseMatchQuality(node.matchQuality));
-        const study = convertTrialScopeToResearchStudy(trial, index);
-        if (!study.description || !study.enrollment || !study.phase || !study.category) {
-          backupIds.push(trial.nctId);
-        }
-        studies.push(study);
-        index++;
-      }
-      if (backupIds.length == 0) {
-        return new SearchSet(studies);
-      } else {
-        return this.backupService.downloadTrials(backupIds).then(() => {
-          const promises: Promise<fhir.ResearchStudy>[] = [];
-          for (const study of studies) {
-            if (backupIds.includes(study.identifier[0].value)) {
-              promises.push(this.backupService.updateResearchStudy(study));
-            } else {
-              // Otherwise push the study as it exists
-              promises.push(Promise.resolve(study));
-            }
-          }
-
-          // FIXME: This should be handled by the service itself
-          fs.unlink('clinicaltrial-backup-cache/backup.zip', (err) => {
-            if (err) console.log(err);
-          });
-          fs.rmdir(path.resolve('clinicaltrial-backup-cache/backups/'), { recursive: true }, (err) => {
-            if (err) console.log(err);
-          });
-
-          return Promise.all(promises).then((studies) => makeSearchSet(studies, matchScores));
-        });
-      }
+      return this._convertToSearchSet(trialscopeResponse);
     });
+  }
+
+  /**
+   * Convert a response to a searchset.
+   * @param trialscopeResponse the response to convert
+   * @returns a promise that will resolve to the converted search set
+   *     (asynchronous lookups may be required to complete the search set)
+   */
+  convertToSearchSet(trialscopeResponse: TrialScopeResponse): Promise<SearchSet> {
+    // This mostly exists to ensure that the "public" API for this is easy to use
+    const result = this._convertToSearchSet(trialscopeResponse);
+    if (result instanceof Promise) {
+      return result;
+    } else {
+      return Promise.resolve(result);
+    }
+  }
+
+  /**
+   * Convert a response to a searchset.
+   * @param trialscopeResponse the response to convert
+   * @returns either the converted searchset or a promise that will resolve to
+   * it (this makes more sense in the intended flow where this is used as the
+   * return value from a Promise's then handler)
+   */
+  private _convertToSearchSet(trialscopeResponse: TrialScopeResponse): SearchSet | Promise<SearchSet> {
+    const studies: fhir.ResearchStudy[] = [];
+    const matchScores: number[] = [];
+    let index = 0;
+    const backupIds: string[] = [];
+    for (const node of trialscopeResponse.data.advancedMatches.edges) {
+      const trial: TrialScopeTrial = node.node;
+      matchScores.push(parseMatchQuality(node.matchQuality));
+      const study = convertTrialScopeToResearchStudy(trial, index);
+      if (!study.description || !study.enrollment || !study.phase || !study.category) {
+        backupIds.push(trial.nctId);
+      }
+      studies.push(study);
+      index++;
+    }
+    if (backupIds.length == 0) {
+      return makeSearchSet(studies, matchScores);
+    } else {
+      return this.backupService.downloadTrials(backupIds).then(() => {
+        const promises: Promise<fhir.ResearchStudy>[] = [];
+        for (const study of studies) {
+          if (backupIds.includes(study.identifier[0].value)) {
+            promises.push(this.backupService.updateResearchStudy(study));
+          } else {
+            // Otherwise push the study as it exists
+            promises.push(Promise.resolve(study));
+          }
+        }
+
+        // FIXME: This should be handled by the service itself
+        fs.unlink('clinicaltrial-backup-cache/backup.zip', (err) => {
+          /* istanbul ignore if failure condition isn't handled anyway */
+          if (err) console.log(err);
+        });
+        fs.rmdir(path.resolve('clinicaltrial-backup-cache/backups/'), { recursive: true }, (err) => {
+          /* istanbul ignore if failure condition isn't handled anyway */
+          if (err) console.log(err);
+        });
+
+        return Promise.all(promises).then((studies) => makeSearchSet(studies, matchScores));
+      });
+    }
   }
 
   sendQuery(query: string): Promise<TrialScopeResponse> {
     return new Promise((resolve, reject) => {
       const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
-      console.log('Running raw TrialScope query');
       console.log(query);
-      const request = this.generateRequest(
+      const request = https.request(
         this.endpoint,
         {
           method: 'POST',
@@ -457,16 +456,11 @@ export class TrialScopeQueryRunner {
             responseBody += chunk;
           });
           result.on('end', () => {
-            console.log('Complete');
             if (result.statusCode === 200) {
-              const json = JSON.parse(responseBody) as unknown;
-              if (isTrialScopeResponse(json)) {
-                resolve(json);
-              } else {
-                // Going to have to be rejected.
-                if (isTrialScopeErrorResponse(json)) {
-                  // TODO: Parse out errors?
-                  reject(new TrialScopeServerError('Server indicates invalid query', result, responseBody));
+              try {
+                const json = JSON.parse(responseBody) as unknown;
+                if (isTrialScopeResponse(json)) {
+                  resolve(json);
                 } else {
                   // Going to have to be rejected.
                   if (isTrialScopeErrorResponse(json)) {
@@ -476,6 +470,8 @@ export class TrialScopeQueryRunner {
                     reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
                   }
                 }
+              } catch (ex) {
+                reject(new TrialScopeServerError('Unable to parse response', result, responseBody));
               }
             } else {
               reject(
@@ -495,17 +491,6 @@ export class TrialScopeQueryRunner {
       request.write(body);
       request.end();
     });
-  }
-
-  /**
-   * Override the request generator used to generate HTTPS requests. This may be
-   * useful in some scenarios where the request needs to be modified. It's
-   * primarily intended to be used in tests.
-   *
-   * @param requestGenerator the request generator to use instead of https.request
-   */
-  setRequestGenerator(requestGenerator?: RequestGeneratorFunction): void {
-    this.generateRequest = requestGenerator ? requestGenerator : https.request;
   }
 }
 
