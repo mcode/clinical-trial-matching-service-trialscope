@@ -201,7 +201,6 @@ export class TrialScopeQuery {
     secondaryCancer: string;
     histologyMorphology: string;
     stage: string;
-    age: string;
     tumorMarker: string;
     radiationProcedure: string;
     surgicalProcedure: string;
@@ -241,7 +240,6 @@ export class TrialScopeQuery {
       secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
       histologyMorphology: extractedMCODE.getHistologyMorphologyValue(),
       stage: extractedMCODE.getStageValue(),
-      age: extractedMCODE.getAgeValue(),
       tumorMarker: extractedMCODE.getTumorMarkerValue(),
       radiationProcedure: extractedMCODE.getRadiationProcedureValue(),
       surgicalProcedure: extractedMCODE.getSurgicalProcedureValue(),
@@ -337,6 +335,7 @@ export class TrialScopeQueryRunner {
     // update for advanced matches query
     return new Promise<TrialScopeResponse>((resolve, reject) => {
       const query = new TrialScopeQuery(patientBundle);
+      console.log(query);
       this.sendQuery(query.toQuery())
         .then((result) => {
           // Result is a parsed JSON object. See if we need to load more pages.
@@ -440,6 +439,7 @@ export class TrialScopeQueryRunner {
   sendQuery(query: string): Promise<TrialScopeResponse> {
     return new Promise((resolve, reject) => {
       const body = Buffer.from(`{"query":${JSON.stringify(query)}}`, 'utf8');
+      console.log(query);
       const request = https.request(
         this.endpoint,
         {
