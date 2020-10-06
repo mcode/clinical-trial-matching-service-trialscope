@@ -1003,6 +1003,30 @@ export class ExtractedMCODE {
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1,PDL2'))
     ) {
       return 'ANTI_PD';
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PARP'))
+    ) {
+      return "ANTI-PARP";
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))
+    ) {
+      return "SG";
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-topoisomerase-1'))
+    ) {
+      return "ANTI-TOPOISOMERASE-1";
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CTLA4'))
+    ) {
+      return "ANTI-CTLA4";
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CD40'))
+    ) {
+      return "ANTI-CD40";
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuz and Pertuz'))
+    ) {
+      return "TRASTUZ_AND_PERTUZ";
     } else {
       return 'NOT_SURE';
     }
