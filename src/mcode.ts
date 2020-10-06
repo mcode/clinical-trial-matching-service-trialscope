@@ -337,7 +337,7 @@ export class ExtractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.codeIsInSheet(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
@@ -353,9 +353,9 @@ export class ExtractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 5. Other malignancy - except skin or cervical
       if (
-        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
+        (primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Breast')) &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')) ||
-        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Cervical')) &&
+        (primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Cervical')) &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
           (this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-0')) ||
             this.TNMPathologicalStageGroup.some((coding) => this.codeIsInSheet(coding, 'Stage-0'))))
@@ -452,11 +452,93 @@ export class ExtractedMCODE {
       if (
         (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
-            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive')
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive-Carcinoma')
           )) ||
         primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))
       ) {
         return 'INVASIVE_BREAST_CANCER';
+      }
+    }
+    // Invasive Mammory Carcinoma
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invas Carc Mix')
+          )) ||
+        (primaryCancerCondition.coding.some(
+          (coding) => this.normalizeCodeSystem(coding.system) == 'SNOMED' && coding.code == '444604002'
+        ) &&
+          this.TNMClinicalStageGroup.some((code) => this.codeIsNotInSheet(code, 'Stage-0'))) ||
+        this.TNMPathologicalStageGroup.some((code) => this.codeIsNotInSheet(code, 'Stage-0'))
+      ) {
+        return 'INVASIVE_MAMMORY_CARCINOMA';
+      }
+    }
+    // Invasive Ductal Carcinoma
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invas Duct Car')
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Morphology-Invas Duct Car'))
+      ) {
+        return 'INVASIVE_DUCTAL_CARCINOMA';
+      }
+    }
+    // Invasive Lobular Carcinoma
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some(
+            (histMorphBehav) =>
+              this.normalizeCodeSystem(histMorphBehav.system) == 'SNOMED' && histMorphBehav.code == '443757001'
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invas Lob Carc'))
+      ) {
+        return 'INVASIVE_LOBUALR_CARCINOMA';
+      }
+    }
+    // Ductual Carcinoma in Situ
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+          this.codeIsInSheet(histMorphBehav, 'Morphology-Duct Car In Situ')
+        )
+      ) {
+        return 'DUCTAL_CARCINOMA_IN_SITU';
+      }
+    }
+    // Inflammatory
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some(
+            (histMorphBehav) =>
+              this.normalizeCodeSystem(histMorphBehav.system) == 'SNOMED' && histMorphBehav.code == '32968003'
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Inflammatory'))
+      ) {
+        return 'INFLAMMATORY';
+      }
+    }
+    // Non-Inflammatory, Invasive
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        ((primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive')
+          )) ||
+          primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))) &&
+        ((primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((code) =>
+            this.codeIsNotInSheet(code, 'Morphology-Inflammatory')
+          )) ||
+          primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Inflammatory')))
+      ) {
+        return 'NON-INFLAMMATORY_INVASIVE';
       }
     }
     // None of the conditions are satisfied.
@@ -964,7 +1046,7 @@ export class ExtractedMCODE {
   }
 
   // Returns whether the given code is any code not in the given profile.
-  profileDoesNotContainCode(coding: Coding, profile: string): boolean {
+  codeIsNotInSheet(coding: Coding, profile: string): boolean {
     if (coding.code == undefined || coding.code == null) {
       return false;
     } else {
