@@ -5,6 +5,7 @@ import { CodeProfile, ProfileSystemCodes } from './profileSystemLogic';
 
 import profile_system_codes_json from '../data/profile-system-codes-json.json';
 import { fhir } from 'clinical-trial-matching-service';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 const profile_system_codes = profile_system_codes_json as ProfileSystemCodes;
 
@@ -56,8 +57,20 @@ export interface TumorMarker {
 
 export interface CancerGeneticVariant {
   code?: Coding[];
-  component_GeneStudied?: Coding[];
+  component?: CancerGeneticVariantComponent[];
   valueCodeableConcept?: Coding[];
+  interpretation?: Coding[];
+}
+
+export interface CancerGeneticVariantComponent {
+  geneStudied?: CancerGeneticVariantComponentType[];
+  genomicsSourceClass?: CancerGeneticVariantComponentType[];
+}
+
+export interface CancerGeneticVariantComponentType {
+  code?: Coding[];
+  valueCodeableConcept?: Coding
+  interpretation?: Coding[];
 }
 
 // extracted MCODE info
@@ -185,8 +198,15 @@ export class ExtractedMCODE {
         ) {
           const tempCGV: CancerGeneticVariant = {};
           tempCGV.code = this.lookup(resource, 'code.coding') as Coding[];
-          tempCGV.component_GeneStudied = this.lookup(resource, 'component.GeneStudied.code.coding') as Coding[];
+          tempCGV.component = [];
+          var i = 0;
+          for( var temp in this.lookup(resource, 'component')) {
+            tempCGV.component[i].geneStudied = this.lookup(resource, 'component[' + i + ']:GeneStudied') as CancerGeneticVariantComponentType[];
+            tempCGV.component[i].genomicsSourceClass = this.lookup(resource, 'component[' + i + ']:GenomicSourceClass') as CancerGeneticVariantComponentType[];
+            i++;
+          }
           tempCGV.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+          tempCGV.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
           if (this.cancerGeneticVariant) {
             this.cancerGeneticVariant.push(tempCGV);
           } else {
@@ -645,8 +665,6 @@ export class ExtractedMCODE {
     if (this.tumorMarker.length == 0) {
       return 'NOT_SURE';
     }
-    // these definitely aren't in a most specific to least specific order, so we'll need to rearrange them
-    // Triple Negative and RB Positive
 
     // TRIPLE_NEGATIVE_AND_RB_POSITIVE
     if (
@@ -741,8 +759,58 @@ export class ExtractedMCODE {
     if (this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+']))) {
       return 'HER2_MINUS';
     }
+    // BRCA1-Germline
+    if( 
+      this.cancerGeneticVariant.some((cancGenVar) =>
+      this.isBRCA(cancGenVar, "1100")      
+      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6683-2")))
+     ) {
+      return "BRCA1-GERMLINE";
+    }
+    // BRCA2-Germline
+    if( 
+      this.cancerGeneticVariant.some((cancGenVar) =>
+      this.isBRCA(cancGenVar, "1101")      
+      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6683-2")))
+     ) {
+      return "BRCA2-GERMLINE";
+    }
+    // BRCA1-somatic
+    if( 
+      this.cancerGeneticVariant.some((cancGenVar) =>
+      this.isBRCA(cancGenVar, "1100")      
+      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6684-0")))
+     ) {
+      return "BRCA1-SOMATIC";
+    }
+    // BRCA2-somatic
+    if( 
+      this.cancerGeneticVariant.some((cancGenVar) =>
+      this.isBRCA(cancGenVar, "1101")      
+      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6684-0")))
+     ) {
+      return "BRCA2-SOMATIC";
+    }
+    // BRCA1
+    if( 
+      this.cancerGeneticVariant.some((cancGenVar) =>
+      this.isBRCA(cancGenVar, "1100"))) {
+      return "BRCA1";
+    }
+    // BRCA2
+    if( 
+      this.cancerGeneticVariant.some((cancGenVar) =>
+      this.isBRCA(cancGenVar, "1101"))) {
+      return "BRCA2";
+    }
     // None of the conditions are satisfied.
     return 'NOT_SURE';
+  }
+  isBRCA(cancGenVar: CancerGeneticVariant, code: string){
+    return cancGenVar.component.some(comp => comp.geneStudied.some(geneStudied => this.normalizeCodeSystem(geneStudied.valueCodeableConcept.system) == "HGNC" && geneStudied.valueCodeableConcept.code == code))
+    && ((cancGenVar.valueCodeableConcept.some(valCodeConc => this.normalizeCodeSystem(valCodeConc.system) == "SNOMED" && valCodeConc.code == "10828004")
+    || cancGenVar.valueCodeableConcept.some(valCodeConc => this.normalizeCodeSystem(valCodeConc.system) == "LOINC" && valCodeConc.code == "LA9633-4"))
+    || cancGenVar.interpretation.some(interp => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'));
   }
   isHER2Positive(tumorMarker: TumorMarker): boolean {
     return (
@@ -1040,27 +1108,27 @@ export class ExtractedMCODE {
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PARP'))
     ) {
-      return "ANTI-PARP";
+      return 'ANTI-PARP';
+    } else if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))) {
+      return 'SG';
     } else if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))
+      this.cancerRelatedMedicationStatement.some((coding) =>
+        this.codeIsInSheet(coding, 'Treatment-anti-topoisomerase-1')
+      )
     ) {
-      return "SG";
-    } else if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-topoisomerase-1'))
-    ) {
-      return "ANTI-TOPOISOMERASE-1";
+      return 'ANTI-TOPOISOMERASE-1';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CTLA4'))
     ) {
-      return "ANTI-CTLA4";
+      return 'ANTI-CTLA4';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CD40'))
     ) {
-      return "ANTI-CD40";
+      return 'ANTI-CD40';
     } else if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuz and Pertuz'))
     ) {
-      return "TRASTUZ_AND_PERTUZ";
+      return 'TRASTUZ_AND_PERTUZ';
     } else {
       return 'NOT_SURE';
     }
@@ -1098,6 +1166,8 @@ export class ExtractedMCODE {
       return 'LOINC';
     } else if (codeSystem.toLowerCase().includes('nih')) {
       return 'NIH';
+    } else if (codeSystem.toLowerCase().includes('hgnc')) {
+      return 'HGNC';
     } else {
       return '';
     }
