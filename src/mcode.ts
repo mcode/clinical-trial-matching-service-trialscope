@@ -1035,6 +1035,14 @@ export class ExtractedMCODE {
       this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Splenectomy'))
     ) {
       return 'SPLENECTOMY';
+    } else if (
+      this.cancerRelatedSurgicalProcedure.some((coding) => this.normalizeCodeSystem(coding.system) == "SNOMED" && coding.code == "58390007")
+    ) {
+      return 'BONE_MARROW_TRANSPLANT';
+    } else if (
+      this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Organ_Transplant'))
+    ) {
+      return 'ORGAN_TRANSPLANT';
     } else {
       return 'NOT_SURE';
     }
