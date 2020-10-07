@@ -54,6 +54,12 @@ export interface TumorMarker {
   interpretation?: Coding[];
 }
 
+export interface CancerGeneticVariant {
+  code?: Coding[];
+  component_GeneStudied?: Coding[];
+  valueCodeableConcept?: Coding[];
+}
+
 // extracted MCODE info
 export class ExtractedMCODE {
   primaryCancerCondition: PrimaryCancerCondition[];
@@ -62,6 +68,7 @@ export class ExtractedMCODE {
   secondaryCancerCondition: SecondaryCancerCondition[];
   birthDate: string;
   tumorMarker: TumorMarker[];
+  cancerGeneticVariant: CancerGeneticVariant[];
   cancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure[];
   cancerRelatedSurgicalProcedure: Coding[];
   cancerRelatedMedicationStatement: Coding[];
@@ -169,6 +176,21 @@ export class ExtractedMCODE {
             this.tumorMarker.push(tempTumorMarker);
           } else {
             this.tumorMarker = [tempTumorMarker];
+          }
+        }
+        // Parse and Extract mCODE Cancer Genetic Variant
+        if (
+          resource.resourceType === 'Observation' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-genetic-variant')
+        ) {
+          const tempCGV: CancerGeneticVariant = {};
+          tempCGV.code = this.lookup(resource, 'code.coding') as Coding[];
+          tempCGV.component_GeneStudied = this.lookup(resource, 'component.GeneStudied.code.coding') as Coding[];
+          tempCGV.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+          if (this.cancerGeneticVariant) {
+            this.cancerGeneticVariant.push(tempCGV);
+          } else {
+            this.cancerGeneticVariant = [tempCGV];
           }
         }
 
@@ -706,6 +728,18 @@ export class ExtractedMCODE {
     // HER2+
     if (this.tumorMarker.some((tm) => this.isHER2Positive(tm))) {
       return 'HER2_PLUS';
+    }
+    // PR+
+    if (this.tumorMarker.some((tm) => this.isPRPositive(tm, 10))) {
+      return 'PR_PLUS';
+    }
+    // ER+
+    if (this.tumorMarker.some((tm) => this.isERPositive(tm, 10))) {
+      return 'ER_PLUS';
+    }
+    // HER2-
+    if (this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+']))) {
+      return 'HER2_MINUS';
     }
     // None of the conditions are satisfied.
     return 'NOT_SURE';
