@@ -5,7 +5,6 @@ import { CodeProfile, ProfileSystemCodes } from './profileSystemLogic';
 
 import profile_system_codes_json from '../data/profile-system-codes-json.json';
 import { fhir } from 'clinical-trial-matching-service';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 const profile_system_codes = profile_system_codes_json as ProfileSystemCodes;
 
@@ -199,15 +198,15 @@ export class ExtractedMCODE {
           const tempCGV: CancerGeneticVariant = {};
           tempCGV.code = this.lookup(resource, 'code.coding') as Coding[];
           tempCGV.component = [];
-          var i = 0;
-          for (var temp in this.lookup(resource, 'component')) {
+          let i = 0;
+          for (const temp of this.lookup(resource, 'component')) {
             tempCGV.component[i].geneStudied = this.lookup(
               resource,
-              'component[' + i + ']:GeneStudied'
+              'component[' + i.toString() + ']:GeneStudied'
             ) as CancerGeneticVariantComponentType[];
             tempCGV.component[i].genomicsSourceClass = this.lookup(
               resource,
-              'component[' + i + ']:GenomicSourceClass'
+              'component[' + i.toString() + ']:GenomicSourceClass'
             ) as CancerGeneticVariantComponentType[];
             i++;
           }
@@ -570,7 +569,7 @@ export class ExtractedMCODE {
       if (
         (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
-            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive-Carcinoma')
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive')
           )) ||
         primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))
       ) {
@@ -841,7 +840,7 @@ export class ExtractedMCODE {
     // None of the conditions are satisfied.
     return 'NOT_SURE';
   }
-  isBRCA(cancGenVar: CancerGeneticVariant, brcaCode: string) {
+  isBRCA(cancGenVar: CancerGeneticVariant, brcaCode: string): boolean {
     return (
       cancGenVar.component.some((comp) =>
         comp.geneStudied.some(
@@ -855,7 +854,9 @@ export class ExtractedMCODE {
           (this.normalizeCodeSystem(valCodeConc.system) == 'SNOMED' && valCodeConc.code == '10828004') ||
           (this.normalizeCodeSystem(valCodeConc.system) == 'LOINC' && valCodeConc.code == 'LA9633-4')
       ) ||
-        cancGenVar.interpretation.some((interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS') ||
+        cancGenVar.interpretation.some(
+          (interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'
+        ) ||
         cancGenVar.component.some((comp) =>
           comp.geneStudied.some((geneStud) =>
             geneStud.interpretation.some((interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS')
@@ -1199,7 +1200,7 @@ export class ExtractedMCODE {
   codeIsInSheet(coding: Coding, ...sheetNames: string[]): boolean {
     const system = this.normalizeCodeSystem(coding.system);
     for (const sheetName of sheetNames) {
-      let codeProfile: CodeProfile = profile_system_codes[sheetName] as CodeProfile; // Pull the codes for the profile
+      const codeProfile: CodeProfile = profile_system_codes[sheetName] as CodeProfile; // Pull the codes for the profile
       if (codeProfile == undefined) {
         console.error('Code Profile ' + sheetName + ' is undefined.');
       }

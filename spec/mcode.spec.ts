@@ -1575,10 +1575,14 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Germline', () => {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
-  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
-  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
+  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
+  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
 
   // BRCA1-Germline Filter Attributes
   cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1100', display: 'BRCA1' };
@@ -1611,10 +1615,14 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Germline', () => {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
-  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
-  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
+  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
+  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
 
   // BRCA2-Germline Filter Attributes
   cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1101', display: 'BRCA2' };
@@ -1644,10 +1652,14 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Somatic', () => {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
-  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
-  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
+  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
+  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
 
   // BRCA1-Somatic Filter Attributes
   cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1100', display: 'BRCA1' };
@@ -1677,10 +1689,14 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Somatic', () => {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
-  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
-  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
+  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
+  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
 
   // BRCA2-Somatic Filter Attributes
   cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1101', display: 'BRCA2' };
@@ -1710,10 +1726,10 @@ describe('checkTumorMarkerFilterLogic-BRCA1', () => {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
-  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
-  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
+  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
 
   // BRCA1 Filter Attributes
   cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1100', display: 'BRCA1' };
@@ -1741,10 +1757,10 @@ describe('checkTumorMarkerFilterLogic-BRCA2', () => {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
-  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
-  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]};
+  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: {} as Coding,
+    interpretation: [] as Coding[]
+  };
 
   // BRCA2 Filter Attributes
   cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1101', display: 'BRCA2' };
