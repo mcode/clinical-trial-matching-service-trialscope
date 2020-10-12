@@ -399,6 +399,146 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
   });
 });
 
+// AdvancedMatches V2 HistologyMorphology Tests
+
+describe('checkHistologyMorphologyFilterLogic-InvasiveMammoryCarcinoma', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
+
+  // Invasive Mammory Carcinoma Filter Attributes
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior.push({
+    system: 'http://snomed.info/sct',
+    code: '128701002',
+    display: 'N/A'
+  } as Coding); // Any code in 'Morphology-Invas_Carc_Mix'
+
+  extractedMCODE.primaryCancerCondition.push(pcc);
+
+  it('Test Invasive Mammory Carcinoma Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INVASIVE_MAMMORY_CARCINOMA');
+  });
+});
+
+describe('checkHistologyMorphologyFilterLogic-InvasiveDuctalCarcinoma', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
+
+  // Invasive Ductal Carcinoma Filter Attributes
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior.push({
+    system: 'http://snomed.info/sct',
+    code: '444134008',
+    display: 'N/A'
+  } as Coding); // Any code in 'Morphology-Invas_Duct_Carc'
+
+  extractedMCODE.primaryCancerCondition.push(pcc);
+
+  it('Test Invasive Invasive Ductal Carcinoma Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INVASIVE_DUCTAL_CARCINOMA');
+  });
+});
+
+describe('checkHistologyMorphologyFilterLogic-InvasiveLobularCarcinoma', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+
+  // Invasive Lobular Carcinoma Filter Attributes
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '1080261000119100', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invas Lob Carc'
+
+  extractedMCODE.primaryCancerCondition.push(pcc);
+
+  it('Test Invasive Lobular Carcinoma Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INVASIVE_LOBULAR_CARCINOMA');
+  });
+});
+
+describe('checkHistologyMorphologyFilterLogic-DuctalCarcinomaInSitu', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
+
+  // Ductal Carcinoma In Situ Filter Attributes
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior.push({
+    system: 'http://snomed.info/sct',
+    code: '18680006',
+    display: 'N/A'
+  } as Coding); // Any code in 'Morphology-Duct_Car_In_Situ'
+
+  extractedMCODE.primaryCancerCondition.push(pcc);
+
+  it('Test Ductal Carcinoma In Situ Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe('DUCTAL_CARCINOMA_IN_SITU');
+  });
+});
+
+describe('checkHistologyMorphologyFilterLogic-Inflammatory', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
+
+  // Inflammatory Filter Attributes
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior.push({
+    system: 'http://snomed.info/sct',
+    code: '32968003',
+    display: 'N/A'
+  } as Coding); // Code: SNOMED 32968003'
+
+  extractedMCODE.primaryCancerCondition.push(pcc);
+
+  it('Test Inflammatory Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INFLAMMATORY');
+  });
+});
+
+describe('checkHistologyMorphologyFilterLogic-NonInflammatoryInvasive', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const pcc: PrimaryCancerCondition = {};
+  pcc.clinicalStatus = [] as Coding[];
+  pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
+
+  // Non-Inflammatory Invasive Filter Attributes
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '254840009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast' AND 'Cancer-Inflammatory'
+  pcc.histologyMorphologyBehavior.push({
+    system: 'http://snomed.info/sct',
+    code: '734075007',
+    display: 'N/A'
+  } as Coding); // Any code in 'Morphology-Invasive'
+
+  extractedMCODE.primaryCancerCondition.push(pcc);
+
+  it('Test Non-Inflammatory Invasive Filter', () => {
+    expect(extractedMCODE.getHistologyMorphologyValue()).toBe('NON-INFLAMMATORY_INVASIVE');
+  });
+});
+
 /* Stage Logic Tests */
 
 describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', () => {
@@ -777,19 +917,111 @@ describe('checkMedicationStatementFilterLogic-anti-PD', () => {
   });
 });
 
-describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine ', () => {
+describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const ms: Coding[] = [] as Coding[];
 
-  // CDK4/6-mTOR and Endocrine  Filter Attributes
+  // CDK4/6-mTOR and Endocrine Filter Attributes
   ms.push({ system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' } as Coding); // Any code in 'Treatment-CDK4_6_Inhibtor'
   ms.push({ system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' } as Coding); // Any code in 'Treatment-Endocrine_Therapy'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
-  it('Test CDK4/6-mTOR and Endocrine  Filter', () => {
+  it('Test CDK4/6-mTOR and Endocrine Filter', () => {
     expect(extractedMCODE.getMedicationStatementValue()).toBe('CDK4_6_MTOR_AND_ENDOCRINE');
+  });
+});
+
+// MedicationStatement AdvancedMatch filter update tests  
+
+describe('checkMedicationStatementFilterLogic-antiPARP', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
+
+  // anti PARP Filter Attributes
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1918231', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-PARP'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test anti PARP Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-PARP');
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-SG', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
+
+  // SG Filter Attributes
+  ms.push({ system: 'http://rxnorm.info/sct', code: '2360231', display: 'N/A' } as Coding); // Any code in 'Treatment-SG'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test SG Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe('SG');
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Treatment-anti-topoisomerase-1', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
+
+  // Treatment-anti-topoisomerase-1 Filter Attributes
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1719773', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-topoisomerase-1'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Treatment-anti-topoisomerase-1 Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-TOPOISOMERASE-1');
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Treatment-Anti-CTLA4', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
+
+  // Treatment-Anti-CTLA4 Filter Attributes
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1657013', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-CTLA4'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Treatment-anti-CTLA4 Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-CTLA4');
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Treatment-Anti-CD40', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
+
+  // Treatment-Anti-CD40 Filter Attributes
+  ms.push({ system: 'http://rxnorm.info/sct', code: '226754', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-CD40'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Treatment-anti-CD40 Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-CD40');
+  });
+});
+
+describe('checkMedicationStatementFilterLogic-Treatment-Trastuz-And-Pertuz', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const ms: Coding[] = [] as Coding[];
+
+  // Treatment-Trastuz-And-Pertuz Filter Attributes
+  ms.push({ system: 'http://rxnorm.info/sct', code: '2382609', display: 'N/A' } as Coding); // Any code in 'Treatment-Trastuz_and_Pertuz'
+  extractedMCODE.cancerRelatedMedicationStatement = ms;
+
+  it('Test Treatment-Trastuz-And-Pertuz Filter', () => {
+    expect(extractedMCODE.getMedicationStatementValue()).toBe('TRASTUZ_AND_PERTUZ');
   });
 });
 

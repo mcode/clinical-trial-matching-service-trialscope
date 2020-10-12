@@ -1518,7 +1518,7 @@
       "code" : "1940653"
     } ]
   },
-  "Treatment-anti-CTLA-4" : {
+  "Treatment-anti-CTLA4" : {
     "RxNorm" : [ {
       "code" : "1094837"
     }, {
@@ -1547,6 +1547,30 @@
       "code" : "1186646"
     }, {
       "code" : "1151126"
+    }, {
+      "code" : "1094837"
+    }, {
+      "code" : "1094833"
+    }, {
+      "code" : "1657013"
+    }, {
+      "code" : "1657007"
+    }, {
+      "code" : "1094838"
+    }, {
+      "code" : "1657006"
+    }, {
+      "code" : "1657012"
+    }, {
+      "code" : "1657005"
+    }, {
+      "code" : "1094834"
+    }, {
+      "code" : "1657004"
+    }, {
+      "code" : "1161327"
+    }, {
+      "code" : "1186646"
     } ]
   },
   "Treatment-P13K_Inhibitor" : {
@@ -4414,35 +4438,8 @@
       "code" : "85310-1"
     } ]
   },
-  "Treatment-anti-CTLA4" : {
-    "RxNorm" : [ {
-      "code" : "1094837"
-    }, {
-      "code" : "1094833"
-    }, {
-      "code" : "1657013"
-    }, {
-      "code" : "1657007"
-    }, {
-      "code" : "1094838"
-    }, {
-      "code" : "1657006"
-    }, {
-      "code" : "1657012"
-    }, {
-      "code" : "1657005"
-    }, {
-      "code" : "1094834"
-    }, {
-      "code" : "1657004"
-    }, {
-      "code" : "1161327"
-    }, {
-      "code" : "1186646"
-    } ]
-  },
   "Treatment-anti-PARP" : {
-    "RxNorm " : [ {
+    "RxNorm" : [ {
       "code" : "1918237"
     }, {
       "code" : "1918231"
@@ -4588,7 +4585,7 @@
       "code" : "2099951"
     } ]
   },
-  "Cancer-Invas Duct Carc" : {
+  "Cancer-Invas_Duct_Carc" : {
     "SNOMED" : [ {
       "code" : "1080241000119100"
     }, {
@@ -4619,7 +4616,7 @@
       "code" : "408643008"
     } ]
   },
-  "Morphology-Invas Carc Mix" : {
+  "Morphology-Invas_Carc_Mix" : {
     "SNOMED" : [ {
       "code" : "128701002"
     }, {
@@ -4630,7 +4627,7 @@
       "code" : "35232005"
     } ]
   },
-  "Morphology-Duct Car In Situ" : {
+  "Morphology-Duct_Car_In_Situ" : {
     "SNOMED" : [ {
       "code" : "734133009"
     }, {
@@ -4657,7 +4654,7 @@
       "code" : "18680006"
     } ]
   },
-  "Cancer-Invas Lob Carc" : {
+  "Cancer-Invas_Lob_Carc" : {
     "SNOMED" : [ {
       "code" : "1080341000119100"
     }, {
@@ -4666,7 +4663,7 @@
       "code" : "722524005"
     } ]
   },
-  "Treatment-Organ Transplant" : {
+  "Treatment-Organ_Transplant" : {
     "SNOMED" : [ {
       "code" : "6.47E+12"
     }, {
@@ -4765,7 +4762,7 @@
       "code" : "18027006"
     } ]
   },
-  "Morphology-Invas Duct Carc" : {
+  "Morphology-Invas_Duct_Carc" : {
     "SNOMED" : [ {
       "code" : "444134008"
     }, {
@@ -4933,7 +4930,7 @@
       "code" : "1172716"
     } ]
   },
-  "Treatment-Trastuz and Pertuz" : {
+  "Treatment-Trastuz_and_Pertuz" : {
     "RxNorm" : [ {
       "code" : "101306"
     }, {
@@ -5243,7 +5240,7 @@
     } ]
   },
   "Treatment-SG" : {
-    "RxNorm " : [ {
+    "RxNorm" : [ {
       "code" : "2360231"
     }, {
       "code" : "2360232"
