@@ -69,7 +69,7 @@ export interface CancerGeneticVariantComponent {
 
 export interface CancerGeneticVariantComponentType {
   code?: Coding[];
-  valueCodeableConcept?: Coding
+  valueCodeableConcept?: Coding;
   interpretation?: Coding[];
 }
 
@@ -200,9 +200,15 @@ export class ExtractedMCODE {
           tempCGV.code = this.lookup(resource, 'code.coding') as Coding[];
           tempCGV.component = [];
           var i = 0;
-          for( var temp in this.lookup(resource, 'component')) {
-            tempCGV.component[i].geneStudied = this.lookup(resource, 'component[' + i + ']:GeneStudied') as CancerGeneticVariantComponentType[];
-            tempCGV.component[i].genomicsSourceClass = this.lookup(resource, 'component[' + i + ']:GenomicSourceClass') as CancerGeneticVariantComponentType[];
+          for (var temp in this.lookup(resource, 'component')) {
+            tempCGV.component[i].geneStudied = this.lookup(
+              resource,
+              'component[' + i + ']:GeneStudied'
+            ) as CancerGeneticVariantComponentType[];
+            tempCGV.component[i].genomicsSourceClass = this.lookup(
+              resource,
+              'component[' + i + ']:GenomicSourceClass'
+            ) as CancerGeneticVariantComponentType[];
             i++;
           }
           tempCGV.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
@@ -283,6 +289,9 @@ export class ExtractedMCODE {
     }
     if (!this.cancerRelatedMedicationStatement) {
       this.cancerRelatedMedicationStatement = [] as Coding[];
+    }
+    if (!this.cancerGeneticVariant) {
+      this.cancerGeneticVariant = [] as CancerGeneticVariant[];
     }
   }
 
@@ -660,7 +669,7 @@ export class ExtractedMCODE {
     return millisecondsAge > milliseconds18Years ? '18_OR_OVER' : 'UNDER_18';
   }
   getTumorMarkerValue(): string {
-    if (this.tumorMarker.length == 0) {
+    if (this.tumorMarker.length == 0 && this.cancerGeneticVariant.length == 0) {
       return 'NOT_SURE';
     }
 
@@ -758,59 +767,102 @@ export class ExtractedMCODE {
       return 'HER2_MINUS';
     }
     // BRCA1-Germline
-    if( 
-      this.cancerGeneticVariant.some((cancGenVar) =>
-      this.isBRCA(cancGenVar, "1100")      
-      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6683-2")))
-     ) {
-      return "BRCA1-GERMLINE";
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1100') &&
+          cancGenVar.component.some((comp) =>
+            comp.genomicsSourceClass.some(
+              (genSourceClass) =>
+                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
+                genSourceClass.valueCodeableConcept.code == 'LA6683-2'
+            )
+          )
+      )
+    ) {
+      return 'BRCA1-GERMLINE';
     }
     // BRCA2-Germline
-    if( 
-      this.cancerGeneticVariant.some((cancGenVar) =>
-      this.isBRCA(cancGenVar, "1101")      
-      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6683-2")))
-     ) {
-      return "BRCA2-GERMLINE";
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1101') &&
+          cancGenVar.component.some((comp) =>
+            comp.genomicsSourceClass.some(
+              (genSourceClass) =>
+                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
+                genSourceClass.valueCodeableConcept.code == 'LA6683-2'
+            )
+          )
+      )
+    ) {
+      return 'BRCA2-GERMLINE';
     }
     // BRCA1-somatic
-    if( 
-      this.cancerGeneticVariant.some((cancGenVar) =>
-      this.isBRCA(cancGenVar, "1100")      
-      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6684-0")))
-     ) {
-      return "BRCA1-SOMATIC";
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1100') &&
+          cancGenVar.component.some((comp) =>
+            comp.genomicsSourceClass.some(
+              (genSourceClass) =>
+                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
+                genSourceClass.valueCodeableConcept.code == 'LA6684-0'
+            )
+          )
+      )
+    ) {
+      return 'BRCA1-SOMATIC';
     }
     // BRCA2-somatic
-    if( 
-      this.cancerGeneticVariant.some((cancGenVar) =>
-      this.isBRCA(cancGenVar, "1101")      
-      && cancGenVar.component.some(comp => comp.genomicsSourceClass.some(genSourceClass => this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == "LOINC" && genSourceClass.valueCodeableConcept.code == "LA6684-0")))
-     ) {
-      return "BRCA2-SOMATIC";
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1101') &&
+          cancGenVar.component.some((comp) =>
+            comp.genomicsSourceClass.some(
+              (genSourceClass) =>
+                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
+                genSourceClass.valueCodeableConcept.code == 'LA6684-0'
+            )
+          )
+      )
+    ) {
+      return 'BRCA2-SOMATIC';
     }
     // BRCA1
-    if( 
-      this.cancerGeneticVariant.some((cancGenVar) =>
-      this.isBRCA(cancGenVar, "1100"))) {
-      return "BRCA1";
+    if (this.cancerGeneticVariant.some((cancGenVar) => this.isBRCA(cancGenVar, '1100'))) {
+      return 'BRCA1';
     }
     // BRCA2
-    if( 
-      this.cancerGeneticVariant.some((cancGenVar) =>
-      this.isBRCA(cancGenVar, "1101"))) {
-      return "BRCA2";
+    if (this.cancerGeneticVariant.some((cancGenVar) => this.isBRCA(cancGenVar, '1101'))) {
+      return 'BRCA2';
     }
     // None of the conditions are satisfied.
     return 'NOT_SURE';
   }
-  isBRCA(cancGenVar: CancerGeneticVariant, brcaCode: string){
-    return cancGenVar.component.some(comp => comp.geneStudied.some(geneStudied => this.normalizeCodeSystem(geneStudied.valueCodeableConcept.system) == "HGNC" && geneStudied.valueCodeableConcept.code == brcaCode))
-    && ((cancGenVar.valueCodeableConcept.some(valCodeConc => this.normalizeCodeSystem(valCodeConc.system) == "SNOMED" && valCodeConc.code == "10828004")
-    || cancGenVar.valueCodeableConcept.some(valCodeConc => this.normalizeCodeSystem(valCodeConc.system) == "LOINC" && valCodeConc.code == "LA9633-4"))
-    || cancGenVar.interpretation.some(interp => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'OS')
-    || cancGenVar.component.some(comp => comp.geneStudied.some(geneStud => geneStud.interpretation.some(interp => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'))));
-  }P
+  isBRCA(cancGenVar: CancerGeneticVariant, brcaCode: string) {
+    return (
+      cancGenVar.component.some((comp) =>
+        comp.geneStudied.some(
+          (geneStudied) =>
+            this.normalizeCodeSystem(geneStudied.valueCodeableConcept.system) == 'HGNC' &&
+            geneStudied.valueCodeableConcept.code == brcaCode
+        )
+      ) &&
+      (cancGenVar.valueCodeableConcept.some(
+        (valCodeConc) =>
+          (this.normalizeCodeSystem(valCodeConc.system) == 'SNOMED' && valCodeConc.code == '10828004') ||
+          (this.normalizeCodeSystem(valCodeConc.system) == 'LOINC' && valCodeConc.code == 'LA9633-4')
+      ) ||
+        cancGenVar.interpretation.some((interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS') ||
+        cancGenVar.component.some((comp) =>
+          comp.geneStudied.some((geneStud) =>
+            geneStud.interpretation.some((interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS')
+          )
+        ))
+    );
+  }
   isHER2Positive(tumorMarker: TumorMarker): boolean {
     return (
       tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-HER2')) &&
@@ -1035,7 +1087,9 @@ export class ExtractedMCODE {
     ) {
       return 'SPLENECTOMY';
     } else if (
-      this.cancerRelatedSurgicalProcedure.some((coding) => this.normalizeCodeSystem(coding.system) == "SNOMED" && coding.code == "58390007")
+      this.cancerRelatedSurgicalProcedure.some(
+        (coding) => this.normalizeCodeSystem(coding.system) == 'SNOMED' && coding.code == '58390007'
+      )
     ) {
       return 'BONE_MARROW_TRANSPLANT';
     } else if (
@@ -1145,9 +1199,9 @@ export class ExtractedMCODE {
   codeIsInSheet(coding: Coding, ...sheetNames: string[]): boolean {
     const system = this.normalizeCodeSystem(coding.system);
     for (const sheetName of sheetNames) {
-      let codeProfile: CodeProfile = (profile_system_codes[sheetName] as CodeProfile) // Pull the codes for the profile
-      if(codeProfile == undefined){
-        console.error("Code Profile " + sheetName + " is undefined.");
+      let codeProfile: CodeProfile = profile_system_codes[sheetName] as CodeProfile; // Pull the codes for the profile
+      if (codeProfile == undefined) {
+        console.error('Code Profile ' + sheetName + ' is undefined.');
       }
       let codeSet: { code: string }[] = codeProfile[system] as { code: string }[]; // Pull the system codes from the codes
       if (!codeSet) {
