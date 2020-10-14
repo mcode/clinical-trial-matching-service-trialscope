@@ -11,17 +11,9 @@ For more information on the architecture and data schemas of the clinical trial 
 3. Run `npm start`
 4. The service will now be running at http://localhost:3000/
 
-# Requirements
+# Services
 
-The ResearchStudy object passed back by this server must be [FHIR-compliant](https://www.hl7.org/fhir/researchstudy.html) and satisfy several requirements.
-Study must contain:
-- Title
-- Summary
-- Site location
-- Phase
-- Contact Information i.e. sponsor email, phone number
-- Study Type
-- Inclusion/Exclusion criteria
+The ResearchStudy object passed back by this server must be [FHIR-compliant](https://www.hl7.org/fhir/researchstudy.html)
 
 Note: The [clinical-trial-matching-service](https://github.com/mcode/clinical-trial-matching-service) library provides a "backup" system for filling in information missing from the object passed back from the matching service. This system fills in the following based on the trial's ClinicalTrials.gov ID:
 - Inclusion/Exclusion Criteria
