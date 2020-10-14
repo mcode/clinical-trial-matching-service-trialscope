@@ -32,7 +32,6 @@ describe('ExtractedMCODE', () => {
 
   it('checksCountOfExtractedProfiles', function () {
     const extractedData = new mcode.ExtractedMCODE(sampleData);
-    //console.log(util.inspect(extractedData, false, null, true));
     expect(extractedData.primaryCancerCondition.length).toBe(1);
     expect(extractedData.TNMClinicalStageGroup.length).toBe(2);
     expect(extractedData.TNMPathologicalStageGroup.length).toBe(2);
@@ -42,6 +41,7 @@ describe('ExtractedMCODE', () => {
     expect(extractedData.cancerRelatedRadiationProcedure.length).toBe(2);
     expect(extractedData.cancerRelatedSurgicalProcedure.length).toBe(2);
     expect(extractedData.cancerRelatedMedicationStatement.length).toBe(1);
+    expect(extractedData.cancerGeneticVariant.length).toBe(1);
   });
 
   it('checkExtractedPrimaryCancerCondition', function () {
@@ -72,7 +72,6 @@ describe('ExtractedMCODE', () => {
 
   it('checkExtractedTumorMarker', function () {
     const extractedData = new mcode.ExtractedMCODE(sampleData);
-    //console.log(util.inspect(extractedData.tumorMarker, false, null, true));
     expect(
       extractedData.tumorMarker.some(
         (marker) =>
@@ -134,6 +133,50 @@ describe('ExtractedMCODE', () => {
     const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(extractedData.cancerRelatedSurgicalProcedure.some((procedure) => procedure.code == '396487001')).toBeTrue();
     expect(extractedData.cancerRelatedSurgicalProcedure.some((procedure) => procedure.code == '443497002')).toBeTrue();
+  });
+
+  it('checkExtractedCancerGeneticVariant', function () {
+    const extractedData = new mcode.ExtractedMCODE(sampleData);
+    expect(extractedData.cancerGeneticVariant[0].code[0].system).toBe('http://loinc.org');
+    expect(extractedData.cancerGeneticVariant[0].code[0].code).toBe('69548-6');
+    expect(extractedData.cancerGeneticVariant[0].valueCodeableConcept[0].system).toBe('http://loinc.org');
+    expect(extractedData.cancerGeneticVariant[0].valueCodeableConcept[0].code).toBe('LA9633-4');
+    expect(extractedData.cancerGeneticVariant[0].interpretation[0].system).toBe(
+      'http://hl7.org/fhir/ValueSet/observation-interpretation'
+    );
+    expect(extractedData.cancerGeneticVariant[0].interpretation[0].code).toBe('POS');
+    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].code.coding[0].system).toBe(
+      'http://loinc.org'
+    );
+    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].code.coding[0].code).toBe('48018-6');
+    expect(
+      extractedData.normalizeCodeSystem(
+        extractedData.cancerGeneticVariant[0].component.geneStudied[0].valueCodeableConcept.coding[0].system
+      )
+    ).toBe('HGNC');
+    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].valueCodeableConcept.coding[0].code).toBe(
+      'HGNC:11389'
+    );
+    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].interpretation.coding[0].system).toBe(
+      'http://hl7.org/fhir/ValueSet/observation-interpretation'
+    );
+    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].interpretation.coding[0].code).toBe('CAR');
+    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].code.coding[0].system).toBe(
+      'http://loinc.org'
+    );
+    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].code.coding[0].code).toBe('48002-0');
+    expect(
+      extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].valueCodeableConcept.coding[0].system
+    ).toBe('http://loinc.org');
+    expect(
+      extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].valueCodeableConcept.coding[0].code
+    ).toBe('LA6684-0');
+    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].interpretation.coding[0].system).toBe(
+      'http://hl7.org/fhir/ValueSet/observation-interpretation'
+    );
+    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].interpretation.coding[0].code).toBe(
+      'A'
+    );
   });
 
   it('checkExtractedCancerRelatedMedicationStatement', function () {
@@ -1569,32 +1612,36 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Germline', () => {
   const cgv: mcode.CancerGeneticVariant = {
     valueCodeableConcept: [] as Coding[],
     interpretation: [] as Coding[],
-    component: [] as mcode.CancerGeneticVariantComponent[]
+    component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
 
   // BRCA1-Germline Filter Attributes
-  cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1100', display: 'BRCA1' };
+  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
   cgv.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
   cgv.valueCodeableConcept.push({ system: 'http://loinc.info/sct', code: 'LA9633-4', display: 'N/A' });
   cgv.interpretation.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
-  cgvGeneStudied.interpretation.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
-  cgvGenomicSourceClass.valueCodeableConcept = { system: ' http://loinc.info/sct', code: 'LA6683-2', display: 'N/A' };
+  cgvGeneStudied.interpretation.coding.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
+  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+    system: ' http://loinc.info/sct',
+    code: 'LA6683-2',
+    display: 'N/A'
+  });
 
   cgvComponent.geneStudied.push(cgvGeneStudied);
   cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
-  cgv.component.push(cgvComponent);
+  cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
   it('Test BRCA1-Germline Filter', () => {
@@ -1609,29 +1656,33 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Germline', () => {
   const cgv: mcode.CancerGeneticVariant = {
     valueCodeableConcept: [] as Coding[],
     interpretation: [] as Coding[],
-    component: [] as mcode.CancerGeneticVariantComponent[]
+    component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
 
   // BRCA2-Germline Filter Attributes
-  cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1101', display: 'BRCA2' };
+  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
   cgv.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
-  cgvGenomicSourceClass.valueCodeableConcept = { system: ' http://loinc.info/sct', code: 'LA6683-2', display: 'N/A' };
+  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+    system: ' http://loinc.info/sct',
+    code: 'LA6683-2',
+    display: 'N/A'
+  });
 
   cgvComponent.geneStudied.push(cgvGeneStudied);
   cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
-  cgv.component.push(cgvComponent);
+  cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
   it('Test BRCA2-Germline Filter', () => {
@@ -1646,29 +1697,33 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Somatic', () => {
   const cgv: mcode.CancerGeneticVariant = {
     valueCodeableConcept: [] as Coding[],
     interpretation: [] as Coding[],
-    component: [] as mcode.CancerGeneticVariantComponent[]
+    component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
 
   // BRCA1-Somatic Filter Attributes
-  cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1100', display: 'BRCA1' };
+  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
   cgv.valueCodeableConcept.push({ system: 'http://loinc.info/sct', code: 'LA9633-4', display: 'N/A' });
-  cgvGenomicSourceClass.valueCodeableConcept = { system: ' http://loinc.info/sct', code: 'LA6684-0', display: 'N/A' };
+  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+    system: ' http://loinc.info/sct',
+    code: 'LA6684-0',
+    display: 'N/A'
+  });
 
   cgvComponent.geneStudied.push(cgvGeneStudied);
   cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
-  cgv.component.push(cgvComponent);
+  cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
   it('Test BRCA1-Somatic Filter', () => {
@@ -1683,29 +1738,33 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Somatic', () => {
   const cgv: mcode.CancerGeneticVariant = {
     valueCodeableConcept: [] as Coding[],
     interpretation: [] as Coding[],
-    component: [] as mcode.CancerGeneticVariantComponent[]
+    component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
 
   // BRCA2-Somatic Filter Attributes
-  cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1101', display: 'BRCA2' };
+  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
   cgv.interpretation.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
-  cgvGenomicSourceClass.valueCodeableConcept = { system: ' http://loinc.info/sct', code: 'LA6684-0', display: 'N/A' };
+  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+    system: ' http://loinc.info/sct',
+    code: 'LA6684-0',
+    display: 'N/A'
+  });
 
   cgvComponent.geneStudied.push(cgvGeneStudied);
   cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
-  cgv.component.push(cgvComponent);
+  cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
   it('Test BRCA2-Somatic Filter', () => {
@@ -1720,23 +1779,23 @@ describe('checkTumorMarkerFilterLogic-BRCA1', () => {
   const cgv: mcode.CancerGeneticVariant = {
     valueCodeableConcept: [] as Coding[],
     interpretation: [] as Coding[],
-    component: [] as mcode.CancerGeneticVariantComponent[]
+    component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
 
   // BRCA1 Filter Attributes
-  cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1100', display: 'BRCA1' };
-  cgvGeneStudied.interpretation.push({ system: 'N/A', code: 'A', display: 'AWW' });
+  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
+  cgvGeneStudied.interpretation.coding.push({ system: 'N/A', code: 'A', display: 'AWW' });
 
   cgvComponent.geneStudied.push(cgvGeneStudied);
-  cgv.component.push(cgvComponent);
+  cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
   it('Test BRCA1 Filter', () => {
@@ -1751,23 +1810,23 @@ describe('checkTumorMarkerFilterLogic-BRCA2', () => {
   const cgv: mcode.CancerGeneticVariant = {
     valueCodeableConcept: [] as Coding[],
     interpretation: [] as Coding[],
-    component: [] as mcode.CancerGeneticVariantComponent[]
+    component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
     geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: {} as Coding,
-    interpretation: [] as Coding[]
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
   };
 
   // BRCA2 Filter Attributes
-  cgvGeneStudied.valueCodeableConcept = { system: 'hgnc', code: '1101', display: 'BRCA2' };
+  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
   cgv.interpretation.push({ system: 'N/A', code: 'POS', display: 'POS' });
 
   cgvComponent.geneStudied.push(cgvGeneStudied);
-  cgv.component.push(cgvComponent);
+  cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
   it('Test BRCA2 Filter', () => {

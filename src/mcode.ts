@@ -56,7 +56,7 @@ export interface TumorMarker {
 
 export interface CancerGeneticVariant {
   code?: Coding[];
-  component?: CancerGeneticVariantComponent[];
+  component?: CancerGeneticVariantComponent;
   valueCodeableConcept?: Coding[];
   interpretation?: Coding[];
 }
@@ -67,9 +67,9 @@ export interface CancerGeneticVariantComponent {
 }
 
 export interface CancerGeneticVariantComponentType {
-  code?: Coding[];
-  valueCodeableConcept?: Coding;
-  interpretation?: Coding[];
+  code?: { coding: Coding[] };
+  valueCodeableConcept?: { coding: Coding[] };
+  interpretation?: { coding: Coding[] };
 }
 
 // extracted MCODE info
@@ -197,18 +197,19 @@ export class ExtractedMCODE {
         ) {
           const tempCGV: CancerGeneticVariant = {};
           tempCGV.code = this.lookup(resource, 'code.coding') as Coding[];
-          tempCGV.component = [];
-          let i = 0;
-          for (const temp of this.lookup(resource, 'component')) {
-            tempCGV.component[i].geneStudied = this.lookup(
-              resource,
-              'component[' + i.toString() + ']:GeneStudied'
-            ) as CancerGeneticVariantComponentType[];
-            tempCGV.component[i].genomicsSourceClass = this.lookup(
-              resource,
-              'component[' + i.toString() + ']:GenomicSourceClass'
-            ) as CancerGeneticVariantComponentType[];
-            i++;
+          tempCGV.component = {
+            geneStudied: [] as CancerGeneticVariantComponentType[],
+            genomicsSourceClass: [] as CancerGeneticVariantComponentType[]
+          };
+          for (const currentComponent of this.lookup(resource, 'component') as CancerGeneticVariantComponentType[]) {
+            if (currentComponent.code.coding[0].code == '48018-6') {
+              // With this code, we've reached a GeneStudied. Populate the GeneStudied attribute.
+              tempCGV.component.geneStudied.push(currentComponent);
+            }
+            if (currentComponent.code.coding[0].code == '48002-0') {
+              // With this code, we've reached a GenomicSourceClass. Populate the GenomicSourceClass attribute.
+              tempCGV.component.genomicsSourceClass.push(currentComponent);
+            }
           }
           tempCGV.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
           tempCGV.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
@@ -218,7 +219,6 @@ export class ExtractedMCODE {
             this.cancerGeneticVariant = [tempCGV];
           }
         }
-
         if (
           resource.resourceType === 'Procedure' &&
           this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
@@ -770,11 +770,9 @@ export class ExtractedMCODE {
       this.cancerGeneticVariant.some(
         (cancGenVar) =>
           this.isBRCA(cancGenVar, '1100') &&
-          cancGenVar.component.some((comp) =>
-            comp.genomicsSourceClass.some(
-              (genSourceClass) =>
-                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
-                genSourceClass.valueCodeableConcept.code == 'LA6683-2'
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6683-2'
             )
           )
       )
@@ -786,11 +784,9 @@ export class ExtractedMCODE {
       this.cancerGeneticVariant.some(
         (cancGenVar) =>
           this.isBRCA(cancGenVar, '1101') &&
-          cancGenVar.component.some((comp) =>
-            comp.genomicsSourceClass.some(
-              (genSourceClass) =>
-                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
-                genSourceClass.valueCodeableConcept.code == 'LA6683-2'
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6683-2'
             )
           )
       )
@@ -802,11 +798,9 @@ export class ExtractedMCODE {
       this.cancerGeneticVariant.some(
         (cancGenVar) =>
           this.isBRCA(cancGenVar, '1100') &&
-          cancGenVar.component.some((comp) =>
-            comp.genomicsSourceClass.some(
-              (genSourceClass) =>
-                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
-                genSourceClass.valueCodeableConcept.code == 'LA6684-0'
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6684-0'
             )
           )
       )
@@ -818,11 +812,9 @@ export class ExtractedMCODE {
       this.cancerGeneticVariant.some(
         (cancGenVar) =>
           this.isBRCA(cancGenVar, '1101') &&
-          cancGenVar.component.some((comp) =>
-            comp.genomicsSourceClass.some(
-              (genSourceClass) =>
-                this.normalizeCodeSystem(genSourceClass.valueCodeableConcept.system) == 'LOINC' &&
-                genSourceClass.valueCodeableConcept.code == 'LA6684-0'
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6684-0'
             )
           )
       )
@@ -842,11 +834,9 @@ export class ExtractedMCODE {
   }
   isBRCA(cancGenVar: CancerGeneticVariant, brcaCode: string): boolean {
     return (
-      cancGenVar.component.some((comp) =>
-        comp.geneStudied.some(
-          (geneStudied) =>
-            this.normalizeCodeSystem(geneStudied.valueCodeableConcept.system) == 'HGNC' &&
-            geneStudied.valueCodeableConcept.code == brcaCode
+      cancGenVar.component.geneStudied.some((geneStudied) =>
+        geneStudied.valueCodeableConcept.coding.some(
+          (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'HGNC' && valCodeCon.code == brcaCode
         )
       ) &&
       (cancGenVar.valueCodeableConcept.some(
@@ -857,9 +847,9 @@ export class ExtractedMCODE {
         cancGenVar.interpretation.some(
           (interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'
         ) ||
-        cancGenVar.component.some((comp) =>
-          comp.geneStudied.some((geneStud) =>
-            geneStud.interpretation.some((interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS')
+        cancGenVar.component.geneStudied.some((geneStud) =>
+          geneStud.interpretation.coding.some(
+            (interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'
           )
         ))
     );
@@ -1220,19 +1210,20 @@ export class ExtractedMCODE {
 
   // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
   normalizeCodeSystem(codeSystem: string): string {
-    if (codeSystem.toLowerCase().includes('snomed')) {
+    const lowerCaseCodeSystem: string = codeSystem.toLowerCase();
+    if (lowerCaseCodeSystem.includes('snomed')) {
       return 'SNOMED';
-    } else if (codeSystem.toLowerCase().includes('rxnorm')) {
+    } else if (lowerCaseCodeSystem.includes('rxnorm')) {
       return 'RxNorm';
-    } else if (codeSystem.toLowerCase().includes('icd-10')) {
+    } else if (lowerCaseCodeSystem.includes('icd-10')) {
       return 'ICD-10';
-    } else if (codeSystem.toLowerCase().includes('ajcc')) {
+    } else if (lowerCaseCodeSystem.includes('ajcc')) {
       return 'AJCC';
-    } else if (codeSystem.toLowerCase().includes('loinc')) {
+    } else if (lowerCaseCodeSystem.includes('loinc')) {
       return 'LOINC';
-    } else if (codeSystem.toLowerCase().includes('nih')) {
+    } else if (lowerCaseCodeSystem.includes('nih')) {
       return 'NIH';
-    } else if (codeSystem.toLowerCase().includes('hgnc')) {
+    } else if (lowerCaseCodeSystem.includes('hgnc') || lowerCaseCodeSystem.includes('genenames.org')) {
       return 'HGNC';
     } else {
       return '';
