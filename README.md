@@ -13,7 +13,7 @@ For more information on the architecture and data schemas of the clinical trial 
 
 # Requirements
 
-The ResearchStudy object passed back by this server must be [FHIR-compliant] (https://www.hl7.org/fhir/researchstudy.html) and satisfy several requirements.
+The ResearchStudy object passed back by this server must be [FHIR-compliant](https://www.hl7.org/fhir/researchstudy.html) and satisfy several requirements.
 Study must contain:
 - Title
 - Summary
