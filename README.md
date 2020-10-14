@@ -21,9 +21,9 @@ Study must contain:
 - Phase
 - Contact Information i.e. sponsor email, phone number
 - Study Type
-- Inclusion/ Exclusion criteria
+- Inclusion/Exclusion criteria
 
-Note: The [clinical-trial-matching-service](https://github.com/mcode/clinical-trial-matching-service) library provides a "backup" system for filling in information missing from the object passed back from the matching service. This system fills in the following based on the trial's NctId:
+Note: The [clinical-trial-matching-service](https://github.com/mcode/clinical-trial-matching-service) library provides a "backup" system for filling in information missing from the object passed back from the matching service. This system fills in the following based on the trial's ClinicalTrials.gov ID:
 - Inclusion/Exclusion Criteria
 - Phase
 - Study Type
