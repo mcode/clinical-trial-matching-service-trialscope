@@ -455,7 +455,7 @@ export class ExtractedMCODE {
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
-      // 3. Leptomeningeal metastatic disease
+      // Leptomeningeal metastatic disease
       if (
         secondaryCancerCondition.bodySite.some(
           (bdySte) => this.normalizeCodeSystem(bdySte.system) == 'SNOMED' && bdySte.code == '8935007'
@@ -466,7 +466,7 @@ export class ExtractedMCODE {
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
-      // 4. Metastatic
+      // Metastatic
       if (
         secondaryCancerCondition.coding.length != 0 ||
         this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4')) ||
@@ -480,7 +480,11 @@ export class ExtractedMCODE {
   }
   // Histology Morphology Value
   getHistologyMorphologyValue(): string {
-    if (this.primaryCancerCondition.length == 0) {
+    if (
+      this.primaryCancerCondition.length == 0 &&
+      this.TNMClinicalStageGroup.length == 0 &&
+      this.TNMPathologicalStageGroup.length == 0
+    ) {
       return 'NOT_SURE';
     }
     // Invasive Mammory Carcinoma
