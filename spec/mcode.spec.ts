@@ -1834,6 +1834,42 @@ describe('checkTumorMarkerFilterLogic-BRCA2', () => {
   });
 });
 
+// empty geneStudied component and empty genomicSourceClass component
+describe('checkTumorMarkerFilterLogic-empty-components-added', () => {
+  // Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const cgv: mcode.CancerGeneticVariant = {
+    valueCodeableConcept: [] as Coding[],
+    interpretation: [] as Coding[],
+    component: {} as mcode.CancerGeneticVariantComponent
+  };
+  const cgvComponent: mcode.CancerGeneticVariantComponent = {
+    geneStudied: [] as mcode.CancerGeneticVariantComponentType[],
+    genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
+  };
+
+  const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
+  };
+
+  const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
+    valueCodeableConcept: { coding: [] as Coding[] },
+    interpretation: { coding: [] as Coding[] }
+  };
+
+  cgvComponent.geneStudied.push(cgvGeneStudied);
+  cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
+  cgv.component = cgvComponent;
+
+  extractedMCODE.cancerGeneticVariant.push(cgv);
+
+  it('Test Tumor Filter Empty Components Added', () => {
+    expect(extractedMCODE.getTumorMarkerValue()).toBe('NOT_SURE');
+  });
+});
+
 describe('checkTumorMarkerFilterLogic-PR+', () => {
   // Initialize
   const patientBundle = null;

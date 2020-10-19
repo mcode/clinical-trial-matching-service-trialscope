@@ -196,7 +196,7 @@ export class ExtractedMCODE {
           this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-genetic-variant')
         ) {
           const tempCGV: CancerGeneticVariant = {};
-          tempCGV.code = this.lookup(resource, 'code.coding') as Coding[];
+          tempCGV.code = this.lookup(resource, 'code.coding') as Coding[]; // not used in logic
           tempCGV.component = {
             geneStudied: [] as CancerGeneticVariantComponentType[],
             genomicsSourceClass: [] as CancerGeneticVariantComponentType[]
