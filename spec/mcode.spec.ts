@@ -478,10 +478,10 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveMammoryCarcinoma-Two', () 
 
   // Invasive Mammory Carcinoma Filter Attributes
   pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
-  const tnmP = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
+  const tnmC = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
-  extractedMCODE.TNMPathologicalStageGroup.push(tnmP);
+  extractedMCODE.TNMClinicalStageGroup.push(tnmC);
 
   it('Test Invasive Mammory Carcinoma Filter', () => {
     expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INVASIVE_MAMMORY_CARCINOMA');
@@ -495,14 +495,14 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveMammoryCarcinoma-Three', (
   const pcc: PrimaryCancerCondition = {};
   pcc.coding = [] as Coding[];
   pcc.histologyMorphologyBehavior = [] as Coding[];
-  extractedMCODE.TNMClinicalStageGroup = [] as Coding[];
+  extractedMCODE.TNMPathologicalStageGroup = [] as Coding[];
 
   // Invasive Mammory Carcinoma Filter Attributes
   pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
-  const tnmC = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
+  const tnmP = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
-  extractedMCODE.TNMPathologicalStageGroup.push(tnmC);
+  extractedMCODE.TNMPathologicalStageGroup.push(tnmP);
 
   it('Test Invasive Mammory Carcinoma Filter', () => {
     expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INVASIVE_MAMMORY_CARCINOMA');
