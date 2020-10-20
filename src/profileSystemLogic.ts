@@ -26,7 +26,7 @@ export interface ProfileSystemCodes {
   'Biomarker-PR & ER'?: CodeProfile;
   'Treatment-Nab-Paclitaxel'?: CodeProfile;
   'Stage-0'?: CodeProfile;
-  'Morphology-Invasive Carcinoma'?: CodeProfile;
+  'Morphology-Invasive-Carcinoma'?: CodeProfile;
   'Treatment-CDK4 6 Inhibtor'?: CodeProfile;
   'Cancer-Breast'?: CodeProfile;
   'Treatment-Tyrosine Kinase Inhib'?: CodeProfile;

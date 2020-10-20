@@ -54,6 +54,24 @@ export interface TumorMarker {
   interpretation?: Coding[];
 }
 
+export interface CancerGeneticVariant {
+  code?: Coding[];
+  component?: CancerGeneticVariantComponent;
+  valueCodeableConcept?: Coding[];
+  interpretation?: Coding[];
+}
+
+export interface CancerGeneticVariantComponent {
+  geneStudied?: CancerGeneticVariantComponentType[];
+  genomicsSourceClass?: CancerGeneticVariantComponentType[];
+}
+
+export interface CancerGeneticVariantComponentType {
+  code?: { coding: Coding[] };
+  valueCodeableConcept?: { coding: Coding[] };
+  interpretation?: { coding: Coding[] };
+}
+
 // extracted MCODE info
 export class ExtractedMCODE {
   primaryCancerCondition: PrimaryCancerCondition[];
@@ -62,6 +80,7 @@ export class ExtractedMCODE {
   secondaryCancerCondition: SecondaryCancerCondition[];
   birthDate: string;
   tumorMarker: TumorMarker[];
+  cancerGeneticVariant: CancerGeneticVariant[];
   cancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure[];
   cancerRelatedSurgicalProcedure: Coding[];
   cancerRelatedMedicationStatement: Coding[];
@@ -171,7 +190,35 @@ export class ExtractedMCODE {
             this.tumorMarker = [tempTumorMarker];
           }
         }
-
+        // Parse and Extract mCODE Cancer Genetic Variant
+        if (
+          resource.resourceType === 'Observation' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-genetic-variant')
+        ) {
+          const tempCGV: CancerGeneticVariant = {};
+          tempCGV.code = this.lookup(resource, 'code.coding') as Coding[]; // not used in logic
+          tempCGV.component = {
+            geneStudied: [] as CancerGeneticVariantComponentType[],
+            genomicsSourceClass: [] as CancerGeneticVariantComponentType[]
+          };
+          for (const currentComponent of this.lookup(resource, 'component') as CancerGeneticVariantComponentType[]) {
+            if (currentComponent.code.coding[0].code == '48018-6') {
+              // With this code, we've reached a GeneStudied. Populate the GeneStudied attribute.
+              tempCGV.component.geneStudied.push(currentComponent);
+            }
+            if (currentComponent.code.coding[0].code == '48002-0') {
+              // With this code, we've reached a GenomicSourceClass. Populate the GenomicSourceClass attribute.
+              tempCGV.component.genomicsSourceClass.push(currentComponent);
+            }
+          }
+          tempCGV.valueCodeableConcept = this.lookup(resource, 'valueCodeableConcept.coding') as Coding[];
+          tempCGV.interpretation = this.lookup(resource, 'interpretation.coding') as Coding[];
+          if (this.cancerGeneticVariant) {
+            this.cancerGeneticVariant.push(tempCGV);
+          } else {
+            this.cancerGeneticVariant = [tempCGV];
+          }
+        }
         if (
           resource.resourceType === 'Procedure' &&
           this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-cancer-related-radiation-procedure')
@@ -241,6 +288,9 @@ export class ExtractedMCODE {
     }
     if (!this.cancerRelatedMedicationStatement) {
       this.cancerRelatedMedicationStatement = [] as Coding[];
+    }
+    if (!this.cancerGeneticVariant) {
+      this.cancerGeneticVariant = [] as CancerGeneticVariant[];
     }
   }
 
@@ -337,7 +387,7 @@ export class ExtractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 2. Concomitant invasive malignancies
       if (
-        primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Breast')) &&
         primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
         (this.TNMClinicalStageGroup.some((code) =>
           this.codeIsInSheet(code, 'Stage-1', 'Stage-2', 'Stage-3', 'Stage-4')
@@ -353,9 +403,9 @@ export class ExtractedMCODE {
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       // 5. Other malignancy - except skin or cervical
       if (
-        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Breast')) &&
+        (primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Breast')) &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active')) ||
-        (primaryCancerCondition.coding.some((code) => this.profileDoesNotContainCode(code, 'Cancer-Cervical')) &&
+        (primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Cervical')) &&
           primaryCancerCondition.clinicalStatus.some((clinStat) => clinStat.code == 'active') &&
           (this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-0')) ||
             this.TNMPathologicalStageGroup.some((coding) => this.codeIsInSheet(coding, 'Stage-0'))))
@@ -405,7 +455,7 @@ export class ExtractedMCODE {
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
-      // 3. Leptomeningeal metastatic disease
+      // Leptomeningeal metastatic disease
       if (
         secondaryCancerCondition.bodySite.some(
           (bdySte) => this.normalizeCodeSystem(bdySte.system) == 'SNOMED' && bdySte.code == '8935007'
@@ -416,7 +466,7 @@ export class ExtractedMCODE {
     }
     // Cycle through each of the secondary cancer objects and check that they satisfy different requirements.
     for (const secondaryCancerCondition of this.secondaryCancerCondition) {
-      // 4. Metastatic
+      // Metastatic
       if (
         secondaryCancerCondition.coding.length != 0 ||
         this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4')) ||
@@ -430,11 +480,83 @@ export class ExtractedMCODE {
   }
   // Histology Morphology Value
   getHistologyMorphologyValue(): string {
-    if (this.primaryCancerCondition.length == 0) {
+    if (
+      this.primaryCancerCondition.length == 0 &&
+      this.TNMClinicalStageGroup.length == 0 &&
+      this.TNMPathologicalStageGroup.length == 0
+    ) {
       return 'NOT_SURE';
     }
-    // 1. Invasive Carcinoma
-    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    // Invasive Mammory Carcinoma
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invas_Carc_Mix')
+          )) ||
+        (primaryCancerCondition.coding.some(
+          (coding) => this.normalizeCodeSystem(coding.system) == 'SNOMED' && coding.code == '444604002'
+        ) &&
+          this.TNMClinicalStageGroup.some((code) => this.codeIsNotInSheet(code, 'Stage-0'))) ||
+        this.TNMPathologicalStageGroup.some((code) => this.codeIsNotInSheet(code, 'Stage-0'))
+      ) {
+        return 'INVASIVE_MAMMORY_CARCINOMA';
+      }
+    }
+    // Invasive Ductal Carcinoma
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invas_Duct_Carc')
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Morphology-Invas_Duct_Carc'))
+      ) {
+        return 'INVASIVE_DUCTAL_CARCINOMA';
+      }
+    }
+    // Invasive Lobular Carcinoma
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some(
+            (histMorphBehav) =>
+              this.normalizeCodeSystem(histMorphBehav.system) == 'SNOMED' && histMorphBehav.code == '443757001'
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invas_Lob_Carc'))
+      ) {
+        return 'INVASIVE_LOBULAR_CARCINOMA';
+      }
+    }
+    // Ductual Carcinoma in Situ
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+        primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+          this.codeIsInSheet(histMorphBehav, 'Morphology-Duct_Car_In_Situ')
+        )
+      ) {
+        return 'DUCTAL_CARCINOMA_IN_SITU';
+      }
+    }
+    // Non-Inflammatory, Invasive
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        ((primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
+            this.codeIsInSheet(histMorphBehav, 'Morphology-Invasive')
+          )) ||
+          primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))) &&
+        ((primaryCancerCondition.coding.some((code) => this.codeIsNotInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some((code) =>
+            this.codeIsNotInSheet(code, 'Morphology-Inflammatory')
+          )) ||
+          primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Inflammatory')))
+      ) {
+        return 'NON-INFLAMMATORY_INVASIVE';
+      }
+    }
+    // Invasive Carcinoma
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       if (
         (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
@@ -446,8 +568,7 @@ export class ExtractedMCODE {
         return 'INVASIVE_CARCINOMA';
       }
     }
-    // 2. Invasive Breast Cancer
-    // Cycle through each of the primary cancer objects and check that they satisfy this priority requirement.
+    // Invasive Breast Cancer
     for (const primaryCancerCondition of this.primaryCancerCondition) {
       if (
         (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
@@ -457,6 +578,19 @@ export class ExtractedMCODE {
         primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invasive-Breast'))
       ) {
         return 'INVASIVE_BREAST_CANCER';
+      }
+    }
+    // Inflammatory
+    for (const primaryCancerCondition of this.primaryCancerCondition) {
+      if (
+        (primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Breast')) &&
+          primaryCancerCondition.histologyMorphologyBehavior.some(
+            (histMorphBehav) =>
+              this.normalizeCodeSystem(histMorphBehav.system) == 'SNOMED' && histMorphBehav.code == '32968003'
+          )) ||
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Inflammatory'))
+      ) {
+        return 'INFLAMMATORY';
       }
     }
     // None of the conditions are satisfied.
@@ -538,11 +672,9 @@ export class ExtractedMCODE {
     return millisecondsAge > milliseconds18Years ? '18_OR_OVER' : 'UNDER_18';
   }
   getTumorMarkerValue(): string {
-    if (this.tumorMarker.length == 0) {
+    if (this.tumorMarker.length == 0 && this.cancerGeneticVariant.length == 0) {
       return 'NOT_SURE';
     }
-    // these definitely aren't in a most specific to least specific order, so we'll need to rearrange them
-    // Triple Negative and RB Positive
 
     // TRIPLE_NEGATIVE_AND_RB_POSITIVE
     if (
@@ -625,8 +757,106 @@ export class ExtractedMCODE {
     if (this.tumorMarker.some((tm) => this.isHER2Positive(tm))) {
       return 'HER2_PLUS';
     }
+    // PR+
+    if (this.tumorMarker.some((tm) => this.isPRPositive(tm, 10))) {
+      return 'PR_PLUS';
+    }
+    // ER+
+    if (this.tumorMarker.some((tm) => this.isERPositive(tm, 10))) {
+      return 'ER_PLUS';
+    }
+    // HER2-
+    if (this.tumorMarker.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+']))) {
+      return 'HER2_MINUS';
+    }
+    // BRCA1-Germline
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1100') &&
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6683-2'
+            )
+          )
+      )
+    ) {
+      return 'BRCA1-GERMLINE';
+    }
+    // BRCA2-Germline
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1101') &&
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6683-2'
+            )
+          )
+      )
+    ) {
+      return 'BRCA2-GERMLINE';
+    }
+    // BRCA1-somatic
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1100') &&
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6684-0'
+            )
+          )
+      )
+    ) {
+      return 'BRCA1-SOMATIC';
+    }
+    // BRCA2-somatic
+    if (
+      this.cancerGeneticVariant.some(
+        (cancGenVar) =>
+          this.isBRCA(cancGenVar, '1101') &&
+          cancGenVar.component.genomicsSourceClass.some((genSourceClass) =>
+            genSourceClass.valueCodeableConcept.coding.some(
+              (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA6684-0'
+            )
+          )
+      )
+    ) {
+      return 'BRCA2-SOMATIC';
+    }
+    // BRCA1
+    if (this.cancerGeneticVariant.some((cancGenVar) => this.isBRCA(cancGenVar, '1100'))) {
+      return 'BRCA1';
+    }
+    // BRCA2
+    if (this.cancerGeneticVariant.some((cancGenVar) => this.isBRCA(cancGenVar, '1101'))) {
+      return 'BRCA2';
+    }
     // None of the conditions are satisfied.
     return 'NOT_SURE';
+  }
+  isBRCA(cancGenVar: CancerGeneticVariant, brcaCode: string): boolean {
+    return (
+      cancGenVar.component.geneStudied.some((geneStudied) =>
+        geneStudied.valueCodeableConcept.coding.some(
+          (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'HGNC' && valCodeCon.code == brcaCode
+        )
+      ) &&
+      (cancGenVar.valueCodeableConcept.some(
+        (valCodeConc) =>
+          (this.normalizeCodeSystem(valCodeConc.system) == 'SNOMED' && valCodeConc.code == '10828004') ||
+          (this.normalizeCodeSystem(valCodeConc.system) == 'LOINC' && valCodeConc.code == 'LA9633-4')
+      ) ||
+        cancGenVar.interpretation.some(
+          (interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'
+        ) ||
+        cancGenVar.component.geneStudied.some((geneStud) =>
+          geneStud.interpretation.coding.some(
+            (interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'
+          )
+        ))
+    );
   }
   isHER2Positive(tumorMarker: TumorMarker): boolean {
     return (
@@ -851,6 +1081,16 @@ export class ExtractedMCODE {
       this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Splenectomy'))
     ) {
       return 'SPLENECTOMY';
+    } else if (
+      this.cancerRelatedSurgicalProcedure.some(
+        (coding) => this.normalizeCodeSystem(coding.system) == 'SNOMED' && coding.code == '58390007'
+      )
+    ) {
+      return 'BONE_MARROW_TRANSPLANT';
+    } else if (
+      this.cancerRelatedSurgicalProcedure.some((coding) => this.codeIsInSheet(coding, 'Treatment-Organ_Transplant'))
+    ) {
+      return 'ORGAN_TRANSPLANT';
     } else {
       return 'NOT_SURE';
     }
@@ -921,6 +1161,30 @@ export class ExtractedMCODE {
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1,PDL2'))
     ) {
       return 'ANTI_PD';
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PARP'))
+    ) {
+      return 'ANTI-PARP';
+    } else if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))) {
+      return 'SG';
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) =>
+        this.codeIsInSheet(coding, 'Treatment-anti-topoisomerase-1')
+      )
+    ) {
+      return 'ANTI-TOPOISOMERASE-1';
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CTLA4'))
+    ) {
+      return 'ANTI-CTLA4';
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CD40'))
+    ) {
+      return 'ANTI-CD40';
+    } else if (
+      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuz_and_Pertuz'))
+    ) {
+      return 'TRASTUZ_AND_PERTUZ';
     } else {
       return 'NOT_SURE';
     }
@@ -930,7 +1194,11 @@ export class ExtractedMCODE {
   codeIsInSheet(coding: Coding, ...sheetNames: string[]): boolean {
     const system = this.normalizeCodeSystem(coding.system);
     for (const sheetName of sheetNames) {
-      let codeSet: { code: string }[] = (profile_system_codes[sheetName] as CodeProfile)[system] as { code: string }[];
+      const codeProfile: CodeProfile = profile_system_codes[sheetName] as CodeProfile; // Pull the codes for the profile
+      if (codeProfile == undefined) {
+        console.error('Code Profile ' + sheetName + ' is undefined.');
+      }
+      let codeSet: { code: string }[] = codeProfile[system] as { code: string }[]; // Pull the system codes from the codes
       if (!codeSet) {
         codeSet = [];
       }
@@ -946,25 +1214,28 @@ export class ExtractedMCODE {
 
   // Normalize the code system. NEED TO ADD MORE CODE SYSTEMS STILL.
   normalizeCodeSystem(codeSystem: string): string {
-    if (codeSystem.toLowerCase().includes('snomed')) {
+    const lowerCaseCodeSystem: string = codeSystem.toLowerCase();
+    if (lowerCaseCodeSystem.includes('snomed')) {
       return 'SNOMED';
-    } else if (codeSystem.toLowerCase().includes('rxnorm')) {
+    } else if (lowerCaseCodeSystem.includes('rxnorm')) {
       return 'RxNorm';
-    } else if (codeSystem.toLowerCase().includes('icd-10')) {
+    } else if (lowerCaseCodeSystem.includes('icd-10')) {
       return 'ICD-10';
-    } else if (codeSystem.toLowerCase().includes('ajcc')) {
+    } else if (lowerCaseCodeSystem.includes('ajcc')) {
       return 'AJCC';
-    } else if (codeSystem.toLowerCase().includes('loinc')) {
+    } else if (lowerCaseCodeSystem.includes('loinc')) {
       return 'LOINC';
-    } else if (codeSystem.toLowerCase().includes('nih')) {
+    } else if (lowerCaseCodeSystem.includes('nih')) {
       return 'NIH';
+    } else if (lowerCaseCodeSystem.includes('hgnc') || lowerCaseCodeSystem.includes('genenames.org')) {
+      return 'HGNC';
     } else {
       return '';
     }
   }
 
   // Returns whether the given code is any code not in the given profile.
-  profileDoesNotContainCode(coding: Coding, profile: string): boolean {
+  codeIsNotInSheet(coding: Coding, profile: string): boolean {
     if (coding.code == undefined || coding.code == null) {
       return false;
     } else {
