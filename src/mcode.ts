@@ -510,7 +510,7 @@ export class ExtractedMCODE {
           primaryCancerCondition.histologyMorphologyBehavior.some((histMorphBehav) =>
             this.codeIsInSheet(histMorphBehav, 'Morphology-Invas_Duct_Carc')
           )) ||
-        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Morphology-Invas_Duct_Carc'))
+        primaryCancerCondition.coding.some((code) => this.codeIsInSheet(code, 'Cancer-Invas_Duct_Carc'))
       ) {
         return 'INVASIVE_DUCTAL_CARCINOMA';
       }
@@ -1221,7 +1221,7 @@ export class ExtractedMCODE {
       return 'RxNorm';
     } else if (lowerCaseCodeSystem.includes('icd-10')) {
       return 'ICD-10';
-    } else if (lowerCaseCodeSystem.includes('ajcc')) {
+    } else if (lowerCaseCodeSystem.includes('ajcc') || lowerCaseCodeSystem.includes('cancerstaging.org')) {
       return 'AJCC';
     } else if (lowerCaseCodeSystem.includes('loinc')) {
       return 'LOINC';
