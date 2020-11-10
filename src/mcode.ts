@@ -1204,7 +1204,7 @@ export class ExtractedMCODE {
       }
       // Check that the current code matches the given code.
       for (const currentCode of codeSet) {
-        if (coding.code == currentCode.code) {
+        if (coding.code == currentCode.code || coding.display == currentCode.code) {
           return true;
         }
       }
