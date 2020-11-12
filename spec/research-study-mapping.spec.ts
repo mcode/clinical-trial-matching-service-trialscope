@@ -18,7 +18,9 @@ describe('convertTrialScopeToResearchStudy', () => {
         detailedDescription: 'Detailed description',
         officialTitle: 'Official Title',
         overallOfficialName: 'Overall Official',
-        sites: [{ facility: 'Facility', contactEmail: 'site@example.com', contactPhone: '781-555-0101' }],
+        sites: [
+          { facility: 'Facility', contactEmail: 'site@example.com', contactPhone: '781-555-0101', zipCode: '12345' }
+        ],
         criteria: 'Criteria',
         sponsor: 'Sponsor'
       },
@@ -77,7 +79,8 @@ describe('convertTrialScopeToResearchStudy', () => {
       telecom: [
         { system: 'phone', value: '781-555-0101', use: 'work' },
         { system: 'email', value: 'site@example.com', use: 'work' }
-      ]
+      ],
+      address: { use: 'work', postalCode: '12345' }
     });
     expect(researchStudy.enrollment).toEqual([{ reference: '#group-study-1', type: 'Group', display: 'Criteria' }]);
     expect(researchStudy.contained).toContain({
