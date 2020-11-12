@@ -6,7 +6,7 @@ env:
     - TRIALSCOPE_TOKEN=fake_token
 
 node_js:
-  - "12"
+  - "15"
 
 cache: npm
 
