@@ -143,6 +143,7 @@ export interface Site {
   contactPhone?: string;
   latitude?: number;
   longitude?: number;
+  zipCode?: string;
 }
 
 function parsePhase(phase: string): string | null {
@@ -314,7 +315,7 @@ export class TrialScopeQuery {
         'matchQuality ' +
         'node {' + this.trialFields.join(' ') +
           ' sites { ' +
-            'facility contactName contactEmail contactPhone latitude longitude ' +
+            'facility contactName contactEmail contactPhone latitude longitude zipCode ' +
           '} ' +
         '} ' +
         'cursor ' +
