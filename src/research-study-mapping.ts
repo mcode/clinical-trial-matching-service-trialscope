@@ -91,6 +91,10 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
       if (site.latitude && site.longitude) {
         location.position = { latitude: site.latitude, longitude: site.longitude };
       }
+      if (site.zipCode) {
+        // Populate just enough of the address in the location
+        location.address = { use: 'work', postalCode: site.zipCode };
+      }
     }
   }
   if (trial.criteria) {
