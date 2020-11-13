@@ -10,6 +10,12 @@ node_js:
 
 cache: npm
 
+# NPM prior to 7.0.10 does not build non-NPM repository packages properly, but
+# Travis is using 7.0.8 for some reason. Force it to 7.0.10. (This should likely
+# be removed at some point in the future, but for now...)
+before_install:
+  - npm i -g npm@7.0.10
+
 script:
   - npm install
   - npm install codecov -g
