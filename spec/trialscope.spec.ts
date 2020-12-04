@@ -6,9 +6,8 @@ import {
   TrialScopeServerError,
   TrialScopeTrial
 } from '../src/trialscope';
-import { SearchSet, fhir, ClinicalTrialGovService, ResearchStudy } from 'clinical-trial-matching-service';
+import { fhir, ClinicalTrialGovService, ResearchStudy } from 'clinical-trial-matching-service';
 // For spying purposes:
-import fs from 'fs';
 import nock from 'nock';
 
 describe('isTrialScopeResponse', () => {
