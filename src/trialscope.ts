@@ -6,8 +6,6 @@ import https from 'https';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
-import * as fs from 'fs';
-import path from 'path';
 import * as mcode from './mcode';
 
 /**
@@ -171,16 +169,6 @@ function parseMatchQuality(matchQuality: string): number {
     // matchQuality == 'POSSIBLE_NON_MATCH'
     return 0;
   }
-}
-
-export function makeSearchSet(studies: fhir.ResearchStudy[], matchScores: number[]): SearchSet {
-  const searchSet = new SearchSet();
-  let count = 0;
-  for (const study of studies) {
-    searchSet.addEntry(study, matchScores[count]);
-    count++;
-  }
-  return searchSet;
 }
 
 /**
@@ -366,75 +354,30 @@ export class TrialScopeQueryRunner {
         })
         .catch(reject);
     }).then<SearchSet>((trialscopeResponse) => {
-      return this._convertToSearchSet(trialscopeResponse);
+      return this.convertToSearchSet(trialscopeResponse);
     });
   }
 
   /**
-   * Convert a response to a searchset.
+   * Convert a response to a searchset. This also fills in any missing data using the ClinicalTrialsGovService.
    * @param trialscopeResponse the response to convert
    * @returns a promise that will resolve to the converted search set
    *     (asynchronous lookups may be required to complete the search set)
    */
   convertToSearchSet(trialscopeResponse: TrialScopeResponse): Promise<SearchSet> {
-    // This mostly exists to ensure that the "public" API for this is easy to use
-    const result = this._convertToSearchSet(trialscopeResponse);
-    if (result instanceof Promise) {
-      return result;
-    } else {
-      return Promise.resolve(result);
-    }
-  }
-
-  /**
-   * Convert a response to a searchset.
-   * @param trialscopeResponse the response to convert
-   * @returns either the converted searchset or a promise that will resolve to
-   * it (this makes more sense in the intended flow where this is used as the
-   * return value from a Promise's then handler)
-   */
-  private _convertToSearchSet(trialscopeResponse: TrialScopeResponse): SearchSet | Promise<SearchSet> {
+    const searchSet = new SearchSet();
     const studies: fhir.ResearchStudy[] = [];
-    const matchScores: number[] = [];
     let index = 0;
-    const backupIds: string[] = [];
     for (const node of trialscopeResponse.data.advancedMatches.edges) {
       const trial: TrialScopeTrial = node.node;
-      matchScores.push(parseMatchQuality(node.matchQuality));
       const study = convertTrialScopeToResearchStudy(trial, index);
-      if (!study.description || !study.enrollment || !study.phase || !study.category) {
-        backupIds.push(trial.nctId);
-      }
+      searchSet.addEntry(study, parseMatchQuality(node.matchQuality));
       studies.push(study);
       index++;
     }
-    if (backupIds.length == 0) {
-      return makeSearchSet(studies, matchScores);
-    } else {
-      return this.backupService.downloadTrials(backupIds).then(() => {
-        const promises: Promise<fhir.ResearchStudy>[] = [];
-        for (const study of studies) {
-          if (backupIds.includes(study.identifier[0].value)) {
-            promises.push(this.backupService.updateResearchStudy(study));
-          } else {
-            // Otherwise push the study as it exists
-            promises.push(Promise.resolve(study));
-          }
-        }
-
-        // FIXME: This should be handled by the service itself
-        fs.unlink('clinicaltrial-backup-cache/backup.zip', (err) => {
-          /* istanbul ignore if failure condition isn't handled anyway */
-          if (err) console.log(err);
-        });
-        fs.rmdir(path.resolve('clinicaltrial-backup-cache/backups/'), { recursive: true }, (err) => {
-          /* istanbul ignore if failure condition isn't handled anyway */
-          if (err) console.log(err);
-        });
-
-        return Promise.all(promises).then((studies) => makeSearchSet(studies, matchScores));
-      });
-    }
+    return this.backupService.updateResearchStudies(studies).then(() => {
+      return searchSet;
+    });
   }
 
   sendQuery(query: string): Promise<TrialScopeResponse> {

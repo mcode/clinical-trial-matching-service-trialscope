@@ -1,15 +1,13 @@
 import {
   isTrialScopeResponse,
   isTrialScopeErrorResponse,
-  makeSearchSet,
   TrialScopeQuery,
   TrialScopeQueryRunner,
   TrialScopeServerError,
   TrialScopeTrial
 } from '../src/trialscope';
-import { SearchSet, fhir, ClinicalTrialGovService, ResearchStudy } from 'clinical-trial-matching-service';
+import { fhir, ClinicalTrialGovService, ResearchStudy } from 'clinical-trial-matching-service';
 // For spying purposes:
-import fs from 'fs';
 import nock from 'nock';
 
 describe('isTrialScopeResponse', () => {
@@ -390,7 +388,13 @@ describe('TrialScopeQueryRunner', () => {
   describe('convertToSearchSet', () => {
     let backupServiceSpy: jasmine.Spy;
     beforeEach(() => {
-      backupServiceSpy = spyOn(backupService, 'downloadTrials');
+      backupServiceSpy = spyOn(backupService, 'updateResearchStudies').and.callFake((studies) => {
+        return Promise.resolve(studies);
+      });
+    });
+    afterEach(() => {
+      // As of now it's always callled even if nothing needs to be done
+      expect(backupServiceSpy).toHaveBeenCalled();
     });
 
     it('converts a response to a SearchSet', () => {
@@ -429,7 +433,7 @@ describe('TrialScopeQueryRunner', () => {
             }
           })
           .then((actual) => {
-            expect(backupServiceSpy).not.toHaveBeenCalled();
+            expect(backupServiceSpy).toHaveBeenCalled();
             expect(actual.total).toEqual(3);
             expect(actual.entry.length).toEqual(3);
             for (let i = 0; i < 3; i++) {
@@ -467,81 +471,6 @@ describe('TrialScopeQueryRunner', () => {
       ).toBeResolved();
     });
 
-    it('invokes the backup service when necessary', () => {
-      backupServiceSpy.and.callFake(() => {
-        return Promise.resolve();
-      });
-      const updateTrialSpy = spyOn(backupService, 'updateResearchStudy').and.callFake((researchStudy) => {
-        return Promise.resolve(researchStudy);
-      });
-      // These are not complete spies as that would involve implementing Promisify
-      ((spyOn(fs, 'unlink') as unknown) as jasmine.Spy<
-        (path: string, callback: (err?: Error) => void) => void
-      >).and.callFake((_path, cb) => {
-        cb(undefined);
-      });
-      // This is technically wrong since it doesn't support options being optional
-      ((spyOn(fs, 'rmdir') as unknown) as jasmine.Spy<
-        (path: string, options: Record<string, unknown>, callback: (err?: Error) => void) => void
-      >).and.callFake((_path, _options, cb) => {
-        cb(undefined);
-      });
-      return expectAsync(
-        queryRunner
-          .convertToSearchSet({
-            data: {
-              advancedMatches: {
-                totalCount: 3,
-                edges: [
-                  {
-                    node: { nctId: 'NCT11111111' },
-                    cursor: 'A',
-                    matchQuality: 'HIGH_LIKELIHOOD'
-                  },
-                  {
-                    // Make this one "complete" so it doesn't get passed to the
-                    // backup service
-                    node: {
-                      nctId: 'NCT22222222',
-                      detailedDescription: 'Detailed description',
-                      criteria: 'Trial Criteria',
-                      phase: 'Phase 2',
-                      studyType: 'Type'
-                    },
-                    cursor: 'B',
-                    matchQuality: 'POSSIBLE'
-                  },
-                  {
-                    node: { nctId: 'NCT33333333' },
-                    cursor: 'C',
-                    matchQuality: 'POSSIBLE_NON_MATCH'
-                  }
-                ],
-                pageInfo: { endCursor: 'D', hasNextPage: false }
-              }
-            }
-          })
-          .then(
-            (actual) => {
-              expect(backupServiceSpy).toHaveBeenCalledWith(['NCT11111111', 'NCT33333333']);
-              expect(updateTrialSpy).toHaveBeenCalledTimes(2);
-              // Only check for the NCT ID in these
-              expect(updateTrialSpy.calls.argsFor(0)[0].identifier).toEqual([
-                { use: 'official', system: 'http://clinicaltrials.gov', value: 'NCT11111111' }
-              ]);
-              expect(updateTrialSpy.calls.argsFor(1)[0].identifier).toEqual([
-                { use: 'official', system: 'http://clinicaltrials.gov', value: 'NCT33333333' }
-              ]);
-              expect(actual.total).toEqual(3);
-            },
-            (error) => {
-              console.log(error);
-              fail(error);
-            }
-          )
-      ).toBeResolved();
-    });
-
     it('converts an empty response to an empty SearchSet', () => {
       return expectAsync(
         queryRunner
@@ -555,36 +484,10 @@ describe('TrialScopeQueryRunner', () => {
             }
           })
           .then((actual) => {
-            expect(backupServiceSpy).not.toHaveBeenCalled();
             expect(actual.total).toEqual(0);
             expect(actual.entry).toEqual([]);
           })
       ).toBeResolved();
     });
-  });
-});
-
-describe('makeSearchSet', () => {
-  let matchScores: number[];
-  let studies: fhir.ResearchStudy[];
-  let searchSet: SearchSet;
-  beforeEach(() => {
-    matchScores = [0, 0.5, 1];
-    studies = [
-      { resourceType: 'ResearchStudy', id: '1' },
-      { resourceType: 'ResearchStudy', id: '2' },
-      { resourceType: 'ResearchStudy', id: '3' }
-    ];
-    searchSet = makeSearchSet(studies, matchScores);
-  });
-
-  it('creates proper searchet', () => {
-    expect(searchSet.resourceType == 'Bundle' && searchSet.type == 'searchset' && searchSet.total == 3).toBe(true);
-  });
-
-  it('sets match scores correctly', () => {
-    expect(searchSet.entry[0].search.score).toBe(0);
-    expect(searchSet.entry[1].search.score).toBe(0.5);
-    expect(searchSet.entry[2].search.score).toBe(1);
   });
 });
