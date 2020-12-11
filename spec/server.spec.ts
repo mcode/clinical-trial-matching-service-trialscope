@@ -8,14 +8,13 @@ describe('TrailScopeService', () => {
   describe('when listening', () => {
     let service: TrialScopeService;
     let server: http.Server;
-    beforeAll(() => {
+    beforeAll(async () => {
       service = new TrialScopeService({ endpoint: 'http://localhost/', token: 'ignored', port: 0 });
-      return service.init().then(() => {
-        server = service.listen();
-      });
+      await service.init();
+      server = await service.listen();
     });
     afterAll(() => {
-      service.close();
+      return service.close();
     });
 
     it('responds to /', () => {
