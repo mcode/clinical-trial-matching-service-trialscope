@@ -44,25 +44,22 @@ export class TrialScopeService extends ClinicalTrialMatchingService {
   }
 }
 
-export function start(): Promise<TrialScopeService> {
-  return new Promise((resolve, reject) => {
-    // Use dotenv-flow to load local configuration from .env files
-    dotenv.config({
-      // The environment variable to use to set the environment
-      node_env: process.env.NODE_ENV,
-      // The default environment to use if none is set
-      default_node_env: 'development'
-    });
-    const service = new TrialScopeService(configFromEnv('TRIALSCOPE_'));
-    service.init().then(() => {
-      service.listen();
-      resolve(service);
-    }, reject);
+export async function start(): Promise<TrialScopeService> {
+  // Use dotenv-flow to load local configuration from .env files
+  dotenv.config({
+    // The environment variable to use to set the environment
+    node_env: process.env.NODE_ENV,
+    // The default environment to use if none is set
+    default_node_env: 'development'
   });
+  const service = new TrialScopeService(configFromEnv('TRIALSCOPE_'));
+  await service.init();
+  await service.listen();
+  return service;
 }
 
 /* istanbul ignore next: can't exactly load this directly via test case */
-if (module.parent === null) {
+if (require.main === module) {
   start().catch((error) => {
     console.error('Could not start service:');
     console.error(error);
