@@ -57,11 +57,3 @@ export async function start(): Promise<TrialScopeService> {
   await service.listen();
   return service;
 }
-
-/* istanbul ignore next: can't exactly load this directly via test case */
-if (require.main === module) {
-  start().catch((error) => {
-    console.error('Could not start service:');
-    console.error(error);
-  });
-}

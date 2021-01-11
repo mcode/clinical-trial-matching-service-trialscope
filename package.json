@@ -14,7 +14,7 @@
     "coverage": "npm run-script build:tests && nyc --require ts-node/register --reporter=lcovonly jasmine",
     "coverage:html": "npm run-script build:tests && nyc --require ts-node/register --reporter=html jasmine",
     "lint": "eslint . --ext .js,.ts",
-    "serve": "npm run build && node dist/src/server.js",
+    "serve": "npm run build && node ./start.js",
     "start": "npm run serve",
     "test": "npm run-script build:tests && npm run-script test:run",
     "test:run": "jasmine"
