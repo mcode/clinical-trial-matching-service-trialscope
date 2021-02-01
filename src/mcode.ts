@@ -844,9 +844,10 @@ export class ExtractedMCODE {
         )
       ) &&
       (cancGenVar.valueCodeableConcept.some(
-        (valCodeConc) =>
-          (this.normalizeCodeSystem(valCodeConc.system) == 'SNOMED' && valCodeConc.code == '10828004') ||
-          (this.normalizeCodeSystem(valCodeConc.system) == 'LOINC' && valCodeConc.code == 'LA9633-4')
+        (valCodeCon) =>
+          (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004') ||
+          (this.normalizeCodeSystem(valCodeCon.system) == 'LOINC' && valCodeCon.code == 'LA9633-4') ||
+          (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'POS')
       ) ||
         cancGenVar.interpretation.some(
           (interp) => interp.code == 'CAR' || interp.code == 'A' || interp.code == 'POS'
@@ -862,7 +863,8 @@ export class ExtractedMCODE {
     return (
       tumorMarker.code.some((code) => this.codeIsInSheet(code, 'Biomarker-HER2')) &&
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
+        (valCodeCon) => (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004') ||
+                        (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'POS')
       ) ||
         tumorMarker.interpretation.some(
           (interp) =>
@@ -877,7 +879,8 @@ export class ExtractedMCODE {
   isHER2Negative(tumorMarker: TumorMarker, quantities: string[]): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
+        (valCodeCon) => (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009') ||
+                        (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'NEG')
       ) ||
         tumorMarker.interpretation.some(
           (interp) =>
@@ -893,7 +896,8 @@ export class ExtractedMCODE {
   isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
+        (valCodeCon) => (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004') ||
+                        (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'POS')
       ) ||
         tumorMarker.interpretation.some(
           (interp) =>
@@ -910,7 +914,8 @@ export class ExtractedMCODE {
   isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
+        (valCodeCon) => (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009') ||
+                        (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'NEG')
       ) ||
         tumorMarker.interpretation.some(
           (interp) =>
@@ -929,7 +934,8 @@ export class ExtractedMCODE {
   isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
+        (valCodeCon) => (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004') ||
+                        (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'POS')
       ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>=')) ||
         tumorMarker.interpretation.some(
@@ -946,7 +952,8 @@ export class ExtractedMCODE {
   isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
-        (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009'
+        (valCodeCon) => (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '260385009') ||
+                        (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'NEG')
       ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '<')) ||
         tumorMarker.interpretation.some(
@@ -985,7 +992,8 @@ export class ExtractedMCODE {
         this.quantityMatch(valQuant.value, valQuant.code, [metric], '>', '%')
       ) ||
         tumorMarker.valueCodeableConcept.some(
-          (valCodeCon) => this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004'
+          (valCodeCon) => (this.normalizeCodeSystem(valCodeCon.system) == 'SNOMED' && valCodeCon.code == '10828004') ||
+                          (this.normalizeCodeSystem(valCodeCon.system) == 'HL7' && valCodeCon.code == 'POS')
         ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>')) ||
         tumorMarker.interpretation.some(
@@ -1229,7 +1237,9 @@ export class ExtractedMCODE {
       return 'NIH';
     } else if (lowerCaseCodeSystem.includes('hgnc') || lowerCaseCodeSystem.includes('genenames.org')) {
       return 'HGNC';
-    } else {
+    } else if (lowerCaseCodeSystem.includes('hl7')) {
+      return 'HL7';
+    }else {
       return '';
     }
   }
