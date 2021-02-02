@@ -540,6 +540,7 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveLobularCarcinoma', () => {
   const pcc: PrimaryCancerCondition = {};
   pcc.clinicalStatus = [] as Coding[];
   pcc.coding = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [] as Coding[];
 
   // Invasive Lobular Carcinoma Filter Attributes
   pcc.coding.push({ system: 'http://snomed.info/sct', code: '1080261000119100', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invas Lob Carc'
