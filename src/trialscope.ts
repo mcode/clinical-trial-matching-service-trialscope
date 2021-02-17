@@ -189,11 +189,14 @@ export class TrialScopeQuery {
     primaryCancer: string;
     secondaryCancer: string;
     histologyMorphology: string;
-    stage: string;
+    stageFilterOne: string;
+    stageFilterTwo: string;
     tumorMarker: string;
     radiationProcedure: string;
     surgicalProcedure: string;
-    medicationStatement: string;
+    medicationStatementOne: string;
+    medicationStatementTwo: string;
+    medicationStatementThree: string;
   };
   /**
    * The fields that should be returned within the individual trial object.
