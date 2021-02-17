@@ -596,13 +596,14 @@ export class ExtractedMCODE {
     // None of the conditions are satisfied.
     return 'NOT_SURE';
   }
-  getStageValue(): string {
+  getStageValue(): string[] {
+    var stageValues:string[];
     if (
       this.primaryCancerCondition.length == 0 &&
       this.TNMClinicalStageGroup.length == 0 &&
       this.TNMPathologicalStageGroup.length == 0
     ) {
-      return 'NOT_SURE';
+      return ['NOT_SURE', 'NOT_SURE'];
     }
     // Invasive Breast Cancer and Locally Advanced
     for (const primaryCancerCondition of this.primaryCancerCondition) {
@@ -615,7 +616,7 @@ export class ExtractedMCODE {
         (this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-3', 'Stage-4')) ||
           this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-3', 'Stage-4')))
       ) {
-        return 'INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED';
+        stageValues.push('INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED');
       }
     }
     // Stage 0
@@ -624,21 +625,21 @@ export class ExtractedMCODE {
       this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-0'))
     ) {
       // This also meets requirements for NON_INVASIVE.
-      return 'ZERO';
+      stageValues.push('ZERO');
     }
     // Stage 1
     if (
       this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-1')) ||
       this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-1'))
     ) {
-      return 'ONE';
+      stageValues.push('ONE');
     }
     // Stage 2
     if (
       this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-2')) ||
       this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-2'))
     ) {
-      return 'TWO';
+      stageValues.push('TWO');
     }
     // Stage 3
     if (
@@ -646,17 +647,24 @@ export class ExtractedMCODE {
       this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-3'))
     ) {
       // This also meets requirements for LOCALLY_ADVANCED.
-      return 'THREE';
+      stageValues.push('THREE');
     }
     // Stage 4
     if (
       this.TNMClinicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4')) ||
       this.TNMPathologicalStageGroup.some((code) => this.codeIsInSheet(code, 'Stage-4'))
     ) {
-      return 'FOUR';
+      stageValues.push('FOUR');
     }
-    // None of the conditions are satisfied.
-    return 'NOT_SURE';
+
+    // Make sure the array has at least 2 values in it
+    // If it does not, fill with NOT_SURE values
+    if (stageValues.length < 2) {
+      for (let i = stageValues.length; i <= 2; i++) {
+        stageValues.push('NOT_SURE');
+      }
+    }
+    return stageValues;
   }
   // Age (18 or younger/older)
   getAgeValue(): string {
@@ -1110,17 +1118,19 @@ export class ExtractedMCODE {
       return 'NOT_SURE';
     }
   }
-  getMedicationStatementValue(): string {
+  getMedicationStatementValue(): string[] {
+    var medicationValues:string[];
+
     if (this.cancerRelatedMedicationStatement.length == 0) {
-      return 'NOT_SURE';
+      return ['NOT_SURE', 'NOT_SURE', 'NOT_SURE'];
     }
     if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuzumab')) &&
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pertuzumab')) &&
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))
     ) {
-      return 'DRUGCOMBO_1';
-    } else if (
+      medicationValues.push('DRUGCOMBO_1');
+    } if (
       (this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-CDK4_6_Inhibtor')
       ) ||
@@ -1129,80 +1139,87 @@ export class ExtractedMCODE {
         )) &&
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine_Therapy'))
     ) {
-      return 'CDK4_6_MTOR_AND_ENDOCRINE';
-    } else if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))) {
-      return 'T_DM1';
-    } else if (
+      medicationValues.push('CDK4_6_MTOR_AND_ENDOCRINE');
+    } if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))) {
+      medicationValues.push('T_DM1');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-CDK4_6_Inhibtor'))
     ) {
-      return 'CDK4_6_INHIBITOR';
-    } else if (
+      medicationValues.push('CDK4_6_INHIBITOR');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pembrolizumab'))
     ) {
-      return 'PEMBROLIZUMAB';
-    } else if (
+      medicationValues.push('PEMBROLIZUMAB');
+    } if (
       this.cancerRelatedMedicationStatement.some(
         (coding) => this.normalizeCodeSystem(coding.system) == 'NIH' && coding.code == '#C1198'
       )
     ) {
-      return 'POLY_ICLC';
-    } else if (
+      medicationValues.push('POLY_ICLC');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-mTOR_Inhibitor'))
     ) {
-      return 'MTOR_INHIBITOR';
-    } else if (
+      medicationValues.push('MTOR_INHIBITOR');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine_Therapy'))
     ) {
-      return 'CONCURRENT_ENDOCRINE_THERAPY';
-    } else if (
+      medicationValues.push('CONCURRENT_ENDOCRINE_THERAPY');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-Androgen'))
     ) {
-      return 'ANTI_ANDROGEN';
-    } else if (
+      medicationValues.push('ANTI_ANDROGEN');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-HER2'))
     ) {
-      return 'ANTI_HER2';
-    } else if (
+      medicationValues.push('ANTI_HER2');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-Tyrosine_Kinase_Inhib')
       )
     ) {
-      return 'TYROSINE_KINASE_INHIBITOR';
-    } else if (
+      medicationValues.push('TYROSINE_KINASE_INHIBITOR');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-P13K_Inhibitor'))
     ) {
-      return 'P13K_INHIBITOR';
-    } else if (
+      medicationValues.push('P13K_INHIBITOR');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1,PDL2'))
     ) {
-      return 'ANTI_PD';
-    } else if (
+      medicationValues.push('ANTI_PD');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PARP'))
     ) {
-      return 'ANTI-PARP';
-    } else if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))) {
-      return 'SG';
-    } else if (
+      medicationValues.push('ANTI-PARP');
+    } if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))) {
+      medicationValues.push('SG');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-anti-topoisomerase-1')
       )
     ) {
-      return 'ANTI-TOPOISOMERASE-1';
-    } else if (
+      medicationValues.push('ANTI-TOPOISOMERASE-1');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CTLA4'))
     ) {
-      return 'ANTI-CTLA4';
-    } else if (
+      medicationValues.push('ANTI-CTLA4');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CD40'))
     ) {
-      return 'ANTI-CD40';
-    } else if (
+      medicationValues.push('ANTI-CD40');
+    } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuz_and_Pertuz'))
     ) {
-      return 'TRASTUZ_AND_PERTUZ';
-    } else {
-      return 'NOT_SURE';
+      medicationValues.push('TRASTUZ_AND_PERTUZ');
+    } 
+
+    // Check to make sure that the array has at least 3 values in it
+    // If not, fill the remaining space with 'NOT_SURE'
+    if (medicationValues.length < 3) {
+      for (let i = medicationValues.length; i <= 3; i++) {
+        medicationValues.push('NOT_SURE');
+      }
     }
+    return medicationValues;
   }
 
   // Return whether any of the codes in a given coding exist in the given profiles (sheets).

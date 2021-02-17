@@ -228,11 +228,14 @@ export class TrialScopeQuery {
       primaryCancer: extractedMCODE.getPrimaryCancerValue(),
       secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
       histologyMorphology: extractedMCODE.getHistologyMorphologyValue(),
-      stage: extractedMCODE.getStageValue(),
+      stageFilterOne: extractedMCODE.getStageValue()[0],
+      stageFilterTwo: extractedMCODE.getStageValue()[1],
       tumorMarker: extractedMCODE.getTumorMarkerValue(),
       radiationProcedure: extractedMCODE.getRadiationProcedureValue(),
       surgicalProcedure: extractedMCODE.getSurgicalProcedureValue(),
-      medicationStatement: extractedMCODE.getMedicationStatementValue()
+      medicationStatementOne: extractedMCODE.getMedicationStatementValue()[0],
+      medicationStatementTwo: extractedMCODE.getMedicationStatementValue()[1],
+      medicationStatementThree: extractedMCODE.getMedicationStatementValue()[2],
     };
     console.log(this.mcode);
     for (const entry of patientBundle.entry) {
