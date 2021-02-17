@@ -596,7 +596,7 @@ export class ExtractedMCODE {
     // None of the conditions are satisfied.
     return 'NOT_SURE';
   }
-  getStageValue(): string[] {
+  getStageValues(): string[] {
     var stageValues:string[];
     if (
       this.primaryCancerCondition.length == 0 &&
@@ -1118,7 +1118,7 @@ export class ExtractedMCODE {
       return 'NOT_SURE';
     }
   }
-  getMedicationStatementValue(): string[] {
+  getMedicationStatementValues(): string[] {
     var medicationValues:string[];
 
     if (this.cancerRelatedMedicationStatement.length == 0) {

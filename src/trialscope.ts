@@ -227,18 +227,20 @@ export class TrialScopeQuery {
   constructor(patientBundle: fhir.Bundle) {
     const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
     console.log(extractedMCODE);
+    let stageValues = extractedMCODE.getStageValues();
+    let medicationStatementValues = extractedMCODE.getMedicationStatementValues();
     this.mcode = {
       primaryCancer: extractedMCODE.getPrimaryCancerValue(),
       secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
       histologyMorphology: extractedMCODE.getHistologyMorphologyValue(),
-      stageFilterOne: extractedMCODE.getStageValue()[0],
-      stageFilterTwo: extractedMCODE.getStageValue()[1],
+      stageFilterOne: stageValues[0],
+      stageFilterTwo: stageValues[1],
       tumorMarker: extractedMCODE.getTumorMarkerValue(),
       radiationProcedure: extractedMCODE.getRadiationProcedureValue(),
       surgicalProcedure: extractedMCODE.getSurgicalProcedureValue(),
-      medicationStatementOne: extractedMCODE.getMedicationStatementValue()[0],
-      medicationStatementTwo: extractedMCODE.getMedicationStatementValue()[1],
-      medicationStatementThree: extractedMCODE.getMedicationStatementValue()[2],
+      medicationStatementOne: medicationStatementValues[0],
+      medicationStatementTwo: medicationStatementValues[1],
+      medicationStatementThree: medicationStatementValues[2],
     };
     console.log(this.mcode);
     for (const entry of patientBundle.entry) {
