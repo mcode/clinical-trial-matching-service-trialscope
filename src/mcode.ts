@@ -84,6 +84,8 @@ export class ExtractedMCODE {
   cancerRelatedRadiationProcedure: CancerRelatedRadiationProcedure[];
   cancerRelatedSurgicalProcedure: Coding[];
   cancerRelatedMedicationStatement: Coding[];
+  ecogPerformaceStatus: number;
+  karnofskyPerformanceStatus: number;
 
   constructor(patientBundle: fhir.Bundle) {
     if (patientBundle != null) {
@@ -259,6 +261,23 @@ export class ExtractedMCODE {
             this.lookup(resource, 'medicationCodeableConcept.coding') as Coding[]
           );
         }
+
+        if (
+          resource.resourceType === 'Observation' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-ecog-performance-status')
+        ) {
+          console.log("ECOG");
+          this.ecogPerformaceStatus = this.lookup(resource, 'valueInteger')[0] as number; // this is probably bad type handling
+        }
+
+        if (
+          resource.resourceType === 'Observation' &&
+          this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-karnofsky-performance-status')
+        ) {
+          console.log("Karnofsky");
+          this.karnofskyPerformanceStatus = this.lookup(resource, 'valueInteger')[0] as number; // so is this
+        }
+
       }
     }
     // add empty fields if they are not yet undefined
@@ -291,6 +310,12 @@ export class ExtractedMCODE {
     }
     if (!this.cancerGeneticVariant) {
       this.cancerGeneticVariant = [] as CancerGeneticVariant[];
+    }
+    if (!this.ecogPerformaceStatus) {
+      this.ecogPerformaceStatus = -1;
+    }
+    if (!this.karnofskyPerformanceStatus) {
+      this.karnofskyPerformanceStatus = -1;
     }
   }
 
@@ -1203,6 +1228,49 @@ export class ExtractedMCODE {
     } else {
       return 'NOT_SURE';
     }
+  }
+
+  // Get ECOG Score
+  getECOGScore(): string {
+    if(this.ecogPerformaceStatus == -1) {
+      return 'NOT_SURE';
+    }
+
+    const ecogScoreMap = new Map<number, string>([
+      [0, 'ZERO'],
+      [1, 'ONE'],
+      [2, 'TWO'],
+      [3, 'THREE'],
+      [4, 'FOUR'],
+      [5, 'FIVE']
+    ]);
+
+    return ecogScoreMap.get(this.ecogPerformaceStatus);
+
+  }
+
+  // Get Karnofsky Score
+  getKarnofskyScore(): string {
+    if(this.karnofskyPerformanceStatus == -1) {
+      return 'NOT_SURE';
+    }
+
+    const karnofskyScoreMap = new Map<number, string>([
+      [0, 'ZERO'],
+      [10, 'TEN'],
+      [20, 'TWENTY'],
+      [30, 'THIRTY'],
+      [40, 'FORTY'],
+      [50, 'FIFTY'],
+      [60, 'SIXTY'],
+      [70, 'SEVENTY'],
+      [80, 'EIGHTY'],
+      [90, 'NINETY'],
+      [100, 'ONE_HUNDRED']
+    ]);
+
+    return karnofskyScoreMap.get(this.karnofskyPerformanceStatus);
+
   }
 
   // Return whether any of the codes in a given coding exist in the given profiles (sheets).
