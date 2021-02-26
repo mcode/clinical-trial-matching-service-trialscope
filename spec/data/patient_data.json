@@ -1594,6 +1594,86 @@
         "method": "POST",
         "url": "Condition"
       }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "mCODEKarnofskyPerformanceStatusExample",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-karnofsky-performance-status"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative</b></p><p></p><p><b>code</b>: <span title=\"Codes: {http://loinc.org 89243-0}\">Karnofsky Performance Status score</span></p><p><b>subject</b>: <a href=\"Patient-mCODEMassiveBioPatientExample1004.html\">Generated Summary: id: a123; Patient J MassiveBio ; gender: female; birthDate: 1945-01-01</a></p><p><b>effective</b>: 2019-04-01</p><p><b>value</b>: 90</p><p><b>interpretation</b>: <span title=\"Codes: {http://loinc.org LA29176-7}\">Able to carry on normal activity; minor signs or symptoms of disease</span></p></div>"
+        },
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "89243-0"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/mCODEMassiveBioPatientExample1004"
+        },
+        "effectiveDateTime": "2019-04-01",
+        "valueInteger": 90,
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "LA29176-7",
+                "display": "Able to carry on normal activity; minor signs or symptoms of disease"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "mCODEECOGPerformanceStatusExample",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-ecog-performance-status"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative</b></p><p></p><p><b>code</b>: <span title=\"Codes: {http://loinc.org 89247-1}\">ECOG Performance Status score</span></p><p><b>subject</b>: <a href=\"Patient-mCODEMassiveBioPatientExample1004.html\">Generated Summary: id: a123; Patient J MassiveBio ; gender: female; birthDate: 1945-01-01</a></p><p><b>effective</b>: 2019-04-01</p><p><b>value</b>: 3</p><p><b>interpretation</b>: <span title=\"Codes: {http://loinc.org LA9625-0}\">Capable of only limited selfcare, confined to bed or chair more than 50% of waking hours</span></p></div>"
+        },
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "89247-1"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/mCODEMassiveBioPatientExample1004"
+        },
+        "effectiveDateTime": "2019-04-01",
+        "valueInteger": 3,
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "LA9625-0",
+                "display": "Capable of only limited selfcare, confined to bed or chair more than 50% of waking hours"
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }
