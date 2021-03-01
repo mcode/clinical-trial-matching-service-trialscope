@@ -189,11 +189,14 @@ export class TrialScopeQuery {
     primaryCancer: string;
     secondaryCancer: string;
     histologyMorphology: string;
-    stage: string;
+    stageFilterOne: string;
+    stageFilterTwo: string;
     tumorMarker: string;
     radiationProcedure: string;
     surgicalProcedure: string;
-    medicationStatement: string;
+    medicationStatementOne: string;
+    medicationStatementTwo: string;
+    medicationStatementThree: string;
     ecogPerformaceStatus: string;
     karnofskyPerformaceStatus: string;
   };
@@ -226,15 +229,20 @@ export class TrialScopeQuery {
   constructor(patientBundle: fhir.Bundle) {
     const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
     console.log(extractedMCODE);
+    let stageValues = extractedMCODE.getStageValues();
+    let medicationStatementValues = extractedMCODE.getMedicationStatementValues();
     this.mcode = {
       primaryCancer: extractedMCODE.getPrimaryCancerValue(),
       secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
       histologyMorphology: extractedMCODE.getHistologyMorphologyValue(),
-      stage: extractedMCODE.getStageValue(),
+      stageFilterOne: stageValues[0],
+      stageFilterTwo: stageValues[1],
       tumorMarker: extractedMCODE.getTumorMarkerValue(),
       radiationProcedure: extractedMCODE.getRadiationProcedureValue(),
       surgicalProcedure: extractedMCODE.getSurgicalProcedureValue(),
-      medicationStatement: extractedMCODE.getMedicationStatementValue(),
+      medicationStatementOne: medicationStatementValues[0],
+      medicationStatementTwo: medicationStatementValues[1],
+      medicationStatementThree: medicationStatementValues[2],
       ecogPerformaceStatus: extractedMCODE.getECOGScore(),
       karnofskyPerformaceStatus: extractedMCODE.getKarnofskyScore()
     };
