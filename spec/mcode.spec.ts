@@ -41,6 +41,8 @@ describe('ExtractedMCODE', () => {
     expect(extractedData.cancerRelatedSurgicalProcedure.length).toBe(2);
     expect(extractedData.cancerRelatedMedicationStatement.length).toBe(1);
     expect(extractedData.cancerGeneticVariant.length).toBe(2);
+    expect(extractedData.ecogPerformaceStatus).toBe(3);
+    expect(extractedData.karnofskyPerformanceStatus).toBe(90);
   });
 
   it('checkExtractedPrimaryCancerCondition', function () {
@@ -2015,6 +2017,32 @@ describe('checkTumorMarkerFilterLogicHER-', () => {
   });
 });
 
+// ECOG Test
+describe('checkECOGFilterLogic', () => {
+  //Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  extractedMCODE.ecogPerformaceStatus = 3;
+
+  it('Test ECOG Filter', () => {
+    expect(extractedMCODE.getECOGScore()).toBe('THREE');
+  });
+
+});
+
+// Karnofsky Test
+describe('checkKarnofskyFilterLogic', () => {
+  //Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  extractedMCODE.karnofskyPerformanceStatus = 90;
+
+  it('Test Karnofsky Filter', () => {
+    expect(extractedMCODE.getKarnofskyScore()).toBe('NINETY');
+  });
+
+});
+
 describe('checkAgeFilterLogic', () => {
   // Initialize
   const patientBundle = null;
@@ -2059,5 +2087,7 @@ describe('NotSureTests', () => {
     expect(extractedMCODE.getStageValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getTumorMarkerValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getAgeValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getECOGScore()).toBe('NOT_SURE');
+    expect(extractedMCODE.getKarnofskyScore()).toBe('NOT_SURE');
   });
 });
