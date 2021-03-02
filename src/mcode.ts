@@ -266,7 +266,6 @@ export class ExtractedMCODE {
           resource.resourceType === 'Observation' &&
           this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-ecog-performance-status')
         ) {
-          console.log("ECOG");
           this.ecogPerformaceStatus = this.lookup(resource, 'valueInteger')[0] as number; // this is probably bad type handling
         }
 
@@ -274,7 +273,6 @@ export class ExtractedMCODE {
           resource.resourceType === 'Observation' &&
           this.resourceProfile(this.lookup(resource, 'meta.profile'), 'mcode-karnofsky-performance-status')
         ) {
-          console.log("Karnofsky");
           this.karnofskyPerformanceStatus = this.lookup(resource, 'valueInteger')[0] as number; // so is this
         }
 
@@ -622,7 +620,7 @@ export class ExtractedMCODE {
     return 'NOT_SURE';
   }
   getStageValues(): string[] {
-    var stageValues:string[];
+    var stageValues:string[] = [];
     if (
       this.primaryCancerCondition.length == 0 &&
       this.TNMClinicalStageGroup.length == 0 &&
@@ -1144,7 +1142,7 @@ export class ExtractedMCODE {
     }
   }
   getMedicationStatementValues(): string[] {
-    var medicationValues:string[];
+    var medicationValues:string[] = [];
 
     if (this.cancerRelatedMedicationStatement.length == 0) {
       return ['NOT_SURE', 'NOT_SURE', 'NOT_SURE'];
@@ -1235,7 +1233,7 @@ export class ExtractedMCODE {
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuz_and_Pertuz'))
     ) {
       medicationValues.push('TRASTUZ_AND_PERTUZ');
-    } 
+    }
 
     // Check to make sure that the array has at least 3 values in it
     // If not, fill the remaining space with 'NOT_SURE'

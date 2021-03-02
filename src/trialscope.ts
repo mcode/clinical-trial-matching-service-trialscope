@@ -197,8 +197,8 @@ export class TrialScopeQuery {
     medicationStatementOne: string;
     medicationStatementTwo: string;
     medicationStatementThree: string;
-    ecogPerformaceStatus: string;
-    karnofskyPerformaceStatus: string;
+    ecog: string;
+    karnofsky: string;
   };
   /**
    * The fields that should be returned within the individual trial object.
@@ -243,8 +243,8 @@ export class TrialScopeQuery {
       medicationStatementOne: medicationStatementValues[0],
       medicationStatementTwo: medicationStatementValues[1],
       medicationStatementThree: medicationStatementValues[2],
-      ecogPerformaceStatus: extractedMCODE.getECOGScore(),
-      karnofskyPerformaceStatus: extractedMCODE.getKarnofskyScore()
+      ecog: extractedMCODE.getECOGScore(),
+      karnofsky: extractedMCODE.getKarnofskyScore()
     };
     console.log(this.mcode);
     for (const entry of patientBundle.entry) {
