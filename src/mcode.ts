@@ -620,7 +620,7 @@ export class ExtractedMCODE {
     return 'NOT_SURE';
   }
   getStageValues(): string[] {
-    var stageValues:string[] = [];
+    const stageValues:string[] = [];
     if (
       this.primaryCancerCondition.length == 0 &&
       this.TNMClinicalStageGroup.length == 0 &&
@@ -1142,7 +1142,7 @@ export class ExtractedMCODE {
     }
   }
   getMedicationStatementValues(): string[] {
-    var medicationValues:string[] = [];
+    const medicationValues:string[] = [];
 
     if (this.cancerRelatedMedicationStatement.length == 0) {
       return ['NOT_SURE', 'NOT_SURE', 'NOT_SURE'];

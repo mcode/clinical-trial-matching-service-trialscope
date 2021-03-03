@@ -649,7 +649,7 @@ describe('checkHistologyMorphologyFilterLogic-NonInflammatoryInvasive', () => {
   });
 });
 
-/* Stage Logic Tests */ //- needs updated
+/* Stage Logic Tests */
 
 describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', () => {
   // Initialize
@@ -894,7 +894,7 @@ describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
   });
 });
 
-/* Medication Statement Logic Tests */ // - needs updated
+/* Medication Statement Logic Tests */
 
 describe('checkMedicationStatementFilterLogic-T-DM1', () => {
   // Initialize
