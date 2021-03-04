@@ -41,6 +41,8 @@ describe('ExtractedMCODE', () => {
     expect(extractedData.cancerRelatedSurgicalProcedure.length).toBe(2);
     expect(extractedData.cancerRelatedMedicationStatement.length).toBe(1);
     expect(extractedData.cancerGeneticVariant.length).toBe(2);
+    expect(extractedData.ecogPerformaceStatus).toBe(3);
+    expect(extractedData.karnofskyPerformanceStatus).toBe(90);
   });
 
   it('checkExtractedPrimaryCancerCondition', function () {
@@ -668,8 +670,11 @@ describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', ()
   extractedMCODE.primaryCancerCondition.push(pcc);
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
+  const stages: string[] = extractedMCODE.getStageValues();
+
   it('Test Invasive Breast Cancer and Locally Advanced Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe('INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED');
+    expect(stages[0]).toBe('INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED');
+    expect(stages[1]).toBe('THREE');
   });
 });
 
@@ -684,8 +689,11 @@ describe('checkStageFilterLogic-Stage 0', () => {
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
+  const stages: string[] = extractedMCODE.getStageValues();
+
   it('Test Stage 0 Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe('ZERO');
+    expect(stages[0]).toBe('ZERO');
+    expect(stages[1]).toBe('NOT_SURE');
   });
 });
 
@@ -700,8 +708,11 @@ describe('checkStageFilterLogic-Stage 1', () => {
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
+  const stages: string[] = extractedMCODE.getStageValues();
+
   it('Test Stage 1 Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe('ONE');
+    expect(stages[0]).toBe('ONE');
+    expect(stages[1]).toBe('NOT_SURE');
   });
 });
 
@@ -716,8 +727,11 @@ describe('checkStageFilterLogic-Stage 2', () => {
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
+  const stages: string[] = extractedMCODE.getStageValues();
+
   it('Test Stage 2 Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe('TWO');
+    expect(stages[0]).toBe('TWO');
+    expect(stages[1]).toBe('NOT_SURE');
   });
 });
 
@@ -732,8 +746,11 @@ describe('checkStageFilterLogic-Stage 3', () => {
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
+  const stages: string[] = extractedMCODE.getStageValues();
+
   it('Test Stage 3 Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe('THREE');
+    expect(stages[0]).toBe('THREE');
+    expect(stages[1]).toBe('NOT_SURE');
   });
 });
 
@@ -748,8 +765,11 @@ describe('checkStageFilterLogic-Stage 4', () => {
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
+  const stages: string[] = extractedMCODE.getStageValues();
+
   it('Test Stage 4 Filter', () => {
-    expect(extractedMCODE.getStageValue()).toBe('FOUR');
+    expect(stages[0]).toBe('FOUR');
+    expect(stages[1]).toBe('NOT_SURE');
   });
 });
 
@@ -886,8 +906,12 @@ describe('checkMedicationStatementFilterLogic-T-DM1', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A' } as Coding); // Any code in 'Treatment-T-DM1'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test T-DM1 Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('T_DM1');
+    expect(medications[0]).toBe('T_DM1');
+    expect(medications[1]).toBe('ANTI_HER2');
+    expect(medications[2]).toBe('TRASTUZ_AND_PERTUZ');
   });
 });
 
@@ -901,8 +925,12 @@ describe('checkMedicationStatementFilterLogic-CDK4/6 inhibitor', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' } as Coding); // Any code in 'Treatment-CDK4_6_Inhibtor'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test CDK4/6 inhibitor Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('CDK4_6_INHIBITOR');
+    expect(medications[0]).toBe('CDK4_6_INHIBITOR');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -916,8 +944,12 @@ describe('checkMedicationStatementFilterLogic-Poly ICLC ', () => {
   ms.push({ system: 'NIH', code: '#C1198', display: 'N/A' } as Coding);
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Poly ICLC Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('POLY_ICLC');
+    expect(medications[0]).toBe('POLY_ICLC');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -932,8 +964,12 @@ describe('checkMedicationStatementFilterLogic-DrugCombo-1', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '1298949', display: 'N/A' } as Coding); // Any code in 'Treatment-Pertuzumab'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test DrugCombo-1 Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('DRUGCOMBO_1');
+    expect(medications[0]).toBe('DRUGCOMBO_1');
+    expect(medications[1]).toBe('T_DM1');
+    expect(medications[2]).toBe('ANTI_HER2');
   });
 });
 
@@ -947,8 +983,12 @@ describe('checkMedicationStatementFilterLogic-Pembrolizumab', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '1547545', display: 'N/A' } as Coding); // Any code in 'Treatment-Pembrolizumab'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Pembrolizumab Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('PEMBROLIZUMAB');
+    expect(medications[0]).toBe('PEMBROLIZUMAB');
+    expect(medications[1]).toBe('ANTI_PD');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -962,8 +1002,12 @@ describe('checkMedicationStatementFilterLogic-mTOR inhibitor', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '845509', display: 'N/A' } as Coding); // Any code in 'Treatment-mTOR_Inhibtor'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test mTOR inhibitor Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('MTOR_INHIBITOR');
+    expect(medications[0]).toBe('MTOR_INHIBITOR');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -977,8 +1021,12 @@ describe('checkMedicationStatementFilterLogic-Concurrent Endocrine Therapy ', ()
   ms.push({ system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' } as Coding); // Any code in 'Treatment-Endocrine_Therapy'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Concurrent Endocrine Therapy  Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('CONCURRENT_ENDOCRINE_THERAPY');
+    expect(medications[0]).toBe('CONCURRENT_ENDOCRINE_THERAPY');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -992,8 +1040,12 @@ describe('checkMedicationStatementFilterLogic-Anti-androgen', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '151495', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-Androgen'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Anti-androgen Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI_ANDROGEN');
+    expect(medications[0]).toBe('ANTI_ANDROGEN');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1007,8 +1059,12 @@ describe('checkMedicationStatementFilterLogic-anti-HER2', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '101306', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-HER2'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test anti-HER2 Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI_HER2');
+    expect(medications[0]).toBe('ANTI_HER2');
+    expect(medications[1]).toBe('TRASTUZ_AND_PERTUZ');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1022,8 +1078,12 @@ describe('checkMedicationStatementFilterLogic-Tyrosine Kinase Inhibitor', () => 
   ms.push({ system: 'http://rxnorm.info/sct', code: '1430449', display: 'N/A' } as Coding); // Any code in 'Treatment-Tyrosine_Kinase_Inhib'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Tyrosine Kinase Inhibitor Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('TYROSINE_KINASE_INHIBITOR');
+    expect(medications[0]).toBe('TYROSINE_KINASE_INHIBITOR');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1037,8 +1097,12 @@ describe('checkMedicationStatementFilterLogic-P13K inhibitor ', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '2169302', display: 'N/A' } as Coding); // Any code in 'Treatment-P13K_Inhibitor'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test P13K inhibitor  Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('P13K_INHIBITOR');
+    expect(medications[0]).toBe('P13K_INHIBITOR');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1052,8 +1116,12 @@ describe('checkMedicationStatementFilterLogic-anti-PD', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '1792780', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-PD1,PDL1,PDL2'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test anti-PD Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI_PD');
+    expect(medications[0]).toBe('ANTI_PD');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1068,8 +1136,12 @@ describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine', () => 
   ms.push({ system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' } as Coding); // Any code in 'Treatment-Endocrine_Therapy'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test CDK4/6-mTOR and Endocrine Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('CDK4_6_MTOR_AND_ENDOCRINE');
+    expect(medications[0]).toBe('CDK4_6_MTOR_AND_ENDOCRINE');
+    expect(medications[1]).toBe('CDK4_6_INHIBITOR');
+    expect(medications[2]).toBe('CONCURRENT_ENDOCRINE_THERAPY');
   });
 });
 
@@ -1085,8 +1157,12 @@ describe('checkMedicationStatementFilterLogic-antiPARP', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '1918231', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-PARP'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test anti PARP Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-PARP');
+    expect(medications[0]).toBe('ANTI-PARP');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1100,8 +1176,12 @@ describe('checkMedicationStatementFilterLogic-SG', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '2360231', display: 'N/A' } as Coding); // Any code in 'Treatment-SG'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test SG Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('SG');
+    expect(medications[0]).toBe('SG');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1115,8 +1195,12 @@ describe('checkMedicationStatementFilterLogic-Treatment-anti-topoisomerase-1', (
   ms.push({ system: 'http://rxnorm.info/sct', code: '1719773', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-topoisomerase-1'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Treatment-anti-topoisomerase-1 Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-TOPOISOMERASE-1');
+    expect(medications[0]).toBe('ANTI-TOPOISOMERASE-1');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1130,8 +1214,12 @@ describe('checkMedicationStatementFilterLogic-Treatment-Anti-CTLA4', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '1657013', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-CTLA4'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Treatment-anti-CTLA4 Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-CTLA4');
+    expect(medications[0]).toBe('ANTI-CTLA4');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1145,8 +1233,12 @@ describe('checkMedicationStatementFilterLogic-Treatment-Anti-CD40', () => {
   ms.push({ system: 'http://rxnorm.info/sct', code: '226754', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-CD40'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Treatment-anti-CD40 Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('ANTI-CD40');
+    expect(medications[0]).toBe('ANTI-CD40');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -1160,8 +1252,12 @@ describe('checkMedicationStatementFilterLogic-Treatment-Trastuz-And-Pertuz', () 
   ms.push({ system: 'http://rxnorm.info/sct', code: '2382609', display: 'N/A' } as Coding); // Any code in 'Treatment-Trastuz_and_Pertuz'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
+  const medications: string[] = extractedMCODE.getMedicationStatementValues();
+
   it('Test Treatment-Trastuz-And-Pertuz Filter', () => {
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('TRASTUZ_AND_PERTUZ');
+    expect(medications[0]).toBe('TRASTUZ_AND_PERTUZ');
+    expect(medications[1]).toBe('NOT_SURE');
+    expect(medications[2]).toBe('NOT_SURE');
   });
 });
 
@@ -2015,6 +2111,32 @@ describe('checkTumorMarkerFilterLogicHER-', () => {
   });
 });
 
+// ECOG Test
+describe('checkECOGFilterLogic', () => {
+  //Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  extractedMCODE.ecogPerformaceStatus = 3;
+
+  it('Test ECOG Filter', () => {
+    expect(extractedMCODE.getECOGScore()).toBe('THREE');
+  });
+
+});
+
+// Karnofsky Test
+describe('checkKarnofskyFilterLogic', () => {
+  //Initialize
+  const patientBundle = null;
+  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  extractedMCODE.karnofskyPerformanceStatus = 90;
+
+  it('Test Karnofsky Filter', () => {
+    expect(extractedMCODE.getKarnofskyScore()).toBe('NINETY');
+  });
+
+});
+
 describe('checkAgeFilterLogic', () => {
   // Initialize
   const patientBundle = null;
@@ -2053,11 +2175,13 @@ describe('NotSureTests', () => {
     expect(extractedMCODE.getPrimaryCancerValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getSecondaryCancerValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getHistologyMorphologyValue()).toBe('NOT_SURE');
-    expect(extractedMCODE.getMedicationStatementValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getMedicationStatementValues()).toEqual(['NOT_SURE', 'NOT_SURE', 'NOT_SURE']);
     expect(extractedMCODE.getRadiationProcedureValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getSurgicalProcedureValue()).toBe('NOT_SURE');
-    expect(extractedMCODE.getStageValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getStageValues()).toEqual(['NOT_SURE', 'NOT_SURE']);
     expect(extractedMCODE.getTumorMarkerValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getAgeValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getECOGScore()).toBe('NOT_SURE');
+    expect(extractedMCODE.getKarnofskyScore()).toBe('NOT_SURE');
   });
 });
