@@ -309,10 +309,11 @@ export class ExtractedMCODE {
     if (!this.cancerGeneticVariant) {
       this.cancerGeneticVariant = [] as CancerGeneticVariant[];
     }
-    if (!this.ecogPerformaceStatus) {
+    // Checking if the performanceStatus exists and also making sure it's not 0, as 0 is a valid score
+    if (!this.ecogPerformaceStatus && this.ecogPerformaceStatus != 0) {
       this.ecogPerformaceStatus = -1;
     }
-    if (!this.karnofskyPerformanceStatus) {
+    if (!this.karnofskyPerformanceStatus && this.karnofskyPerformanceStatus != 0) {
       this.karnofskyPerformanceStatus = -1;
     }
   }
@@ -1212,7 +1213,7 @@ export class ExtractedMCODE {
     } if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PARP'))
     ) {
-      medicationValues.push('ANTI-PARP');
+      medicationValues.push('ANTI_PARP');
     } if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))) {
       medicationValues.push('SG');
     } if (
