@@ -309,6 +309,7 @@ export class ExtractedMCODE {
     if (!this.cancerGeneticVariant) {
       this.cancerGeneticVariant = [] as CancerGeneticVariant[];
     }
+    // Checking if the performanceStatus exists and also making sure it's not 0, as 0 is a valid score
     if (!this.ecogPerformaceStatus && this.ecogPerformaceStatus != 0) {
       this.ecogPerformaceStatus = -1;
     }
