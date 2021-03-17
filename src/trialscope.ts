@@ -1,7 +1,7 @@
 /**
  * Module for running queries via TrialScope
  */
-import { ClinicalTrialGovService, ServerError } from 'clinical-trial-matching-service';
+import { ClinicalTrialsGovService, ServerError } from 'clinical-trial-matching-service';
 import https from 'https';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
@@ -330,7 +330,7 @@ export class TrialScopeQuery {
 }
 
 export class TrialScopeQueryRunner {
-  constructor(public endpoint: string, private token: string, private backupService: ClinicalTrialGovService) {}
+  constructor(public endpoint: string, private token: string, private backupService: ClinicalTrialsGovService) {}
 
   runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
     // update for advanced matches query

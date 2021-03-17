@@ -6,7 +6,7 @@ import {
   TrialScopeServerError,
   TrialScopeTrial
 } from '../src/trialscope';
-import { fhir, ClinicalTrialGovService, ResearchStudy } from 'clinical-trial-matching-service';
+import { fhir, ClinicalTrialsGovService, ResearchStudy } from 'clinical-trial-matching-service';
 // For spying purposes:
 import nock from 'nock';
 
@@ -244,12 +244,12 @@ describe('TrialScopeQuery', () => {
 
 describe('TrialScopeQueryRunner', () => {
   let queryRunner: TrialScopeQueryRunner;
-  let backupService: ClinicalTrialGovService;
+  let backupService: ClinicalTrialsGovService;
   let scope: nock.Scope;
   let interceptor: nock.Interceptor;
 
   beforeEach(() => {
-    backupService = new ClinicalTrialGovService('tmp');
+    backupService = new ClinicalTrialsGovService('tmp');
     queryRunner = new TrialScopeQueryRunner('https://example.com/trialscope', 'token', backupService);
     scope = nock('https://example.com');
     interceptor = scope.post('/trialscope');

@@ -3,7 +3,7 @@ import TrialScopeQueryRunner from './trialscope';
 
 import {
   fhir,
-  ClinicalTrialGovService,
+  ClinicalTrialsGovService,
   ClinicalTrialMatchingService,
   configFromEnv
 } from 'clinical-trial-matching-service';
@@ -11,7 +11,7 @@ import * as dotenv from 'dotenv-flow';
 
 export class TrialScopeService extends ClinicalTrialMatchingService {
   queryRunner: TrialScopeQueryRunner;
-  backupService: ClinicalTrialGovService;
+  backupService: ClinicalTrialsGovService;
 
   constructor(config: Record<string, string | number>) {
     super((patientBundle: fhir.Bundle) => {
@@ -23,7 +23,7 @@ export class TrialScopeService extends ClinicalTrialMatchingService {
     if (!config.token) throw new Error('Missing configuration value for TRIALSCOPE_TOKEN');
 
     // TODO: Make this configurable
-    this.backupService = new ClinicalTrialGovService('clinicaltrial-backup-cache');
+    this.backupService = new ClinicalTrialsGovService('clinicaltrial-backup-cache');
     this.queryRunner = new TrialScopeQueryRunner(
       config.endpoint.toString(),
       config.token.toString(),
