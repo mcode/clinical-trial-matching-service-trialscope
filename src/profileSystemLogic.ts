@@ -4,6 +4,7 @@ export interface ProfileType {
   types: string[];
 }
 export interface ProfileSystemCodes {
+  [key: string] : CodeProfile;
   'Cancer-Skin'?: CodeProfile;
   'Treatment-Pertuzumab'?: CodeProfile;
   'Treatment-SRS-Brain'?: CodeProfile;
@@ -44,6 +45,7 @@ export interface ProfileSystemCodes {
   'Biomarker-ER'?: CodeProfile;
 }
 export interface CodeProfile {
+  [key: string] : { code: string }[];
   SNOMED?: { code: string }[];
   RxNorm?: { code: string }[];
   ICD10?: { code: string }[];
