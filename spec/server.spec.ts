@@ -27,7 +27,7 @@ describe('TrailScopeService', () => {
       });
       return request(server)
         .post('/getClinicalTrial')
-        .send({ patientData: { resourceType: 'Bundle', type: 'collection', entry: [] } })
+        .send({ resourceType: 'Bundle', type: 'collection', entry: [] })
         .set('Accept', 'application/json')
         .expect(200)
         .end(() => {
