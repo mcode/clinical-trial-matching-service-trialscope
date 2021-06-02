@@ -1160,7 +1160,7 @@ describe('checkMedicationStatementFilterLogic-antiPARP', () => {
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
 
   it('Test anti PARP Filter', () => {
-    expect(medications[0]).toBe('ANTI-PARP');
+    expect(medications[0]).toBe('ANTI_PARP');
     expect(medications[1]).toBe('NOT_SURE');
     expect(medications[2]).toBe('NOT_SURE');
   });
