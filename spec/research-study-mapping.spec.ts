@@ -46,7 +46,7 @@ describe('convertTrialScopeToResearchStudy', () => {
       ],
       text: 'Phase 1/Phase 2'
     });
-    expect(researchStudy.category).toEqual([{ text: 'study type' }]);
+    expect(researchStudy.category).toEqual([{ text: 'Study Type: study type' }]);
     expect(researchStudy.condition).toEqual([{ text: 'condition 1' }, { text: 'condition 2' }]);
     expect(researchStudy.contact).toEqual([
       {

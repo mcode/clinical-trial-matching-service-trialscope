@@ -448,7 +448,7 @@ describe('TrialScopeQueryRunner', () => {
                 ],
                 text: 'Phase 2'
               };
-              expected.category = [{ text: 'Type' }];
+              expected.category = [{ text: 'Study Type: Type' }];
               expected.description = 'Detailed description';
               const reference = expected.addContainedResource({
                 resourceType: 'Group',
