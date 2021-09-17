@@ -1293,10 +1293,16 @@ export class ExtractedMCODE {
   codeIsInSheet(coding: Coding, ...sheetNames: string[]): boolean {
     const system = this.normalizeCodeSystem(coding.system);
     for (const sheetName of sheetNames) {
-      const codeProfile: CodeProfile = profile_system_codes[sheetName] as CodeProfile; // Pull the codes for the profile
-      if (codeProfile == undefined) {
-        console.error('Code Profile ' + sheetName + ' is undefined.');
+      let codeProfile: CodeProfile = undefined;
+      try {
+        codeProfile = profile_system_codes[sheetName] as CodeProfile; // Pull the codes for the profile
+      } finally {
+        if (codeProfile == undefined) {
+          console.error('Code Profile ' + sheetName + ' is undefined.');
+          continue;
+        }
       }
+    
       let codeSet: { code: string }[] = codeProfile[system] as { code: string }[]; // Pull the system codes from the codes
       if (!codeSet) {
         codeSet = [];

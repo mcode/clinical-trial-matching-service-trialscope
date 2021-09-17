@@ -2160,9 +2160,7 @@ describe('InvalidCodeProfileTest', () => {
   const code: Coding = { system: 'http://icD-10.info/sct', code: '32996-1', display: 'N/A' } as Coding;
 
   it('Test that an error throws for an invalid code profile input.', () => {
-    expect(function () {
-      extractedMCODE.codeIsInSheet(code, 'INVALID_TEST_SHEET');
-    }).toThrow(new TypeError("Cannot read property 'ICD-10' of undefined"));
+    expect(extractedMCODE.codeIsInSheet(code, 'INVALID_TEST_SHEET')).toBe(false);
   });
 });
 
