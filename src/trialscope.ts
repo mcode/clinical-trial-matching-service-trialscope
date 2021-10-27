@@ -6,7 +6,7 @@ import https from 'https';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
-import * as mcode from './mcode';
+import {TrialscopeMappingLogic} from './trialscopemappinglogic';
 
 /**
  * Maps FHIR phases to TrialScope phases.
@@ -227,24 +227,24 @@ export class TrialScopeQuery {
   ];
 
   constructor(patientBundle: fhir.Bundle) {
-    const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-    console.log(extractedMCODE);
-    let stageValues = extractedMCODE.getStageValues();
-    let medicationStatementValues = extractedMCODE.getMedicationStatementValues();
+    const mappingLogic = new TrialscopeMappingLogic(patientBundle);
+    console.log(mappingLogic);
+    let stageValues = mappingLogic.getStageValues();
+    let medicationStatementValues = mappingLogic.getMedicationStatementValues();
     this.mcode = {
-      primaryCancer: extractedMCODE.getPrimaryCancerValue(),
-      secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
-      histologyMorphology: extractedMCODE.getHistologyMorphologyValue(),
+      primaryCancer: mappingLogic.getPrimaryCancerValues(),
+      secondaryCancer: mappingLogic.getSecondaryCancerValues(),
+      histologyMorphology: mappingLogic.getHistologyMorphologyValue(),
       stageFilterOne: stageValues[0],
       stageFilterTwo: stageValues[1],
-      tumorMarker: extractedMCODE.getTumorMarkerValue(),
-      radiationProcedure: extractedMCODE.getRadiationProcedureValue(),
-      surgicalProcedure: extractedMCODE.getSurgicalProcedureValue(),
+      tumorMarker: mappingLogic.getTumorMarkerValues(),
+      radiationProcedure: mappingLogic.getRadiationProcedureValues(),
+      surgicalProcedure: mappingLogic.getSurgicalProcedureValues(),
       medicationStatementOne: medicationStatementValues[0],
       medicationStatementTwo: medicationStatementValues[1],
       medicationStatementThree: medicationStatementValues[2],
-      ecog: extractedMCODE.getECOGScore(),
-      karnofsky: extractedMCODE.getKarnofskyScore()
+      ecog: mappingLogic.getECOGScore(),
+      karnofsky: mappingLogic.getKarnofskyScore()
     };
     console.log(this.mcode);
     for (const entry of patientBundle.entry) {
