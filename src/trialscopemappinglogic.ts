@@ -1,5 +1,5 @@
 
-import profile_system_codes_json from '../data/profile-system-codes-json.json';
+import profile_system_codes_json from '../data/profile-system-codes.json';
 import { CancerGeneticVariant, CodeMapper, CodeSystemEnum, MappingLogic, Quantity, TumorMarker } from 'clinical-trial-matching-service';
 
 const profile_system_codes = profile_system_codes_json;
