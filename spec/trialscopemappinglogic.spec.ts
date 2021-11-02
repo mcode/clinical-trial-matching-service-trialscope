@@ -1,5 +1,6 @@
 import { PrimaryCancerCondition, Quantity, Ratio, TumorMarker } from 'clinical-trial-matching-service';
-import { Bundle, Coding, Resource } from 'clinical-trial-matching-service/dist/fhir-types';
+import { Bundle, Coding, Procedure, Resource } from 'clinical-trial-matching-service/dist/fhir-types';
+import { create } from 'domain';
 import { TrialscopeMappingLogic } from "../src/trialscopemappinglogic";
 
 /* Primary Cancer Condition Logic Tests */
@@ -692,124 +693,119 @@ describe('checkStageFilterLogic-Stage 4', () => {
   });
 });
 
-/* Radiation Procedure Logic Tests */
+describe('checkRadiationProcedureFilterLogic', () => {
 
-describe('checkRadiationProcedureFilterLogic-SRS', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = [] as Coding[];
-  crrp.coding = [] as Coding[];
-
-  // SRS Filter Attributes
-  crrp.coding.push({ system: 'http://snomed.info/sct', code: '473237008', display: 'N/A' } as Coding); // Any code in 'Treatment-SRS-Brain'
-
-  extractedMCODE.cancerRelatedRadiationProcedure.push(crrp);
+  const createRadiationBundle = (coding: Coding, bodySite: Coding): string => {
+    const radiationBundle: Bundle = {
+      resourceType: "Bundle",
+      type: "transaction",
+      entry: [
+        {
+          fullUrl: "urn:uuid:92df8252-84bd-4cbe-b1dc-f80a9f28d1cc",
+          resource: {
+            resourceType: "Procedure",
+            id: "92df8252-84bd-4cbe-b1dc-f80a9f28d1cc",
+            meta: {
+              profile: [
+                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-radiation-procedure",
+                "http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure"
+              ],
+              lastUpdated: ""
+            },
+            code: {
+              coding: [coding],
+            },
+            bodySite: [
+              {
+                coding: [bodySite]
+              }
+            ],
+            reasonReference: [
+              {
+                "reference": "4dee068c-5ffe-4977-8677-4ff9b518e763",
+                "display": "Malignant neoplasm of breast (disorder)"
+              }
+            ]
+          } as Procedure
+        }
+      ]
+    };
+    const mappingLogic = new TrialscopeMappingLogic(radiationBundle);
+    return mappingLogic.getRadiationProcedureValues();
+  };
 
   it('Test SRS Filter', () => {
-    expect(extractedMCODE.getRadiationProcedureValue()).toBe('SRS');
+    const radiationValue = createRadiationBundle({ system: 'http://snomed.info/sct', code: '473237008', display: 'N/A' } as Coding, undefined); // Any code in 'Treatment-SRS-Brain'
+    expect(radiationValue).toBe('SRS');
   });
-});
-
-describe('checkRadiationProcedureFilterLogic-WBRT', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = [] as Coding[];
-  crrp.coding = [] as Coding[];
-
-  // WBRT Filter Attributes
-  crrp.coding.push({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding);
-  crrp.bodySite.push({ system: 'http://snomed.info/sct', code: '12738006', display: 'N/A' } as Coding);
-
-  extractedMCODE.cancerRelatedRadiationProcedure.push(crrp);
 
   it('Test WBRT Filter', () => {
-    expect(extractedMCODE.getRadiationProcedureValue()).toBe('WBRT');
+    const coding = ({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding);
+    const bodySite = ({ system: 'http://snomed.info/sct', code: '12738006', display: 'N/A' } as Coding);
+    const radiationValue = createRadiationBundle(coding, bodySite);
+    expect(radiationValue).toBe('WBRT');
   });
-});
-
-describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = [] as Coding[];
-  crrp.coding = [] as Coding[];
-
-  // Radiation Therapy Filter Attributes
-  crrp.coding.push({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding); // Any code
-
-  extractedMCODE.cancerRelatedRadiationProcedure.push(crrp);
 
   it('Test Radiation Therapy Filter', () => {
-    expect(extractedMCODE.getRadiationProcedureValue()).toBe('RADIATION_THERAPY');
+    const coding = ({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding); // Any code.
+    const radiationValue = createRadiationBundle(coding, undefined);
+    expect(radiationValue).toBe('RADIATION_THERAPY');
   });
+
 });
 
-/* Surgical Procedure Logic Tests */
+describe('checkSurgicalProcedureFilterLogic', () => {
 
-describe('checkSurgicalProcedureFilterLogic-Resection', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
-
-  // Resection Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '446103006', display: 'N/A' } as Coding); // Any code in 'Treatment-Resection-Brain'
-  extractedMCODE.cancerRelatedSurgicalProcedure = sp;
+  const createSurgicalBundle = (coding: Coding): string => {
+    const surgicalBundle: Bundle = {
+      resourceType: "Bundle",
+      type: "transaction",
+      entry: [
+        {
+          fullUrl: "urn:uuid:6a401855-9277-4b01-ac59-48ac734eece6",
+          resource: {
+            resourceType: "Procedure",
+            id: "6a401855-9277-4b01-ac59-48ac734eece6xxx",
+            meta: {
+              profile: [
+                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure",
+                "http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure"
+              ],
+              lastUpdated: ""
+            },
+            code: {coding: [coding],},
+            reasonReference: [
+              {
+                reference: "4dee068c-5ffe-4977-8677-4ff9b518e763x",
+                display: "Secondary Cancer Condition Reference - for tests."
+              }
+            ]
+         } as Procedure
+      }
+    ]
+    };
+    const mappingLogic = new TrialscopeMappingLogic(surgicalBundle);
+    return mappingLogic.getSurgicalProcedureValues();
+  };
 
   it('Test Resection Filter', () => {
-    expect(extractedMCODE.getSurgicalProcedureValue()).toBe('RESECTION');
+    const surgicalValue = createSurgicalBundle({ system: 'http://snomed.info/sct', code: '446103006', display: 'N/A' } as Coding); // Any code in 'Treatment-Resection-Brain'
+    expect(surgicalValue).toBe('RESECTION');
   });
-});
-
-describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
-
-  // Splenectomy Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code in 'Treatment-Splenectomy'
-  extractedMCODE.cancerRelatedSurgicalProcedure = sp;
 
   it('Test Splenectomy Filter', () => {
-    expect(extractedMCODE.getSurgicalProcedureValue()).toBe('SPLENECTOMY');
+    const surgicalValue = createSurgicalBundle({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code in 'Treatment-Splenectomy'
+    expect(surgicalValue).toBe('SPLENECTOMY');
   });
-});
-
-// New Advanced Match update Surgical Procedure Tests
-
-describe('checkSurgicalProcedureFilterLogic-BoneMarrowTransplant', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
-
-  // Bone Marrow Transplant Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '58390007', display: 'N/A' } as Coding); // One specific Code for Bone Marrow Transplant
-  extractedMCODE.cancerRelatedSurgicalProcedure = sp;
 
   it('Test Bone Marrow Transplant Filter', () => {
-    expect(extractedMCODE.getSurgicalProcedureValue()).toBe('BONE_MARROW_TRANSPLANT');
+    const surgicalValue = createSurgicalBundle({ system: 'http://snomed.info/sct', code: '58390007', display: 'N/A' } as Coding); // One specific Code for Bone Marrow Transplant
+    expect(surgicalValue).toBe('BONE_MARROW_TRANSPLANT');
   });
-});
 
-describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
-
-  // Splenectomy Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '782655004', display: 'N/A' } as Coding); // Any code in 'Treatment-Organ_Transplant'
-  extractedMCODE.cancerRelatedSurgicalProcedure = sp;
-
-  it('Test Splenectomy Filter', () => {
-    expect(extractedMCODE.getSurgicalProcedureValue()).toBe('ORGAN_TRANSPLANT');
+  it('Test Organ Transplant Filter', () => {
+    const surgicalValue = createSurgicalBundle({ system: 'http://snomed.info/sct', code: '58390007', display: 'N/A' } as Coding); // Any code in 'Treatment-Organ_Transplant'
+    expect(surgicalValue).toBe('ORGAN_TRANSPLANT');
   });
 });
 
@@ -1873,45 +1869,59 @@ describe('checkKarnofskyFilterLogic', () => {
 
 describe('checkAgeFilterLogic', () => {
   // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const createBirthdateBundle = (birthdate: string): Bundle => {
+    const birthdateResource: Bundle = {
+      resourceType: "Bundle",
+      type: "transaction",
+      entry: [
+        {
+          fullUrl: "urn:uuid:1e208b6b-77f1-4808-a32b-9f9caf1ec334",
+          resource: {
+            resourceType: "Patient",
+            id: "1e208b6b-77f1-4808-a32b-9f9caf1ec334",
+            meta: {
+              profile: [
+                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-patient",
+                "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"
+              ],
+              lastUpdated: ""
+            },
+            gender: "female",
+            birthDate: birthdate
+            }
+          }
+        ]
+      };
+      return birthdateResource;
+    };
 
   it('Test Age is over 18 Filter', () => {
-    extractedMCODE.birthDate = '2000-06-11';
-    expect(extractedMCODE.getAgeValue()).toBe('18_OR_OVER');
+    const patientBundle = createBirthdateBundle('2000-06-11');
+    const mappingLogic = new TrialscopeMappingLogic(patientBundle);
+    expect(mappingLogic.getAgeValue()).toBe('18_OR_OVER');
   });
 
   it('Test Age is under 18 Filter', () => {
-    extractedMCODE.birthDate = '2020-06-11';
-    expect(extractedMCODE.getAgeValue()).toBe('UNDER_18');
-  });
-});
-
-describe('InvalidCodeProfileTest', () => {
-  // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const code: Coding = { system: 'http://icD-10.info/sct', code: '32996-1', display: 'N/A' } as Coding;
-
-  it('Test that an error throws for an invalid code profile input.', () => {
-    expect(extractedMCODE.codeIsInSheet(code, 'INVALID_TEST_SHEET')).toBe(false);
+    const patientBundle = createBirthdateBundle('2020-06-11');
+    const mappingLogic = new TrialscopeMappingLogic(patientBundle);
+    expect(mappingLogic.getAgeValue()).toBe('UNDER_18');
   });
 });
 
 describe('NotSureTests', () => {
   // Initialize
-  const patientBundle = null;
-  const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
+  const emptyPatientBundle = null;
+  const extractedMCODE = new TrialscopeMappingLogic(emptyPatientBundle);
 
   it('Test NOT_SURE returns for null inputs', () => {
-    expect(extractedMCODE.getPrimaryCancerValue()).toBe('NOT_SURE');
-    expect(extractedMCODE.getSecondaryCancerValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getPrimaryCancerValues()).toBe('NOT_SURE');
+    expect(extractedMCODE.getSecondaryCancerValues()).toBe('NOT_SURE');
     expect(extractedMCODE.getHistologyMorphologyValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getMedicationStatementValues()).toEqual(['NOT_SURE', 'NOT_SURE', 'NOT_SURE']);
-    expect(extractedMCODE.getRadiationProcedureValue()).toBe('NOT_SURE');
-    expect(extractedMCODE.getSurgicalProcedureValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getRadiationProcedureValues()).toBe('NOT_SURE');
+    expect(extractedMCODE.getSurgicalProcedureValues()).toBe('NOT_SURE');
     expect(extractedMCODE.getStageValues()).toEqual(['NOT_SURE', 'NOT_SURE']);
-    expect(extractedMCODE.getTumorMarkerValue()).toBe('NOT_SURE');
+    expect(extractedMCODE.getTumorMarkerValues()).toBe('NOT_SURE');
     expect(extractedMCODE.getAgeValue()).toBe('NOT_SURE');
     expect(extractedMCODE.getECOGScore()).toBe('NOT_SURE');
     expect(extractedMCODE.getKarnofskyScore()).toBe('NOT_SURE');
