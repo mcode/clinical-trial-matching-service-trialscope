@@ -2,77 +2,99 @@ import { Quantity, Ratio } from 'clinical-trial-matching-service';
 import { Bundle, BundleEntry, Coding, Condition, Observation, Procedure, Resource } from 'clinical-trial-matching-service/dist/fhir-types';
 import { TrialscopeMappingLogic } from "../src/trialscopemappinglogic";
 
-describe('checkPrimaryCancerFilterLogic', () => {
-  const createPrimaryCancerValues = (primaryCoding: Coding, histologyBehavior: Coding, clinicalStatus: Coding, tnmClinical: Coding): string => {
-    const primaryCancerBundle: Bundle = {
-      resourceType: "Bundle",
-      type: "transaction",
-      entry: [
-        {
-          fullUrl: "urn:uuid:4dee068c-5ffe-4977-8677-4ff9b518e763",
-          resource: {
-            resourceType: "Condition",
-            id: "4dee068c-5ffe-4977-8677-4ff9b518e763",
-            meta: {
-              profile: [
-                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition",
-                "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition"
-              ],
-              lastUpdated: ""
-            }
-          } as Condition
-        }
-      ]
-    };
-
-    if(primaryCoding) {
-      primaryCancerBundle.entry[0].resource.code = {
-        coding: [
-          primaryCoding
-        ],
-        text: "Malignant neoplasm of breast (disorder)"
-      }
-    }
-
-    if(histologyBehavior){
-      primaryCancerBundle.entry[0].resource.extension = [
-        {
-          url: "http://hl7.org/fhir/us/mcode/ValueSet/mcode-histology-morphology-behavior-vs",
-          valueCodeableConcept: {
-            coding: [
-              histologyBehavior
-            ]
-          }
-        }
-      ]
-    }
-
-    if(clinicalStatus) {
-      (primaryCancerBundle.entry[0].resource as Condition).clinicalStatus = {
-        coding: [
-          clinicalStatus
-        ],
-      }
-    }
-
-    if(tnmClinical){
-      const tnmClinicalResource: BundleEntry = {
+const createPrimaryCancerResource = (primaryCoding: Coding, histologyBehavior: Coding, clinicalStatus: Coding, tnmClinical: Coding, tnmPathological: Coding): Bundle => {
+  const primaryCancerBundle: Bundle = {
+    resourceType: "Bundle",
+    type: "transaction",
+    entry: [
+      {
+        fullUrl: "urn:uuid:4dee068c-5ffe-4977-8677-4ff9b518e763",
         resource: {
-          resourceType: "Observation",
+          resourceType: "Condition",
+          id: "4dee068c-5ffe-4977-8677-4ff9b518e763",
           meta: {
             profile: [
-              "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-stage-group",
+              "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition",
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition"
             ],
-          },
-          valueCodeableConcept: {
-            coding: tnmClinical,
-          },
-        } as unknown as Resource
-      };
-      primaryCancerBundle.entry.push(tnmClinicalResource);
-    }
+            lastUpdated: ""
+          }
+        } as Condition
+      }
+    ]
+  };
 
-    const mappingLogic = new TrialscopeMappingLogic(primaryCancerBundle);
+  if(primaryCoding) {
+    primaryCancerBundle.entry[0].resource.code = {
+      coding: [
+        primaryCoding
+      ],
+      text: "Malignant neoplasm of breast (disorder)"
+    }
+  }
+
+  if(histologyBehavior){
+    primaryCancerBundle.entry[0].resource.extension = [
+      {
+        url: "http://hl7.org/fhir/us/mcode/ValueSet/mcode-histology-morphology-behavior-vs",
+        valueCodeableConcept: {
+          coding: [
+            histologyBehavior
+          ]
+        }
+      }
+    ]
+  }
+
+  if(clinicalStatus) {
+    (primaryCancerBundle.entry[0].resource as Condition).clinicalStatus = {
+      coding: [
+        clinicalStatus
+      ],
+    }
+  }
+
+  if(tnmClinical){
+    const tnmClinicalResource: BundleEntry = {
+      resource: {
+        resourceType: "Observation",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-clinical-stage-group",
+          ],
+        },
+        valueCodeableConcept: {
+          coding: tnmClinical,
+        },
+      } as unknown as Resource
+    };
+    primaryCancerBundle.entry.push(tnmClinicalResource);
+  }
+
+  if(tnmPathological){
+    const tnmPathologicalResource: BundleEntry = {
+      resource: {
+        resourceType: "Observation",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-stage-group",
+          ],
+        },
+        valueCodeableConcept: {
+          coding: tnmPathological,
+        },
+      } as unknown as Resource
+    };
+    primaryCancerBundle.entry.push(tnmPathologicalResource);
+  }
+
+  return primaryCancerBundle;
+}
+
+describe('checkPrimaryCancerFilterLogic', () => {
+
+  const createPrimaryCancerValues = (primaryCoding: Coding, histologyBehavior: Coding, clinicalStatus: Coding, tnmClinical: Coding, tnmPathological: Coding): string => {
+    const mappingLogic = new TrialscopeMappingLogic(createPrimaryCancerResource(primaryCoding, histologyBehavior, clinicalStatus, tnmClinical, tnmPathological));
     return mappingLogic.getPrimaryCancerValues();
   }
 
@@ -80,33 +102,33 @@ describe('checkPrimaryCancerFilterLogic', () => {
     const clinicalStatus = ({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding);
     const histologyMorphologyBehavior = ({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
-    expect(createPrimaryCancerValues(coding, histologyMorphologyBehavior, clinicalStatus, undefined)).toBe('BREAST_CANCER');
+    expect(createPrimaryCancerValues(coding, histologyMorphologyBehavior, clinicalStatus, undefined, undefined)).toBe('BREAST_CANCER');
   });
 
   it('Test Concomitant invasive malignancies Filter', () => {
     const clinicalStatus = ({ system: 'snomed', code: 'active', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
     const tnmClinical = ({ system: 'AJCC', code: 'II', display: 'N/A' } as Coding); // Any code in 'Stage-2'
-    expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, tnmClinical)).toBe('CONCOMITANT_INVASIVE_MALIGNANCIES');
+    expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, tnmClinical, undefined)).toBe('CONCOMITANT_INVASIVE_MALIGNANCIES');
   });
 
   it('Test Invasive Breast Cancer and Recurrent Filter', () => {
     const clinicalStatus = ({ system: 'snomed', code: 'recurrence', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '78354100ƒ√ƒ9', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({ system: 'N/Asnomed', code: '734075007', display: 'N/A' } as Coding); // Any code in 'Morphology-Invasive'
-    expect(createPrimaryCancerValues(coding, histologyMorphologyBehavior, clinicalStatus, undefined)).toBe('INVASIVE_BREAST_CANCER_AND_RECURRENT');
+    expect(createPrimaryCancerValues(coding, histologyMorphologyBehavior, clinicalStatus, undefined, undefined)).toBe('INVASIVE_BREAST_CANCER_AND_RECURRENT');
   });
 
   it('Test Locally Recurrent Filter', () => {
     const clinicalStatus = ({ system: 'snomed', code: 'recurrence', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding);
-    expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, undefined)).toBe('LOCALLY_RECURRENT');
+    expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, undefined, undefined)).toBe('LOCALLY_RECURRENT');
   });
 
   it('Test Other malignancy - except skin or cervical  Filter', () => {
     const clinicalStatus = ({ system: 'snomed', code: 'active', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
-    expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, undefined)).toBe('OTHER_MALIGNANCY_EXCEPT_SKIN_OR_CERVICAL');
+    expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, undefined, undefined)).toBe('OTHER_MALIGNANCY_EXCEPT_SKIN_OR_CERVICAL');
   });
 
 });
@@ -247,7 +269,7 @@ describe('checkSecondaryCancerFilterLogic', () => {
 
 describe('checkHistologyMorphologyFilterLogic', () => {
 
-  const createHistologyMorphologyResource = (primaryCoding: Coding, histologyBehavior?: Coding): string => {
+  const createHistologyMorphologyResource = (primaryCoding: Coding, histologyBehavior: Coding, tnmClinicalStage: Coding, tnmPathologicalStage: Coding): string => {
     const histologyMorphology: Bundle = {
       resourceType: "Bundle",
       type: "transaction",
@@ -291,6 +313,40 @@ describe('checkHistologyMorphologyFilterLogic', () => {
       ]
     }
 
+    if(tnmPathologicalStage){
+      const tnmPathologicalResource: BundleEntry = {
+        resource: {
+          resourceType: "Observation",
+          meta: {
+            profile: [
+              "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-stage-group",
+            ],
+          },
+          valueCodeableConcept: {
+            coding: tnmPathologicalStage,
+          },
+        } as unknown as Resource
+      };
+      histologyMorphology.entry.push(tnmPathologicalResource);
+    }
+
+    if(tnmClinicalStage){
+      const tnmClinicalResource: BundleEntry = {
+        resource: {
+          resourceType: "Observation",
+          meta: {
+            profile: [
+              "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-clinical-stage-group",
+            ],
+          },
+          valueCodeableConcept: {
+            coding: tnmClinicalStage,
+          },
+        } as unknown as Resource
+      };
+      histologyMorphology.entry.push(tnmClinicalResource);
+    }
+
     const mappingLogic = new TrialscopeMappingLogic(histologyMorphology);
     return mappingLogic.getHistologyMorphologyValue();
   }
@@ -298,77 +354,60 @@ describe('checkHistologyMorphologyFilterLogic', () => {
   it('Test Invasive Carcinoma Filter', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding); // Any code in 'Morphology-Invasive_Carcinoma'
-    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('INVASIVE_CARCINOMA');
+    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior, undefined, undefined)).toBe('INVASIVE_CARCINOMA');
   });
 
   it('Test Invasive Breast Cancer Filter', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '446688004', display: 'N/A'} as Coding); // Any code in 'Morphology-Invasive'
-    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('INVASIVE_BREAST_CANCER');
+    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior, undefined, undefined)).toBe('INVASIVE_BREAST_CANCER');
   });
 
   it('Test Invasive Mammory Carcinoma Filter 1', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '128701002', display: 'N/A'} as Coding); // Any code in 'Morphology-Invas_Carc_Mix'
-    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('INVASIVE_MAMMORY_CARCINOMA');
+    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior, undefined, undefined)).toBe('INVASIVE_MAMMORY_CARCINOMA');
   });
 
   it('Test Invasive Mammory Carcinoma Filter 2', () => {
-  //   const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
-  //   const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '128701002', display: 'N/A'} as Coding); // Any code in 'Morphology-Invas_Carc_Mix'
-  //   expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('INVASIVE_MAMMORY_CARCINOMA');
-  //     // Invasive Mammory Carcinoma Filter Attributes
-  //   pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
-  //   const tnmC = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
-
-  //   extractedMCODE.primaryCancerCondition.push(pcc);
-  //   extractedMCODE.TNMClinicalStageGroup.push(tnmC);
-
-  // it('Test Invasive Mammory Carcinoma Filter', () => {
-  //   expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INVASIVE_MAMMORY_CARCINOMA');
-  // });
+    const primaryCoding = ({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
+    const tnmClinicalStage = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
+    expect(createHistologyMorphologyResource(primaryCoding, undefined, tnmClinicalStage, undefined)).toBe('INVASIVE_MAMMORY_CARCINOMA');
   });
 
   it('Test Invasive Mammory Carcinoma Filter 3', () => {
-  // // Invasive Mammory Carcinoma Filter Attributes
-  // pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
-  // const tnmP = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
-
-  // extractedMCODE.primaryCancerCondition.push(pcc);
-  // extractedMCODE.TNMPathologicalStageGroup.push(tnmP);
-
-  // it('Test Invasive Mammory Carcinoma Filter', () => {
-  //   expect(extractedMCODE.getHistologyMorphologyValue()).toBe('INVASIVE_MAMMORY_CARCINOMA');
-  // });
+    const primaryCoding = ({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
+    const tnmPathological = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
+    expect(createHistologyMorphologyResource(primaryCoding, undefined, undefined, tnmPathological)).toBe('INVASIVE_MAMMORY_CARCINOMA');
   });
 
-  it('Test Invasive Invasive Ductal Carcinoma Filter', () => {
+  it('Test Invasive Ductal Carcinoma Filter', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '444134008', display: 'N/A'} as Coding); // Any code in 'Morphology-Invas_Duct_Carc'
-    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('INVASIVE_DUCTAL_CARCINOMA');
+    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior, undefined, undefined)).toBe('INVASIVE_DUCTAL_CARCINOMA');
   });
 
   it('Test Invasive Lobular Carcinoma Filter', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '1080261000119100', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invas Lob Carc'
-    expect(createHistologyMorphologyResource(coding, undefined)).toBe('INVASIVE_LOBULAR_CARCINOMA');
+    expect(createHistologyMorphologyResource(coding, undefined, undefined, undefined)).toBe('INVASIVE_LOBULAR_CARCINOMA');
   });
 
   it('Test Ductal Carcinoma In Situ Filter', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '18680006', display: 'N/A'} as Coding); // Any code in 'Morphology-Duct_Car_In_Situ'
-    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('DUCTAL_CARCINOMA_IN_SITU');
+    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior, undefined, undefined)).toBe('DUCTAL_CARCINOMA_IN_SITU');
   });
 
   it('Test Non-Inflammatory Invasive Filter', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '254840009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast' AND 'Cancer-Inflammatory'
     const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding); // Any code in 'Morphology-Invasive'
-    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('NON-INFLAMMATORY_INVASIVE');
+    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior, undefined, undefined)).toBe('NON-INFLAMMATORY_INVASIVE');
   });
 
   it('Test Inflammatory Filter', () => {
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '32968003', display: 'N/A'} as Coding); // Code: SNOMED 32968003'
-    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('INFLAMMATORY');
+    expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior, undefined, undefined)).toBe('INFLAMMATORY');
   });
 
 });
@@ -402,18 +441,17 @@ describe('checkStageFilterLogic', () => {
   }
 
   it('Test Invasive Breast Cancer and Locally Advanced Filter', () => {
-    // Invasive Breast Cancer and Locally Advanced Filter Attributes
-    // pcc.clinicalStatus.push({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
-    // pcc.coding.push({ system: 'http://snomed.info/sct', code: '722524005', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast'
-    // pcc.histologyMorphologyBehavior.push({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
-    // tnmPathological.push({ system: 'snomed', code: '261640009', display: 'N/A' } as Coding); // Any code in 'Stage-3'
+    const primaryClinicalStatus = ({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
+    const primaryCoding = ({ system: 'http://snomed.info/sct', code: '722524005', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast'
+    const histologyMorphologyBehavior = ({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
+    const tnmPathological = ({ system: 'snomed', code: '261640009', display: 'N/A' } as Coding); // Any code in 'Stage-3'
 
-    // extractedMCODE.primaryCancerCondition.push(pcc);
-    // extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
+    const bundle = createPrimaryCancerResource(primaryCoding, histologyMorphologyBehavior, primaryClinicalStatus, undefined, tnmPathological)
+    const mappingLogic = new TrialscopeMappingLogic(bundle);
 
-    // const stages: string[] = extractedMCODE.getStageValues();
-    // expect(stages[0]).toBe('INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED');
-    // expect(stages[1]).toBe('THREE');
+    const stages: string[] = mappingLogic.getStageValues();
+    expect(stages[0]).toBe('INVASIVE_BREAST_CANCER_AND_LOCALLY_ADVANCED');
+    expect(stages[1]).toBe('THREE');
   });
 
   it('Test Stage 0 Filter', () => {
@@ -1175,29 +1213,68 @@ describe('checkTumorMarkerFilterLogic', () => {
 
 });
 
-// // ECOG Test
-// describe('checkECOGFilterLogic', () => {
-//   //Initialize
-//   const patientBundle = null;
-//   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-//   extractedMCODE.ecogPerformaceStatus = 3;
+describe('checkECOGFilterLogic', () => {
+  it('Test ECOG Filter', () => {
+    const resource: Bundle = {
+      resourceType: "Bundle",
+      type: "transaction",
+      entry: [{
+      "resource": {
+        "resourceType": "Observation",
+        "id": "mCODEKarnofskyPerformanceStatusExample",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-ecog-performance-status"
+          ],
+          "lastUpdated": ""
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "89243-0"
+            }
+          ]
+        },
+        "valueInteger": 3
+      } as unknown as Observation
+    }]};
+    const mappingLogic = new TrialscopeMappingLogic(resource);
+    expect(mappingLogic.getECOGScore()).toBe('THREE');
+  });
+});
 
-//   it('Test ECOG Filter', () => {
-//     expect(extractedMCODE.getECOGScore()).toBe('THREE');
-//   });
-// });
+describe('checkKarnofskyFilterLogic', () => {
 
-// // Karnofsky Test
-// describe('checkKarnofskyFilterLogic', () => {
-//   //Initialize
-//   const patientBundle = null;
-//   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-//   extractedMCODE.karnofskyPerformanceStatus = 90;
-
-//   it('Test Karnofsky Filter', () => {
-//     expect(extractedMCODE.getKarnofskyScore()).toBe('NINETY');
-//   });
-// });
+  it('Test Karnofsky Filter', () => {
+    const resource: Bundle = {
+      resourceType: "Bundle",
+      type: "transaction",
+      entry: [{
+      "resource": {
+        "resourceType": "Observation",
+        "id": "mCODEKarnofskyPerformanceStatusExample",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-karnofsky-performance-status"
+          ],
+          "lastUpdated": ""
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "89243-0"
+            }
+          ]
+        },
+        "valueInteger": 90
+      } as unknown as Observation
+    }]};
+    const mappingLogic = new TrialscopeMappingLogic(resource);
+    expect(mappingLogic.getKarnofskyScore()).toBe('NINETY');
+  });
+});
 
 describe('checkAgeFilterLogic', () => {
   // Initialize

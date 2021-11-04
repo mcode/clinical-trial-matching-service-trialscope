@@ -2488,6 +2488,11 @@
       "722524005"
     ]
   },
+  "POLY_ICLC": {
+    "NIH": [
+      "#C1198"
+    ]
+  },
   "Treatment-Organ_Transplant": {
     "SNOMED": [
       "6471000179103",

@@ -180,7 +180,7 @@ export class TrialscopeMappingLogic extends MappingLogic {
         (primaryCancerValues.includes('Cancer-Breast') &&
         histologyValues.includes('Morphology-Invas_Carc_Mix')) ||
         (primaryCancerCondition.coding.some((coding) => (CodeMapper.codesEqual(coding, CodeSystemEnum.SNOMED, '444604002'))) &&
-        tnmStageMappings.includes('Stage-0'))
+        !tnmStageMappings.includes('Stage-0'))
       ) {
         return 'INVASIVE_MAMMORY_CARCINOMA';
       }
