@@ -224,13 +224,13 @@ export class TrialscopeMappingLogic extends MappingLogic {
       const primaryCancerValues = TrialscopeMappingLogic.codeMapper.extractCodeMappings(primaryCancerCondition.coding);
       const histologyValues = TrialscopeMappingLogic.codeMapper.extractCodeMappings(primaryCancerCondition.histologyMorphologyBehavior);
       if (
-        (primaryCancerValues.includes('Cancer-Breast') &&
-        histologyValues.includes('Morphology-Invasive')) ||
-          primaryCancerValues.includes('Cancer-Invasive-Breast') &&
         ((primaryCancerValues.includes('Cancer-Breast') &&
-        histologyValues.includes('Morphology-Inflammatory')
+        histologyValues.includes('Morphology-Invasive')) ||
+          primaryCancerValues.includes('Cancer-Invasive-Breast')) &&
+        ((primaryCancerValues.includes('Cancer-Breast') &&
+        (histologyValues.includes('Morphology-Inflammatory')
           )) ||
-          primaryCancerValues.includes('Cancer-Inflammatory')) {
+          primaryCancerValues.includes('Cancer-Inflammatory'))) {
         return 'NON-INFLAMMATORY_INVASIVE';
       }
     }
@@ -335,13 +335,13 @@ export class TrialscopeMappingLogic extends MappingLogic {
   getAgeValue(): string {
 
     const extractedBirthDate = this.getExtractedBirthDate();
+    const checkDate: Date = new Date(extractedBirthDate);
 
-    if (extractedBirthDate == 'NA' || extractedBirthDate == null || extractedBirthDate == undefined) {
+    if (extractedBirthDate == 'NA' || extractedBirthDate == null || extractedBirthDate == undefined || extractedBirthDate == 'N/A' || checkDate.getFullYear() < 1) {
       return 'NOT_SURE';
     }
     // Birthdate is in format: '1966-08-03'
     const today: Date = new Date();
-    const checkDate: Date = new Date(extractedBirthDate);
     // Time Difference (Milliseconds)
     const millisecondsAge = today.getTime() - checkDate.getTime();
     const milliseconds18Years = 1000 * 60 * 60 * 24 * 365 * 18;
@@ -351,7 +351,6 @@ export class TrialscopeMappingLogic extends MappingLogic {
   getTumorMarkerValues(): string {
 
     const extractedTumorMarkers = this.getExtractedTumorMarkers();
-    const basicTumorMapping = TrialscopeMappingLogic.codeMapper.extractCodeMappings([].concat(...extractedTumorMarkers.map(tumorMarker => tumorMarker.coding)));
     const extractedCancerGeneticVariants = this.getExtractedCancerGeneticVariants();
 
     if (extractedTumorMarkers.length == 0 && extractedCancerGeneticVariants.length == 0) {
@@ -360,95 +359,95 @@ export class TrialscopeMappingLogic extends MappingLogic {
 
     // TRIPLE_NEGATIVE_AND_RB_POSITIVE
     if (
-      this.isHER2Negative(extractedTumorMarkers[0], ['0', '1', '2', '1+', '2+'], basicTumorMapping) &&
-      extractedTumorMarkers.some((tm) => this.isPRNegative(tm, 1, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isERNegative(tm, 1, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isRBPositive(tm, 50, basicTumorMapping))
+      this.isHER2Negative(extractedTumorMarkers[0], ['0', '1', '2', '1+', '2+']) &&
+      extractedTumorMarkers.some((tm) => this.isPRNegative(tm, 1)) &&
+      extractedTumorMarkers.some((tm) => this.isERNegative(tm, 1)) &&
+      extractedTumorMarkers.some((tm) => this.isRBPositive(tm, 50))
     ) {
       return 'TRIPLE_NEGATIVE_AND_RB_POSITIVE';
     }
     // Triple Negative
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'], basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isPRNegative(tm, 1, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isERNegative(tm, 1, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      extractedTumorMarkers.some((tm) => this.isPRNegative(tm, 1)) &&
+      extractedTumorMarkers.some((tm) => this.isERNegative(tm, 1))
     ) {
       return 'TRIPLE_NEGATIVE';
     }
     // Triple Negative-10
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '1+'], basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isPRNegative(tm, 10, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isERNegative(tm, 10, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '1+'])) &&
+      extractedTumorMarkers.some((tm) => this.isPRNegative(tm, 10)) &&
+      extractedTumorMarkers.some((tm) => this.isERNegative(tm, 10))
     ) {
       return 'TRIPLE_NEGATIVE_MINUS_10';
     }
     // ER+ PR+ HER2-
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'], basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 1, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 1, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 1)) &&
+      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 1))
     ) {
       return 'ER_PLUS_PR_PLUS_HER2_MINUS';
     }
     // PR+ and HER2- and FGFR amplifications
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'], basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 1, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isFGFRAmplification(tm, 1, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 1)) &&
+      extractedTumorMarkers.some((tm) => this.isFGFRAmplification(tm, 1))
     ) {
       return 'PR_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
     }
     // ER+ and HER2- and FGFR amplifications
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'], basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 1, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isFGFRAmplification(tm, 1, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 1)) &&
+      extractedTumorMarkers.some((tm) => this.isFGFRAmplification(tm, 1))
     ) {
       return 'ER_PLUS_AND_HER2_MINUS_AND_FGFR_AMPLIFICATIONS';
     }
     // PR+ and HER2-
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'], basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 1, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 1))
     ) {
       return 'PR_PLUS_AND_HER2_MINUS';
     }
     // ER+ and HER2-
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'], basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 1, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'])) &&
+      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 1))
     ) {
       return 'ER_PLUS_AND_HER2_MINUS';
     }
     // HER2+ and PR+
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Positive(tm, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 10, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Positive(tm)) &&
+      extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 10))
     ) {
       return 'HER2_PLUS_AND_PR_PLUS';
     }
     // HER2+ and ER+
     if (
-      extractedTumorMarkers.some((tm) => this.isHER2Positive(tm, basicTumorMapping)) &&
-      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 10, basicTumorMapping))
+      extractedTumorMarkers.some((tm) => this.isHER2Positive(tm)) &&
+      extractedTumorMarkers.some((tm) => this.isERPositive(tm, 10))
     ) {
       return 'HER2_PLUS_AND_ER_PLUS';
     }
     // HER2+
-    if (extractedTumorMarkers.some((tm) => this.isHER2Positive(tm, basicTumorMapping))) {
+    if (extractedTumorMarkers.some((tm) => this.isHER2Positive(tm))) {
       return 'HER2_PLUS';
     }
     // PR+
-    if (extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 10, basicTumorMapping))) {
+    if (extractedTumorMarkers.some((tm) => this.isPRPositive(tm, 10))) {
       return 'PR_PLUS';
     }
     // ER+
-    if (extractedTumorMarkers.some((tm) => this.isERPositive(tm, 10, basicTumorMapping))) {
+    if (extractedTumorMarkers.some((tm) => this.isERPositive(tm, 10))) {
       return 'ER_PLUS';
     }
     // HER2-
-    if (extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+'], basicTumorMapping))) {
+    if (extractedTumorMarkers.some((tm) => this.isHER2Negative(tm, ['0', '1', '2', '1+', '2+']))) {
       return 'HER2_MINUS';
     }
     // BRCA1-Germline
@@ -537,9 +536,13 @@ export class TrialscopeMappingLogic extends MappingLogic {
         ))
     );
   }
-  isHER2Positive(tumorMarker: TumorMarker, tumorMarkerMappings: string[]): boolean {
+  isHER2Positive(tumorMarker: TumorMarker): boolean {
+    if(tumorMarker == undefined) {
+      // There is no tumor marker to check, return false.
+      return false;
+    }
     return (
-      tumorMarkerMappings.includes('Biomarker-HER2')) &&
+      TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-HER2') &&
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) =>
           (CodeMapper.codesEqual(valCodeCon, CodeSystemEnum.SNOMED, '10828004')) ||
@@ -551,9 +554,13 @@ export class TrialscopeMappingLogic extends MappingLogic {
         tumorMarker.valueQuantity.some((valQuant) =>
           this.quantityMatch(valQuant.value, valQuant.code, ['3', '3+'], '=')
         )
-    );
+    ));
   }
-  isHER2Negative(tumorMarker: TumorMarker, quantities: string[], tumorMarkerMappings: string[]): boolean {
+  isHER2Negative(tumorMarker: TumorMarker, quantities: string[]): boolean {
+    if(tumorMarker == undefined) {
+      // There is no tumor marker to check, return false.
+      return false;
+    }
     return (
       (tumorMarker.valueCodeableConcept.some((valCodeCon) =>
           (CodeMapper.codesEqual(valCodeCon, CodeSystemEnum.SNOMED, '260385009')) ||
@@ -565,10 +572,14 @@ export class TrialscopeMappingLogic extends MappingLogic {
         ) || // Information on Interpretation values can be found at: http://hl7.org/fhir/R4/valueset-observation-interpretation.html
         tumorMarker.valueQuantity.some((valQuant) =>
           this.quantityMatch(valQuant.value, valQuant.code, quantities, '='))) &&
-        tumorMarkerMappings.includes('Biomarker-HER2')
-    );
+          TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-HER2')
+          );
   }
-  isPRPositive(tumorMarker: TumorMarker, metric: number, tumorMarkerMappings: string[]): boolean {
+  isPRPositive(tumorMarker: TumorMarker, metric: number): boolean {
+    if(tumorMarker == undefined) {
+      // There is no tumor marker to check, return false.
+      return false;
+    }
     return (
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) =>
@@ -584,10 +595,14 @@ export class TrialscopeMappingLogic extends MappingLogic {
           this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%')
         ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '>='))) &&
-        tumorMarkerMappings.includes('Biomarker-PR')
+        TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-PR')
     );
   }
-  isPRNegative(tumorMarker: TumorMarker, metric: number, tumorMarkerMappings: string[]): boolean {
+  isPRNegative(tumorMarker: TumorMarker, metric: number): boolean {
+    if(tumorMarker == undefined) {
+      // There is no tumor marker to check, return false.
+      return false;
+    }
     return (
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) =>
@@ -605,10 +620,10 @@ export class TrialscopeMappingLogic extends MappingLogic {
             this.quantityMatch(valQuant.value, valQuant.code, [0], '=')
         ) ||
         tumorMarker.valueRatio.some((valRat) => this.ratioMatch(valRat.numerator, valRat.denominator, metric, '<'))) &&
-        tumorMarkerMappings.includes('Biomarker-PR')
+        TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-PR')
     );
   }
-  isERPositive(tumorMarker: TumorMarker, metric: number, tumorMarkerMappings: string[]): boolean {
+  isERPositive(tumorMarker: TumorMarker, metric: number): boolean {
     return (
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) =>
@@ -623,10 +638,14 @@ export class TrialscopeMappingLogic extends MappingLogic {
         ) ||
         tumorMarker.valueQuantity.some((valQuant) =>
           this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%'))) &&
-        tumorMarkerMappings.includes('Biomarker-ER')
+        TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-ER')
     );
   }
-  isERNegative(tumorMarker: TumorMarker, metric: number, tumorMarkerMappings: string[]): boolean {
+  isERNegative(tumorMarker: TumorMarker, metric: number): boolean {
+    if(tumorMarker == undefined) {
+      // There is no tumor marker to check, return false.
+      return false;
+    }
     return (
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) =>
@@ -643,10 +662,14 @@ export class TrialscopeMappingLogic extends MappingLogic {
           (valQuant) =>
             this.quantityMatch(valQuant.value, valQuant.code, [metric], '<', '%') ||
             this.quantityMatch(valQuant.value, valQuant.code, [0], '='))) &&
-        tumorMarkerMappings.includes('Biomarker-ER')
+            TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-ER')
     );
   }
-  isFGFRAmplification(tumorMarker: TumorMarker, metric: number, tumorMarkerMappings: string[]): boolean {
+  isFGFRAmplification(tumorMarker: TumorMarker, metric: number): boolean {
+    if(tumorMarker == undefined) {
+      // There is no tumor marker to check, return false.
+      return false;
+    }
     return (
       (tumorMarker.valueCodeableConcept.some(
         (valCodeCon) => (CodeMapper.codesEqual(valCodeCon, CodeSystemEnum.SNOMED, '10828004'))
@@ -659,10 +682,14 @@ export class TrialscopeMappingLogic extends MappingLogic {
         ) ||
         tumorMarker.valueQuantity.some((valQuant) =>
           this.quantityMatch(valQuant.value, valQuant.code, [metric], '>=', '%'))) &&
-        tumorMarkerMappings.includes('Biomarker-FGFR')
+          TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-FGFR')
     );
   }
-  isRBPositive(tumorMarker: TumorMarker, metric: number, tumorMarkerMappings: string[]): boolean {
+  isRBPositive(tumorMarker: TumorMarker, metric: number): boolean {
+    if(tumorMarker == undefined) {
+      // There is no tumor marker to check, return false.
+      return false;
+    }
     return (
       (tumorMarker.valueQuantity.some((valQuant) =>
         this.quantityMatch(valQuant.value, valQuant.code, [metric], '>', '%')
@@ -678,7 +705,7 @@ export class TrialscopeMappingLogic extends MappingLogic {
             (interp.code == 'POS' || interp.code == 'DET' || interp.code == 'H') &&
             interp.system == 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html'
         )) &&
-        tumorMarkerMappings.includes('Biomarker-RB')
+        TrialscopeMappingLogic.codeMapper.extractCodeMappings(tumorMarker.coding).includes('Biomarker-RB')
     );
   }
   quantityMatch(
@@ -804,7 +831,7 @@ export class TrialscopeMappingLogic extends MappingLogic {
       medicationValues.push('CDK4_6_INHIBITOR');
     } if (mappedMedicationValues.includes('Treatment-Pembrolizumab')) {
       medicationValues.push('PEMBROLIZUMAB');
-    } if (extractedMedications.some((coding) => (CodeMapper.codesEqual(coding, CodeSystemEnum.NIH, '#C1198')))) {
+    } if (mappedMedicationValues.includes('POLY_ICLC')) {
       medicationValues.push('POLY_ICLC');
     } if (mappedMedicationValues.includes('Treatment-mTOR_Inhibitor')){
       medicationValues.push('MTOR_INHIBITOR');

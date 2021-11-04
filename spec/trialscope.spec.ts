@@ -135,6 +135,7 @@ describe('TrialScopeQuery', () => {
         ],
         lastUpdated: ""
       },
+      bodySite: {coding: []},
       clinicalStatus: {
         coding: [
           {

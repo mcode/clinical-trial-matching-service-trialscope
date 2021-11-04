@@ -3,7 +3,7 @@ import { Bundle, BundleEntry, Coding, Condition, Observation, Procedure, Resourc
 import { TrialscopeMappingLogic } from "../src/trialscopemappinglogic";
 
 describe('checkPrimaryCancerFilterLogic', () => {
-  const createPrimaryCancerValues = (primaryCoding: Coding, histologyBehavior?: Coding, clinicalStatus?: Coding, tnmClinical?: Coding): string => {
+  const createPrimaryCancerValues = (primaryCoding: Coding, histologyBehavior: Coding, clinicalStatus: Coding, tnmClinical: Coding): string => {
     const primaryCancerBundle: Bundle = {
       resourceType: "Bundle",
       type: "transaction",
@@ -19,8 +19,7 @@ describe('checkPrimaryCancerFilterLogic', () => {
                 "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition"
               ],
               lastUpdated: ""
-            },
-            clinicalStatus: {coding: [clinicalStatus]}
+            }
           } as Condition
         }
       ]
@@ -48,13 +47,13 @@ describe('checkPrimaryCancerFilterLogic', () => {
       ]
     }
 
-    // if(clinicalStatus) {
-    //   primaryCancer.entry[0].resource.clinicalStatus = {
-    //     coding: [
-    //       clinicalStatus
-    //     ],
-    //   }
-    // }
+    if(clinicalStatus) {
+      (primaryCancerBundle.entry[0].resource as Condition).clinicalStatus = {
+        coding: [
+          clinicalStatus
+        ],
+      }
+    }
 
     if(tnmClinical){
       const tnmClinicalResource: BundleEntry = {
@@ -78,34 +77,34 @@ describe('checkPrimaryCancerFilterLogic', () => {
   }
 
   it('Test Breast Cancer Filter', () => {
-    const clinicalStatus = ({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
+    const clinicalStatus = ({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding);
-    const histologyMorphologyBehavior = ({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
+    const histologyMorphologyBehavior = ({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
     expect(createPrimaryCancerValues(coding, histologyMorphologyBehavior, clinicalStatus, undefined)).toBe('BREAST_CANCER');
   });
 
   it('Test Concomitant invasive malignancies Filter', () => {
-    const clinicalStatus = ({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
+    const clinicalStatus = ({ system: 'snomed', code: 'active', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
     const tnmClinical = ({ system: 'AJCC', code: 'II', display: 'N/A' } as Coding); // Any code in 'Stage-2'
     expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, tnmClinical)).toBe('CONCOMITANT_INVASIVE_MALIGNANCIES');
   });
 
   it('Test Invasive Breast Cancer and Recurrent Filter', () => {
-    const clinicalStatus = ({ system: 'N/A', code: 'recurrence', display: 'N/A' } as Coding);
+    const clinicalStatus = ({ system: 'snomed', code: 'recurrence', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '78354100ƒ√ƒ9', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const histologyMorphologyBehavior = ({ system: 'N/Asnomed', code: '734075007', display: 'N/A' } as Coding); // Any code in 'Morphology-Invasive'
     expect(createPrimaryCancerValues(coding, histologyMorphologyBehavior, clinicalStatus, undefined)).toBe('INVASIVE_BREAST_CANCER_AND_RECURRENT');
   });
 
   it('Test Locally Recurrent Filter', () => {
-    const clinicalStatus = ({ system: 'N/A', code: 'recurrence', display: 'N/A' } as Coding);
+    const clinicalStatus = ({ system: 'snomed', code: 'recurrence', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding);
     expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, undefined)).toBe('LOCALLY_RECURRENT');
   });
 
   it('Test Other malignancy - except skin or cervical  Filter', () => {
-    const clinicalStatus = ({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
+    const clinicalStatus = ({ system: 'snomed', code: 'active', display: 'N/A' } as Coding);
     const coding = ({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
     expect(createPrimaryCancerValues(coding, undefined, clinicalStatus, undefined)).toBe('OTHER_MALIGNANCY_EXCEPT_SKIN_OR_CERVICAL');
   });
@@ -116,7 +115,7 @@ describe('checkPrimaryCancerFilterLogic', () => {
 
 describe('checkSecondaryCancerFilterLogic', () => {
 
-  const createSecondaryCancerValues = (secondaryCancerCondition: Coding, secondaryClinicalStatus: Coding, primaryCoding: Coding, primaryHistology: Coding, secondaryBodySite: Coding): string => {
+  const createSecondaryCancerValues = (secondaryCancerCondition: Coding, secondaryClinicalStatus: Coding, primaryCoding: Coding, primaryHistology: Coding, secondaryBodySite: Coding, tnmPathological: Coding): string => {
     const secondaryCancerBundle: Bundle = {
       resourceType: "Bundle",
       type: "transaction",
@@ -133,15 +132,31 @@ describe('checkSecondaryCancerFilterLogic', () => {
               ],
               lastUpdated: ""
             },
-            code: {
-              coding: [secondaryCancerCondition],
-              text: "Malignant neoplasm of breast (disorder)"
-            },
-            clinicalStatus: {coding: [secondaryClinicalStatus]}
-          }
+            bodySite: {coding: []},
+            clinicalStatus: {coding: []}
+          } as Condition
         }
       ]
     };
+
+    if(secondaryCancerCondition) {
+      (secondaryCancerBundle.entry[0].resource as Condition).code = {
+        coding: [secondaryCancerCondition],
+        text: "Malignant neoplasm of breast (disorder)"
+      }
+    }
+
+    if(secondaryClinicalStatus) {
+      (secondaryCancerBundle.entry[0].resource as Condition).clinicalStatus = {
+        coding: [secondaryClinicalStatus]
+      }
+    }
+
+    if(secondaryBodySite) {
+      (secondaryCancerBundle.entry[0].resource as Condition).bodySite = {
+        coding: [secondaryBodySite]
+      }
+    }
 
     if(primaryCoding || primaryHistology) {
       const primaryCancerResource: BundleEntry = {
@@ -155,8 +170,7 @@ describe('checkSecondaryCancerFilterLogic', () => {
                   "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition"
                 ],
                 lastUpdated: ""
-              },
-              clinicalStatus: {coding: []}
+              }
             } as Condition
           };
 
@@ -184,32 +198,50 @@ describe('checkSecondaryCancerFilterLogic', () => {
           secondaryCancerBundle.entry.push(primaryCancerResource);
       }
 
+      if(tnmPathological) {
+        const tnmResource: BundleEntry = {
+            resource: {
+              resourceType: "Observation",
+              meta: {
+                profile: [
+                  "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tnm-pathological-stage-group",
+                ],
+              },
+              valueCodeableConcept: {
+                coding: tnmPathological,
+              },
+            } as unknown as Resource,
+          };
+
+          secondaryCancerBundle.entry.push(tnmResource);
+        }
+
     const mappingLogic = new TrialscopeMappingLogic(secondaryCancerBundle);
-    return mappingLogic.getPrimaryCancerValues();
+    return mappingLogic.getSecondaryCancerValues();
   }
 
   it('Test Brain Metastasis Filter', () => {
     const secondaryCoding = ({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding); // Any code in 'Metastasis-Brain'
-    const secondaryClinicalStatus = ({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
-    expect(createSecondaryCancerValues(secondaryCoding, secondaryClinicalStatus, undefined, undefined, undefined)).toBe('BRAIN_METASTASIS');
+    const secondaryClinicalStatus = ({ system: 'snomed', code: 'active', display: 'N/A' } as Coding);
+    expect(createSecondaryCancerValues(secondaryCoding, secondaryClinicalStatus, undefined, undefined, undefined, undefined)).toBe('BRAIN_METASTASIS');
   });
 
   it('Test Invasive Breast Cancer and Metastatic Filter', () => {
     const primaryCoding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
     const primaryHistologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '734075007', display: 'N/A'} as Coding); // Any code in 'Morphology-Invasive'
     const secondaryCoding = ({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding); // Any code
-    expect(createSecondaryCancerValues(secondaryCoding, undefined, primaryCoding, primaryHistologyMorphologyBehavior, undefined)).toBe('INVASIVE_BREAST_CANCER_AND_METASTATIC');
+    expect(createSecondaryCancerValues(secondaryCoding, undefined, primaryCoding, primaryHistologyMorphologyBehavior, undefined, undefined)).toBe('INVASIVE_BREAST_CANCER_AND_METASTATIC');
   });
 
   it('Test Leptomeningeal metastatic disease Filter', () => {
     const secondaryBodySite = ({ system: 'http://snomed.info/sct', code: '8935007', display: 'N/A' } as Coding);
-    expect(createSecondaryCancerValues(undefined, undefined, undefined, undefined, secondaryBodySite)).toBe('LEPTOMENINGEAL_METASTATIC_DISEASE');
+    expect(createSecondaryCancerValues(undefined, undefined, undefined, undefined, secondaryBodySite, undefined)).toBe('LEPTOMENINGEAL_METASTATIC_DISEASE');
   });
 
   it('Test Metastatic Filter', () => {
     const tnmPathological = ({ system: 'snomed', code: '313046007', display: 'N/A' } as Coding); // Any code in 'Stage-4'
     const secondaryCoding = ({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding); // Any code
-    expect(createSecondaryCancerValues(secondaryCoding, undefined, undefined, undefined, undefined)).toBe('METASTATIC');
+    expect(createSecondaryCancerValues(secondaryCoding, undefined, undefined, undefined, undefined, tnmPathological)).toBe('METASTATIC');
   });
 });
 
@@ -322,8 +354,8 @@ describe('checkHistologyMorphologyFilterLogic', () => {
   });
 
   it('Test Ductal Carcinoma In Situ Filter', () => {
-    const coding = ({ system: 'http://snomed.info/sct', code: '18680006', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
-    const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '444134008', display: 'N/A'} as Coding); // Any code in 'Morphology-Duct_Car_In_Situ'
+    const coding = ({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+    const histologyMorphologyBehavior = ({system: 'http://snomed.info/sct', code: '18680006', display: 'N/A'} as Coding); // Any code in 'Morphology-Duct_Car_In_Situ'
     expect(createHistologyMorphologyResource(coding, histologyMorphologyBehavior)).toBe('DUCTAL_CARCINOMA_IN_SITU');
   });
 
@@ -371,9 +403,9 @@ describe('checkStageFilterLogic', () => {
 
   it('Test Invasive Breast Cancer and Locally Advanced Filter', () => {
     // Invasive Breast Cancer and Locally Advanced Filter Attributes
-    // pcc.clinicalStatus.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
+    // pcc.clinicalStatus.push({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
     // pcc.coding.push({ system: 'http://snomed.info/sct', code: '722524005', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast'
-    // pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
+    // pcc.histologyMorphologyBehavior.push({ system: 'snomed', code: 'N/A', display: 'N/A' } as Coding);
     // tnmPathological.push({ system: 'snomed', code: '261640009', display: 'N/A' } as Coding); // Any code in 'Stage-3'
 
     // extractedMCODE.primaryCancerCondition.push(pcc);
@@ -437,11 +469,7 @@ describe('checkRadiationProcedureFilterLogic', () => {
             code: {
               coding: [coding],
             },
-            bodySite: [
-              {
-                coding: [bodySite]
-              }
-            ],
+            bodySite: [],
             reasonReference: [
               {
                 "reference": "4dee068c-5ffe-4977-8677-4ff9b518e763",
@@ -452,6 +480,10 @@ describe('checkRadiationProcedureFilterLogic', () => {
         }
       ]
     };
+
+    if(bodySite){
+      (radiationBundle.entry[0].resource as Procedure).bodySite = [{coding: [bodySite]}];
+    }
     const mappingLogic = new TrialscopeMappingLogic(radiationBundle);
     return mappingLogic.getRadiationProcedureValues();
   };
@@ -526,7 +558,7 @@ describe('checkSurgicalProcedureFilterLogic', () => {
   });
 
   it('Test Organ Transplant Filter', () => {
-    const surgicalValue = createSurgicalBundle({ system: 'http://snomed.info/sct', code: '58390007', display: 'N/A' } as Coding); // Any code in 'Treatment-Organ_Transplant'
+    const surgicalValue = createSurgicalBundle({ system: 'http://snomed.info/sct', code: '765478004', display: 'N/A' } as Coding); // Any code in 'Treatment-Organ_Transplant'
     expect(surgicalValue).toBe('ORGAN_TRANSPLANT');
   });
 });
@@ -879,7 +911,7 @@ describe('checkTumorMarkerFilterLogic', () => {
     expect(createTumorMarkerValues(tumorMarker1, tumorMarker2)).toBe('HER2_PLUS_AND_PR_PLUS');
   });
 
-  describe('checkTumorMarkerFilterLogic-ER+ and HER-', () => {
+  it('Test ER+ and HER- Filter', () => {
     // HER2- Filter Attributes
     const tm1Code = ({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
     const tm1ValueQuantity = ({ value: '2+', comparator: '=' } as Quantity);
@@ -915,8 +947,8 @@ describe('checkTumorMarkerFilterLogic', () => {
     const tumorMarker1 = createTumorMarkerResource(undefined, undefined, tm1Interpretation, undefined, tm1Code);
     // ER+ Filter Attributes
     const tm2Code = ({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
-    const tm2ValueQuantity = ({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
-    const tumorMarker2 = createTumorMarkerResource(undefined, tm2ValueQuantity, undefined, undefined, tm2Code);
+    const tm2ValueCodeableConcept = ({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
+    const tumorMarker2 = createTumorMarkerResource(undefined, undefined, undefined, tm2ValueCodeableConcept, tm2Code);
     // FGFR Amplifications Attributes
     const tm3Code = ({ system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A' } as Coding); // Any code in 'Biomarker-FGFR'
     const tm3ValueQuantity = ({ value: '1', comparator: '>=', unit: '%', code: '%' } as Quantity);
@@ -948,8 +980,8 @@ describe('checkTumorMarkerFilterLogic', () => {
     // PR+ Filter Attributes
     const tm2Code = ({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
     const tm2ValueRatio = ({
-      numerator: { value: '30', comparator: '>=', unit: '%', code: '%' } as Quantity,
-      denominator: { value: '2', comparator: '>=', unit: '%', code: '%' } as Quantity
+      numerator: { value: '100', comparator: '>=', unit: '%', code: '%' } as Quantity,
+      denominator: { value: '3', comparator: '>=', unit: '%', code: '%' } as Quantity
     } as Ratio);
     const tumorMarker2 = createTumorMarkerResource(tm2ValueRatio, undefined, undefined, undefined, tm2Code);
     // ER+ Filter Attributes
@@ -1049,11 +1081,6 @@ describe('checkTumorMarkerFilterLogic', () => {
                     ]
                   },
                   valueCodeableConcept: {
-                    coding: [
-                      cgvGeneStudiedVcc
-                    ]
-                  },
-                  interpretation: {
                     coding: []
                   }
                 },
@@ -1076,30 +1103,24 @@ describe('checkTumorMarkerFilterLogic', () => {
         ]
     };
 
-    if(cgvGeneStudiedInterpretation != undefined) {
-      bundle.entry[0].resource.component[0].interpretation = {coding: [
-        cgvGeneStudiedInterpretation
-      ]};
+    if(cgvGeneStudiedVcc){
+      bundle.entry[0].resource.component[0].valueCodeableConcept = {coding: [cgvGeneStudiedVcc]};
     }
 
-    if(cgvGenomicSourceClassVcc != undefined) {
-      bundle.entry[0].resource.component[1].valueCodeableConcept = {coding: [
-        cgvGenomicSourceClassVcc
-      ]};
+    if(cgvGeneStudiedInterpretation) {
+      bundle.entry[0].resource.component[0].interpretation = {coding: [cgvGeneStudiedInterpretation]};
     }
 
-    if(cgvValueCodeableConcepts != undefined){
-      bundle.entry[0].resource.valueCodeableConcept = {
-        coding: cgvValueCodeableConcepts
-      }
+    if(cgvGenomicSourceClassVcc) {
+      bundle.entry[0].resource.component[1].valueCodeableConcept = {coding: [cgvGenomicSourceClassVcc]};
     }
 
-    if(cgvInterpretation != undefined){
-      bundle.entry[0].resource.interpretation = {
-        coding: [
-          cgvInterpretation
-        ]
-      }
+    if(cgvValueCodeableConcepts){
+      bundle.entry[0].resource.valueCodeableConcept = {coding: cgvValueCodeableConcepts};
+    }
+
+    if(cgvInterpretation){
+      bundle.entry[0].resource.interpretation = {coding: [cgvInterpretation]};
     }
 
     return bundle;
@@ -1109,8 +1130,8 @@ describe('checkTumorMarkerFilterLogic', () => {
     const cgvGeneStudiedVcc = ({ system: 'hgnc', code: '1100', display: 'BRCA1' });
     const cgvValueCodeableConcepts = [({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' })];
     cgvValueCodeableConcepts.push({ system: 'http://loinc.info/sct', code: 'LA9633-4', display: 'N/A' });
-    const cgvInterpretation = ({ system: 'N/A', code: 'CAR', display: 'CAR' });
-    const cgvGeneStudiedInterpretation = ({ system: 'N/A', code: 'CAR', display: 'CAR' });
+    const cgvInterpretation = ({ system: 'snomed', code: 'CAR', display: 'CAR' });
+    const cgvGeneStudiedInterpretation = ({ system: 'snomed', code: 'CAR', display: 'CAR' });
     const cgvGenomicSourceClassVcc = ({system: ' http://loinc.info/sct', code: 'LA6683-2', display: 'N/A'});
     expect(createCgvTumorMarkerValues(cgvGeneStudiedVcc, cgvGeneStudiedInterpretation, cgvGenomicSourceClassVcc, cgvValueCodeableConcepts, cgvInterpretation)).toBe('BRCA1-GERMLINE');
   });
@@ -1131,21 +1152,20 @@ describe('checkTumorMarkerFilterLogic', () => {
 
   it('Test BRCA2-Somatic Filter', () => {
     const cgvGeneStudiedVcc = ({ system: 'hgnc', code: '1101', display: 'BRCA2' });
-    const cgvInterpretation = ({ system: 'N/A', code: 'CAR', display: 'CAR' });
+    const cgvInterpretation = ({ system: 'snomed', code: 'CAR', display: 'CAR' });
     const cgvGenomicSourceClassVcc = ({system: ' http://loinc.info/sct', code: 'LA6684-0', display: 'N/A'});
     expect(createCgvTumorMarkerValues(cgvGeneStudiedVcc, undefined, cgvGenomicSourceClassVcc, undefined, cgvInterpretation)).toBe('BRCA2-SOMATIC');
   });
 
   it('Test BRCA1 Filter', () => {
     const cgvGeneStudiedVcc = ({ system: 'hgnc', code: '1100', display: 'BRCA1' });
-    const cgvGeneStudiedInterpretation = ({ system: 'N/A', code: 'A', display: 'AWW' });
-    const cgvGenomicSourceClassVcc = ({system: ' http://loinc.info/sct', code: 'LA6684-0', display: 'N/A'});
-    expect(createCgvTumorMarkerValues(cgvGeneStudiedVcc, cgvGeneStudiedInterpretation, cgvGenomicSourceClassVcc, undefined, undefined)).toBe('BRCA1');
+    const cgvGeneStudiedInterpretation = ({ system: 'snomed', code: 'A', display: 'AWW' });
+    expect(createCgvTumorMarkerValues(cgvGeneStudiedVcc, cgvGeneStudiedInterpretation, undefined, undefined, undefined)).toBe('BRCA1');
   });
 
   it('Test BRCA2 Filter', () => {
     const cgvGeneStudiedVcc = ({ system: 'hgnc', code: '1101', display: 'BRCA2' });
-    const cgvInterpretation = ({ system: 'N/A', code: 'POS', display: 'POS' });
+    const cgvInterpretation = ({ system: 'snomed', code: 'POS', display: 'POS' });
     expect(createCgvTumorMarkerValues(cgvGeneStudiedVcc, undefined, undefined, undefined, cgvInterpretation)).toBe('BRCA2');
   });
 
@@ -1222,7 +1242,11 @@ describe('checkAgeFilterLogic', () => {
 
 describe('NotSureTests', () => {
   // Initialize
-  const emptyPatientBundle = null;
+  const emptyPatientBundle: Bundle = {
+    resourceType: "Bundle",
+    type: "transaction",
+    entry: []
+  };
   const extractedMCODE = new TrialscopeMappingLogic(emptyPatientBundle);
 
   it('Test NOT_SURE returns for null inputs', () => {
