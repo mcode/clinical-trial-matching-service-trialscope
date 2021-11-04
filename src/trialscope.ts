@@ -6,7 +6,7 @@ import https from 'https';
 import { IncomingMessage } from 'http';
 import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
-import {TrialscopeMappingLogic} from './trialscopemappinglogic';
+import { TrialscopeMappingLogic } from './trialscopemappinglogic';
 
 /**
  * Maps FHIR phases to TrialScope phases.
@@ -229,8 +229,8 @@ export class TrialScopeQuery {
   constructor(patientBundle: fhir.Bundle) {
     const mappingLogic = new TrialscopeMappingLogic(patientBundle);
     console.log(mappingLogic);
-    let stageValues = mappingLogic.getStageValues();
-    let medicationStatementValues = mappingLogic.getMedicationStatementValues();
+    const stageValues = mappingLogic.getStageValues();
+    const medicationStatementValues = mappingLogic.getMedicationStatementValues();
     this.mcode = {
       primaryCancer: mappingLogic.getPrimaryCancerValues(),
       secondaryCancer: mappingLogic.getSecondaryCancerValues(),

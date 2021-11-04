@@ -133,9 +133,9 @@ describe('TrialScopeQuery', () => {
           'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition',
           'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
         ],
-        lastUpdated: ""
+        lastUpdated: ''
       },
-      bodySite: {coding: []},
+      bodySite: { coding: [] },
       clinicalStatus: {
         coding: [
           {

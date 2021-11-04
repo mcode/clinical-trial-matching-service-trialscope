@@ -55,7 +55,7 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
     };
   }
   if (trial.studyType) {
-    result.category = [{ text: "Study Type: " + trial.studyType }];
+    result.category = [{ text: 'Study Type: ' + trial.studyType }];
   }
   if (trial.conditions) {
     const conditions = convertStringsToCodeableConcept(trial.conditions);
