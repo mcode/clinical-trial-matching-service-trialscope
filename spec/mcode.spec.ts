@@ -2121,7 +2121,6 @@ describe('checkECOGFilterLogic', () => {
   it('Test ECOG Filter', () => {
     expect(extractedMCODE.getECOGScore()).toBe('THREE');
   });
-
 });
 
 // Karnofsky Test
@@ -2134,7 +2133,6 @@ describe('checkKarnofskyFilterLogic', () => {
   it('Test Karnofsky Filter', () => {
     expect(extractedMCODE.getKarnofskyScore()).toBe('NINETY');
   });
-
 });
 
 describe('checkAgeFilterLogic', () => {

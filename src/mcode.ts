@@ -9,6 +9,8 @@ import { fhir } from 'clinical-trial-matching-service';
 const profile_system_codes = profile_system_codes_json as ProfileSystemCodes;
 
 export type FHIRPath = string;
+// fhirpath now has official TypeScript types. Unfortunately, the result they use is "any"
+export type PathLookupResult = Record<string, unknown> | string | number;
 
 export interface Coding {
   system?: string;
@@ -275,7 +277,6 @@ export class ExtractedMCODE {
         ) {
           this.karnofskyPerformanceStatus = this.lookup(resource, 'valueInteger')[0] as number; // so is this
         }
-
       }
     }
     // add empty fields if they are not yet undefined
@@ -322,10 +323,10 @@ export class ExtractedMCODE {
     resource: fhirclient.FHIR.Resource,
     path: FHIRPath,
     environment?: { [key: string]: string }
-  ): fhirpath.PathLookupResult[] {
+  ): PathLookupResult[] {
     return fhirpath.evaluate(resource, path, environment);
   }
-  resourceProfile(profiles: fhirpath.PathLookupResult[], key: string): boolean {
+  resourceProfile(profiles: PathLookupResult[], key: string): boolean {
     for (const profile of profiles) {
       if ((profile as string).includes(key)) {
         return true;
@@ -621,7 +622,7 @@ export class ExtractedMCODE {
     return 'NOT_SURE';
   }
   getStageValues(): string[] {
-    const stageValues:string[] = [];
+    const stageValues: string[] = [];
     if (
       this.primaryCancerCondition.length == 0 &&
       this.TNMClinicalStageGroup.length == 0 &&
@@ -1143,7 +1144,7 @@ export class ExtractedMCODE {
     }
   }
   getMedicationStatementValues(): string[] {
-    const medicationValues:string[] = [];
+    const medicationValues: string[] = [];
 
     if (this.cancerRelatedMedicationStatement.length == 0) {
       return ['NOT_SURE', 'NOT_SURE', 'NOT_SURE'];
@@ -1154,7 +1155,8 @@ export class ExtractedMCODE {
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))
     ) {
       medicationValues.push('DRUGCOMBO_1');
-    } if (
+    }
+    if (
       (this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-CDK4_6_Inhibtor')
       ) ||
@@ -1164,73 +1166,78 @@ export class ExtractedMCODE {
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine_Therapy'))
     ) {
       medicationValues.push('CDK4_6_MTOR_AND_ENDOCRINE');
-    } if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-T-DM1'))) {
       medicationValues.push('T_DM1');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-CDK4_6_Inhibtor'))
     ) {
       medicationValues.push('CDK4_6_INHIBITOR');
-    } if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pembrolizumab'))
-    ) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Pembrolizumab'))) {
       medicationValues.push('PEMBROLIZUMAB');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some(
         (coding) => this.normalizeCodeSystem(coding.system) == 'NIH' && coding.code == '#C1198'
       )
     ) {
       medicationValues.push('POLY_ICLC');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-mTOR_Inhibitor'))
     ) {
       medicationValues.push('MTOR_INHIBITOR');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Endocrine_Therapy'))
     ) {
       medicationValues.push('CONCURRENT_ENDOCRINE_THERAPY');
-    } if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-Androgen'))
-    ) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-Androgen'))) {
       medicationValues.push('ANTI_ANDROGEN');
-    } if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-HER2'))
-    ) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-HER2'))) {
       medicationValues.push('ANTI_HER2');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-Tyrosine_Kinase_Inhib')
       )
     ) {
       medicationValues.push('TYROSINE_KINASE_INHIBITOR');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-P13K_Inhibitor'))
     ) {
       medicationValues.push('P13K_INHIBITOR');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PD1,PDL1,PDL2'))
     ) {
       medicationValues.push('ANTI_PD');
-    } if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PARP'))
-    ) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-PARP'))) {
       medicationValues.push('ANTI_PARP');
-    } if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-SG'))) {
       medicationValues.push('SG');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) =>
         this.codeIsInSheet(coding, 'Treatment-anti-topoisomerase-1')
       )
     ) {
       medicationValues.push('ANTI-TOPOISOMERASE-1');
-    } if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CTLA4'))
-    ) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CTLA4'))) {
       medicationValues.push('ANTI-CTLA4');
-    } if (
-      this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CD40'))
-    ) {
+    }
+    if (this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-anti-CD40'))) {
       medicationValues.push('ANTI-CD40');
-    } if (
+    }
+    if (
       this.cancerRelatedMedicationStatement.some((coding) => this.codeIsInSheet(coding, 'Treatment-Trastuz_and_Pertuz'))
     ) {
       medicationValues.push('TRASTUZ_AND_PERTUZ');
@@ -1248,7 +1255,7 @@ export class ExtractedMCODE {
 
   // Get ECOG Score
   getECOGScore(): string {
-    if(this.ecogPerformaceStatus == -1) {
+    if (this.ecogPerformaceStatus == -1) {
       return 'NOT_SURE';
     }
 
@@ -1262,12 +1269,11 @@ export class ExtractedMCODE {
     ]);
 
     return ecogScoreMap.get(this.ecogPerformaceStatus);
-
   }
 
   // Get Karnofsky Score
   getKarnofskyScore(): string {
-    if(this.karnofskyPerformanceStatus == -1) {
+    if (this.karnofskyPerformanceStatus == -1) {
       return 'NOT_SURE';
     }
 
@@ -1286,7 +1292,6 @@ export class ExtractedMCODE {
     ]);
 
     return karnofskyScoreMap.get(this.karnofskyPerformanceStatus);
-
   }
 
   // Return whether any of the codes in a given coding exist in the given profiles (sheets).
@@ -1302,7 +1307,7 @@ export class ExtractedMCODE {
           continue;
         }
       }
-    
+
       let codeSet: { code: string }[] = codeProfile[system] as { code: string }[]; // Pull the system codes from the codes
       if (!codeSet) {
         codeSet = [];
