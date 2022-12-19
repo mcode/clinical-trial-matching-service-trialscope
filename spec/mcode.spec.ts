@@ -1,14 +1,12 @@
-import * as mcode from '../src/mcode';
-import { Coding } from '../src/mcode';
-import { PrimaryCancerCondition } from '../src/mcode';
-import { SecondaryCancerCondition } from '../src/mcode';
-
 import fs from 'fs';
 import path from 'path';
-import { fhir } from 'clinical-trial-matching-service';
+import { Bundle, Coding, Quantity } from 'fhir/r4';
+
+import * as mcode from '../src/mcode';
+import { PrimaryCancerCondition, SecondaryCancerCondition } from '../src/mcode';
 
 describe('ExtractedMCODE', () => {
-  let sampleData: fhir.Bundle;
+  let sampleData: Bundle;
   beforeAll(() => {
     return new Promise((resolve, reject) => {
       const patientDataPath = path.join(__dirname, '../../spec/data/patient_data.json');
@@ -19,7 +17,7 @@ describe('ExtractedMCODE', () => {
           return;
         }
         try {
-          sampleData = JSON.parse(data) as fhir.Bundle;
+          sampleData = JSON.parse(data) as Bundle;
           // The object we resolve to doesn't really matter
           resolve(sampleData);
         } catch (ex) {
@@ -47,9 +45,9 @@ describe('ExtractedMCODE', () => {
 
   it('checkExtractedPrimaryCancerCondition', function () {
     const extractedData = new mcode.ExtractedMCODE(sampleData);
-    expect(extractedData.primaryCancerCondition[0].clinicalStatus[0].code).toBe('active');
-    expect(extractedData.primaryCancerCondition[0].coding[0].code).toBe('254837009');
-    expect(extractedData.primaryCancerCondition[0].histologyMorphologyBehavior[0].code).toBe('367651003');
+    expect(extractedData.primaryCancerCondition[0].clinicalStatus?.[0].code).toBe('active');
+    expect(extractedData.primaryCancerCondition[0].coding?.[0].code).toBe('254837009');
+    expect(extractedData.primaryCancerCondition[0].histologyMorphologyBehavior?.[0].code).toBe('367651003');
   });
 
   it('checkExtractedTNMClinicalStageGroup', function () {
@@ -66,9 +64,9 @@ describe('ExtractedMCODE', () => {
 
   it('checkExtractedSecondaryCancerCondition', function () {
     const extractedData = new mcode.ExtractedMCODE(sampleData);
-    expect(extractedData.secondaryCancerCondition[0].clinicalStatus[0].code).toBe('active');
-    expect(extractedData.secondaryCancerCondition[0].coding[0].code).toBe('128462008');
-    expect(extractedData.secondaryCancerCondition[0].bodySite[0].code).toBe('8935007');
+    expect(extractedData.secondaryCancerCondition[0].clinicalStatus?.[0].code).toBe('active');
+    expect(extractedData.secondaryCancerCondition[0].coding?.[0].code).toBe('128462008');
+    expect(extractedData.secondaryCancerCondition[0].bodySite?.[0].code).toBe('8935007');
   });
 
   it('checkExtractedTumorMarker', function () {
@@ -76,39 +74,39 @@ describe('ExtractedMCODE', () => {
     expect(
       extractedData.tumorMarker.some(
         (marker) =>
-          marker.valueCodeableConcept[0].code == '10828004' &&
-          marker.valueQuantity[0].value == 3 &&
-          marker.valueRatio.length == 0 &&
-          marker.code[0].code == '48676-1' &&
-          marker.code[1].code == '85319-2' &&
-          marker.interpretation[0].code == 'POS'
+          marker.valueCodeableConcept?.[0].code == '10828004' &&
+          marker.valueQuantity?.[0].value == 3 &&
+          marker.valueRatio?.length == 0 &&
+          marker.code?.[0].code == '48676-1' &&
+          marker.code?.[1].code == '85319-2' &&
+          marker.interpretation?.[0].code == 'POS'
       )
     ).toBeTrue();
     expect(
       extractedData.tumorMarker.some(
         (marker) =>
-          marker.valueCodeableConcept[0].code == '10828004' &&
-          marker.valueQuantity.length == 0 &&
-          marker.valueRatio[0].numerator.value == 1 &&
-          marker.valueRatio[0].numerator.comparator == '>=' &&
-          marker.valueRatio[0].denominator.value == 100 &&
-          marker.code[0].code == '48676-1' &&
-          marker.code[1].code == '85318-4' &&
-          marker.interpretation.length == 0
+          marker.valueCodeableConcept?.[0].code == '10828004' &&
+          marker.valueQuantity?.length == 0 &&
+          marker.valueRatio?.[0].numerator?.value == 1 &&
+          marker.valueRatio?.[0].numerator.comparator == '>=' &&
+          marker.valueRatio?.[0].denominator?.value == 100 &&
+          marker.code?.[0].code == '48676-1' &&
+          marker.code?.[1].code == '85318-4' &&
+          marker.interpretation?.length == 0
       )
     ).toBeTrue();
     expect(
       extractedData.tumorMarker.some(
         (marker) =>
-          marker.valueCodeableConcept[0].code == '10828004' &&
-          marker.valueQuantity.length > 0 &&
-          marker.valueQuantity[0].value == 10 &&
-          marker.valueQuantity[0].comparator == '>=' &&
-          marker.valueQuantity[0].unit == '%' &&
-          marker.valueRatio.length == 0 &&
-          marker.code[0].code == '16112-5' &&
-          marker.code[1].code == '85337-4' &&
-          marker.interpretation.length == 0
+          marker.valueCodeableConcept?.[0].code == '10828004' &&
+          (marker.valueQuantity?.length ?? 0) > 0 &&
+          marker.valueQuantity?.[0].value == 10 &&
+          marker.valueQuantity?.[0].comparator == '>=' &&
+          marker.valueQuantity?.[0].unit == '%' &&
+          marker.valueRatio?.length == 0 &&
+          marker.code?.[0].code == '16112-5' &&
+          marker.code?.[1].code == '85337-4' &&
+          marker.interpretation?.length == 0
       )
     ).toBeTrue();
   });
@@ -117,15 +115,15 @@ describe('ExtractedMCODE', () => {
     const extractedData = new mcode.ExtractedMCODE(sampleData);
     expect(
       extractedData.cancerRelatedRadiationProcedure.some(
-        (procedure) => procedure.coding[0].code == '448385000' && procedure.bodySite.length == 0
+        (procedure) => procedure.coding?.[0].code == '448385000' && procedure.bodySite?.length == 0
       )
     ).toBeTrue();
     expect(
       extractedData.cancerRelatedRadiationProcedure.some(
         (procedure) =>
-          procedure.coding[0].code == '448385000' &&
-          procedure.bodySite.length != 0 &&
-          procedure.bodySite[0].code == '12738006'
+          procedure.coding?.[0].code == '448385000' &&
+          procedure.bodySite?.length != 0 &&
+          procedure.bodySite?.[0].code == '12738006'
       )
     ).toBeTrue();
   });
@@ -138,46 +136,50 @@ describe('ExtractedMCODE', () => {
 
   it('checkExtractedCancerGeneticVariant', function () {
     const extractedData = new mcode.ExtractedMCODE(sampleData);
-    expect(extractedData.cancerGeneticVariant[0].code[0].system).toBe('http://loinc.org');
-    expect(extractedData.cancerGeneticVariant[0].code[0].code).toBe('69548-6');
-    expect(extractedData.cancerGeneticVariant[0].valueCodeableConcept[0].system).toBe('http://loinc.org');
-    expect(extractedData.cancerGeneticVariant[0].valueCodeableConcept[0].code).toBe('LA9633-4');
-    expect(extractedData.cancerGeneticVariant[0].interpretation[0].system).toBe(
+    expect(extractedData.cancerGeneticVariant[0].code?.[0].system).toBe('http://loinc.org');
+    expect(extractedData.cancerGeneticVariant[0].code?.[0].code).toBe('69548-6');
+    expect(extractedData.cancerGeneticVariant[0].valueCodeableConcept?.[0].system).toBe('http://loinc.org');
+    expect(extractedData.cancerGeneticVariant[0].valueCodeableConcept?.[0].code).toBe('LA9633-4');
+    expect(extractedData.cancerGeneticVariant[0].interpretation?.[0].system).toBe(
       'http://hl7.org/fhir/ValueSet/observation-interpretation'
     );
-    expect(extractedData.cancerGeneticVariant[0].interpretation[0].code).toBe('POS');
-    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].code.coding[0].system).toBe(
+    expect(extractedData.cancerGeneticVariant[0].interpretation?.[0].code).toBe('POS');
+    expect(extractedData.cancerGeneticVariant[0].component?.geneStudied?.[0].code?.coding[0].system).toBe(
       'http://loinc.org'
     );
-    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].code.coding[0].code).toBe('48018-6');
+    expect(extractedData.cancerGeneticVariant[0].component?.geneStudied?.[0].code?.coding[0].code).toBe('48018-6');
     expect(
       extractedData.normalizeCodeSystem(
-        extractedData.cancerGeneticVariant[0].component.geneStudied[0].valueCodeableConcept.coding[0].system
+        extractedData.cancerGeneticVariant[0].component?.geneStudied?.[0].valueCodeableConcept?.coding[0].system ?? ''
       )
     ).toBe('HGNC');
-    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].valueCodeableConcept.coding[0].code).toBe(
+    expect(extractedData.cancerGeneticVariant[0].component?.geneStudied?.[0].valueCodeableConcept?.coding[0].code).toBe(
       'HGNC:11389'
     );
-    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].interpretation.coding[0].system).toBe(
+    expect(extractedData.cancerGeneticVariant[0].component?.geneStudied?.[0].interpretation?.coding[0].system).toBe(
       'http://hl7.org/fhir/ValueSet/observation-interpretation'
     );
-    expect(extractedData.cancerGeneticVariant[0].component.geneStudied[0].interpretation.coding[0].code).toBe('CAR');
-    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].code.coding[0].system).toBe(
+    expect(extractedData.cancerGeneticVariant[0].component?.geneStudied?.[0].interpretation?.coding[0].code).toBe(
+      'CAR'
+    );
+    expect(extractedData.cancerGeneticVariant[0].component?.genomicsSourceClass?.[0].code?.coding[0].system).toBe(
       'http://loinc.org'
     );
-    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].code.coding[0].code).toBe('48002-0');
+    expect(extractedData.cancerGeneticVariant[0].component?.genomicsSourceClass?.[0].code?.coding[0].code).toBe(
+      '48002-0'
+    );
     expect(
-      extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].valueCodeableConcept.coding[0].system
+      extractedData.cancerGeneticVariant[0].component?.genomicsSourceClass?.[0].valueCodeableConcept?.coding[0].system
     ).toBe('http://loinc.org');
     expect(
-      extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].valueCodeableConcept.coding[0].code
+      extractedData.cancerGeneticVariant[0].component?.genomicsSourceClass?.[0].valueCodeableConcept?.coding[0].code
     ).toBe('LA6684-0');
-    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].interpretation.coding[0].system).toBe(
-      'http://hl7.org/fhir/ValueSet/observation-interpretation'
-    );
-    expect(extractedData.cancerGeneticVariant[0].component.genomicsSourceClass[0].interpretation.coding[0].code).toBe(
-      'A'
-    );
+    expect(
+      extractedData.cancerGeneticVariant[0].component?.genomicsSourceClass?.[0].interpretation?.coding[0].system
+    ).toBe('http://hl7.org/fhir/ValueSet/observation-interpretation');
+    expect(
+      extractedData.cancerGeneticVariant[0].component?.genomicsSourceClass?.[0].interpretation?.coding[0].code
+    ).toBe('A');
   });
 
   it('checkExtractedCancerRelatedMedicationStatement', function () {
@@ -193,14 +195,14 @@ describe('checkPrimaryCancerFilterLogic-BreastCancer', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Breast Cancer Filter Attributes
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding);
-  pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'N/A', display: 'N/A' });
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' });
+  pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' });
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -214,17 +216,17 @@ describe('checkPrimaryCancerFilterLogic-ConcomitantInvasiveMalignancies', () => 
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
-  const tnmClinical: Coding[] = [] as Coding[];
-  const tnmPathological: Coding[] = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
+  const tnmClinical: Coding[] = [];
+  const tnmPathological: Coding[] = [];
 
   // Concomitant invasive malignancies Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
-  pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
-  tnmClinical.push({ system: 'AJCC', code: 'II', display: 'N/A' } as Coding); // Any code in 'Stage-2'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' }); // Any code not in 'Cancer-Breast'
+  pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' });
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' });
+  tnmClinical.push({ system: 'AJCC', code: 'II', display: 'N/A' }); // Any code in 'Stage-2'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
   extractedMCODE.TNMClinicalStageGroup = tnmClinical;
@@ -240,18 +242,18 @@ describe('checkPrimaryCancerFilterLogic-InvasiveBreastCancerandRecurrent', () =>
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Invasive Breast Cancer and Recurrent Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '734075007',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Invasive'
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrence', display: 'N/A' } as Coding);
+  }); // Any code in 'Morphology-Invasive'
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrence', display: 'N/A' });
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -265,13 +267,13 @@ describe('checkPrimaryCancerFilterLogic-LocallyRecurrent', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Locally Recurrent Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding);
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrence', display: 'N/A' } as Coding);
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' });
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'recurrence', display: 'N/A' });
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -285,13 +287,13 @@ describe('checkPrimaryCancerFilterLogic-OtherMalignancyExceptSkinOrCervical ', (
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Other malignancy - except skin or cervical  Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code not in 'Cancer-Breast'
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' }); // Any code not in 'Cancer-Breast'
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' });
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -307,13 +309,13 @@ describe('checkSecondaryCancerFilterLogic-BrainMetastasis', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = [] as Coding[];
-  scc.coding = [] as Coding[];
-  scc.bodySite = [] as Coding[];
+  scc.clinicalStatus = [];
+  scc.coding = [];
+  scc.bodySite = [];
 
   // Brain Metastasis Filter Attributes
-  scc.coding.push({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding); // Any code in 'Metastasis-Brain'
-  scc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' } as Coding);
+  scc.coding.push({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' }); // Any code in 'Metastasis-Brain'
+  scc.clinicalStatus.push({ system: 'N/A', code: 'active', display: 'N/A' });
 
   extractedMCODE.secondaryCancerCondition.push(scc);
 
@@ -327,22 +329,22 @@ describe('checkSecondaryCancerFilterLogic-InvasiveBreastCancerAndMetastatic', ()
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = [] as Coding[];
-  scc.coding = [] as Coding[];
-  scc.bodySite = [] as Coding[];
+  scc.clinicalStatus = [];
+  scc.coding = [];
+  scc.bodySite = [];
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Invasive Breast Cancer and Metastatic  Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '734075007',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Invasive'
-  scc.coding.push({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding); // Any code
+  }); // Any code in 'Morphology-Invasive'
+  scc.coding.push({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' }); // Any code
 
   extractedMCODE.primaryCancerCondition.push(pcc);
   extractedMCODE.secondaryCancerCondition.push(scc);
@@ -357,12 +359,12 @@ describe('checkSecondaryCancerFilterLogic-LeptomeningealMetastaticDisease', () =
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = [] as Coding[];
-  scc.coding = [] as Coding[];
-  scc.bodySite = [] as Coding[];
+  scc.clinicalStatus = [];
+  scc.coding = [];
+  scc.bodySite = [];
 
   // Leptomeningeal metastatic disease Filter Attributes
-  scc.bodySite.push({ system: 'http://snomed.info/sct', code: '8935007', display: 'N/A' } as Coding);
+  scc.bodySite.push({ system: 'http://snomed.info/sct', code: '8935007', display: 'N/A' });
 
   extractedMCODE.secondaryCancerCondition.push(scc);
 
@@ -376,14 +378,14 @@ describe('checkSecondaryCancerFilterLogic-Metastatic', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const scc: SecondaryCancerCondition = {};
-  scc.clinicalStatus = [] as Coding[];
-  scc.coding = [] as Coding[];
-  scc.bodySite = [] as Coding[];
-  const tnmPathological: Coding[] = [] as Coding[];
+  scc.clinicalStatus = [];
+  scc.coding = [];
+  scc.bodySite = [];
+  const tnmPathological: Coding[] = [];
 
   // Metastatic Filter Attributes
-  tnmPathological.push({ system: 'snomed', code: '313046007', display: 'N/A' } as Coding); // Any code in 'Stage-4'
-  scc.coding.push({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' } as Coding); // Any code
+  tnmPathological.push({ system: 'snomed', code: '313046007', display: 'N/A' }); // Any code in 'Stage-4'
+  scc.coding.push({ system: 'http://snomed.info/sct', code: '285641009', display: 'N/A' }); // Any code
 
   extractedMCODE.secondaryCancerCondition.push(scc);
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
@@ -400,17 +402,17 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveCarcinoma', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Invasive Carcinoma Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '734075007',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Invasive_Carcinoma'
+  }); // Any code in 'Morphology-Invasive_Carcinoma'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -424,17 +426,17 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveBreastCancer', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Invasive Breast Cancer Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '446688004',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Invasive'
+  }); // Any code in 'Morphology-Invasive'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -450,17 +452,17 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveMammoryCarcinoma-One', () 
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Invasive Mammory Carcinoma Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '128701002',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Invas_Carc_Mix'
+  }); // Any code in 'Morphology-Invas_Carc_Mix'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -474,12 +476,12 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveMammoryCarcinoma-Two', () 
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
-  extractedMCODE.TNMClinicalStageGroup = [] as Coding[];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
+  extractedMCODE.TNMClinicalStageGroup = [];
 
   // Invasive Mammory Carcinoma Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }); // SNOMED#444604002
   const tnmC = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
@@ -495,12 +497,12 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveMammoryCarcinoma-Three', (
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
-  extractedMCODE.TNMPathologicalStageGroup = [] as Coding[];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
+  extractedMCODE.TNMPathologicalStageGroup = [];
 
   // Invasive Mammory Carcinoma Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' } as Coding); // SNOMED#444604002
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }); // SNOMED#444604002
   const tnmP = { system: 'http://snomed.info/sct', code: '444604002', display: 'N/A' }; // Any Code not in 'Stage-0'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
@@ -516,17 +518,17 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveDuctalCarcinoma', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Invasive Ductal Carcinoma Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '444134008',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Invas_Duct_Carc'
+  }); // Any code in 'Morphology-Invas_Duct_Carc'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -540,12 +542,12 @@ describe('checkHistologyMorphologyFilterLogic-InvasiveLobularCarcinoma', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Invasive Lobular Carcinoma Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '1080261000119100', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invas Lob Carc'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '1080261000119100', display: 'N/A' }); // Any Code in 'Cancer-Invas Lob Carc'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -559,17 +561,17 @@ describe('checkHistologyMorphologyFilterLogic-DuctalCarcinomaInSitu', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Ductal Carcinoma In Situ Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '18680006',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Duct_Car_In_Situ'
+  }); // Any code in 'Morphology-Duct_Car_In_Situ'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -583,24 +585,24 @@ describe('checkHistologyMorphologyFilterLogic-Inflammatory', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
   describe('checkHistologyMorphologyFilterLogic-NonInflammatoryInvasive', () => {
     // Initialize
     const patientBundle = null;
     const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
     const pcc: PrimaryCancerCondition = {};
-    pcc.clinicalStatus = [] as Coding[];
-    pcc.coding = [] as Coding[];
-    pcc.histologyMorphologyBehavior = [] as Coding[];
+    pcc.clinicalStatus = [];
+    pcc.coding = [];
+    pcc.histologyMorphologyBehavior = [];
 
     // Non-Inflammatory Invasive Filter Attributes
-    pcc.coding.push({ system: 'http://snomed.info/sct', code: '254840009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast' AND 'Cancer-Inflammatory'
+    pcc.coding.push({ system: 'http://snomed.info/sct', code: '254840009', display: 'N/A' }); // Any Code in 'Cancer-Invasive-Breast' AND 'Cancer-Inflammatory'
     pcc.histologyMorphologyBehavior.push({
       system: 'http://snomed.info/sct',
       code: '734075007',
       display: 'N/A'
-    } as Coding); // Any code in 'Morphology-Invasive'
+    }); // Any code in 'Morphology-Invasive'
 
     extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -608,15 +610,15 @@ describe('checkHistologyMorphologyFilterLogic-Inflammatory', () => {
       expect(extractedMCODE.getHistologyMorphologyValue()).toBe('NON-INFLAMMATORY_INVASIVE');
     });
   });
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.histologyMorphologyBehavior = [];
 
   // Inflammatory Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Breast'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '783541009', display: 'N/A' }); // Any Code in 'Cancer-Breast'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '32968003',
     display: 'N/A'
-  } as Coding); // Code: SNOMED 32968003'
+  }); // Code: SNOMED 32968003'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -630,17 +632,17 @@ describe('checkHistologyMorphologyFilterLogic-NonInflammatoryInvasive', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
 
   // Non-Inflammatory Invasive Filter Attributes
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '254840009', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast' AND 'Cancer-Inflammatory'
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '254840009', display: 'N/A' }); // Any Code in 'Cancer-Invasive-Breast' AND 'Cancer-Inflammatory'
   pcc.histologyMorphologyBehavior.push({
     system: 'http://snomed.info/sct',
     code: '734075007',
     display: 'N/A'
-  } as Coding); // Any code in 'Morphology-Invasive'
+  }); // Any code in 'Morphology-Invasive'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
 
@@ -656,16 +658,16 @@ describe('checkStageFilterLogic-Invasive Breast Cancer and Locally Advanced', ()
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const pcc: PrimaryCancerCondition = {};
-  pcc.clinicalStatus = [] as Coding[];
-  pcc.coding = [] as Coding[];
-  pcc.histologyMorphologyBehavior = [] as Coding[];
-  const tnmPathological: Coding[] = [] as Coding[];
+  pcc.clinicalStatus = [];
+  pcc.coding = [];
+  pcc.histologyMorphologyBehavior = [];
+  const tnmPathological: Coding[] = [];
 
   // Invasive Breast Cancer and Locally Advanced Filter Attributes
-  pcc.clinicalStatus.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
-  pcc.coding.push({ system: 'http://snomed.info/sct', code: '722524005', display: 'N/A' } as Coding); // Any Code in 'Cancer-Invasive-Breast'
-  pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' } as Coding);
-  tnmPathological.push({ system: 'snomed', code: '261640009', display: 'N/A' } as Coding); // Any code in 'Stage-3'
+  pcc.clinicalStatus.push({ system: 'N/A', code: 'N/A', display: 'N/A' });
+  pcc.coding.push({ system: 'http://snomed.info/sct', code: '722524005', display: 'N/A' }); // Any Code in 'Cancer-Invasive-Breast'
+  pcc.histologyMorphologyBehavior.push({ system: 'N/A', code: 'N/A', display: 'N/A' });
+  tnmPathological.push({ system: 'snomed', code: '261640009', display: 'N/A' }); // Any code in 'Stage-3'
 
   extractedMCODE.primaryCancerCondition.push(pcc);
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
@@ -682,10 +684,10 @@ describe('checkStageFilterLogic-Stage 0', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const tnmPathological: Coding[] = [] as Coding[];
+  const tnmPathological: Coding[] = [];
 
   // Stage 0 Filter Attributes
-  tnmPathological.push({ system: 'snomed', code: '261645004', display: 'N/A' } as Coding); // Any code in 'Stage-0'
+  tnmPathological.push({ system: 'snomed', code: '261645004', display: 'N/A' }); // Any code in 'Stage-0'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -701,10 +703,10 @@ describe('checkStageFilterLogic-Stage 1', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const tnmPathological: Coding[] = [] as Coding[];
+  const tnmPathological: Coding[] = [];
 
   // Stage 1 Filter Attributes
-  tnmPathological.push({ system: 'snomed', code: '313112008', display: 'N/A' } as Coding); // Any code in 'Stage-1'
+  tnmPathological.push({ system: 'snomed', code: '313112008', display: 'N/A' }); // Any code in 'Stage-1'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -720,10 +722,10 @@ describe('checkStageFilterLogic-Stage 2', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const tnmPathological: Coding[] = [] as Coding[];
+  const tnmPathological: Coding[] = [];
 
   // Stage 2 Filter Attributes
-  tnmPathological.push({ system: 'snomed', code: 'Stage 2B (qualifier value)', display: 'N/A' } as Coding); // Any code in 'Stage-2
+  tnmPathological.push({ system: 'snomed', code: 'Stage 2B (qualifier value)', display: 'N/A' }); // Any code in 'Stage-2
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -739,10 +741,10 @@ describe('checkStageFilterLogic-Stage 3', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const tnmPathological: Coding[] = [] as Coding[];
+  const tnmPathological: Coding[] = [];
 
   // Stage 3 Filter Attributes
-  tnmPathological.push({ system: 'snomed', code: '261640009', display: 'N/A' } as Coding); // Any code in 'Stage-3'
+  tnmPathological.push({ system: 'snomed', code: '261640009', display: 'N/A' }); // Any code in 'Stage-3'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -758,10 +760,10 @@ describe('checkStageFilterLogic-Stage 4', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const tnmPathological: Coding[] = [] as Coding[];
+  const tnmPathological: Coding[] = [];
 
   // Stage 4 Filter Attributes
-  tnmPathological.push({ system: 'snomed', code: '261643006', display: 'N/A' } as Coding); // Any code in 'Stage-4'
+  tnmPathological.push({ system: 'snomed', code: '261643006', display: 'N/A' }); // Any code in 'Stage-4'
 
   extractedMCODE.TNMPathologicalStageGroup = tnmPathological;
 
@@ -780,11 +782,11 @@ describe('checkRadiationProcedureFilterLogic-SRS', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = [] as Coding[];
-  crrp.coding = [] as Coding[];
+  crrp.bodySite = [];
+  crrp.coding = [];
 
   // SRS Filter Attributes
-  crrp.coding.push({ system: 'http://snomed.info/sct', code: '473237008', display: 'N/A' } as Coding); // Any code in 'Treatment-SRS-Brain'
+  crrp.coding.push({ system: 'http://snomed.info/sct', code: '473237008', display: 'N/A' }); // Any code in 'Treatment-SRS-Brain'
 
   extractedMCODE.cancerRelatedRadiationProcedure.push(crrp);
 
@@ -798,12 +800,12 @@ describe('checkRadiationProcedureFilterLogic-WBRT', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = [] as Coding[];
-  crrp.coding = [] as Coding[];
+  crrp.bodySite = [];
+  crrp.coding = [];
 
   // WBRT Filter Attributes
-  crrp.coding.push({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding);
-  crrp.bodySite.push({ system: 'http://snomed.info/sct', code: '12738006', display: 'N/A' } as Coding);
+  crrp.coding.push({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' });
+  crrp.bodySite.push({ system: 'http://snomed.info/sct', code: '12738006', display: 'N/A' });
 
   extractedMCODE.cancerRelatedRadiationProcedure.push(crrp);
 
@@ -817,11 +819,11 @@ describe('checkRadiationProcedureFilterLogic-Radiation Therapy', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const crrp: mcode.CancerRelatedRadiationProcedure = {};
-  crrp.bodySite = [] as Coding[];
-  crrp.coding = [] as Coding[];
+  crrp.bodySite = [];
+  crrp.coding = [];
 
   // Radiation Therapy Filter Attributes
-  crrp.coding.push({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' } as Coding); // Any code
+  crrp.coding.push({ system: 'http://snomed.info/sct', code: '108290001', display: 'N/A' }); // Any code
 
   extractedMCODE.cancerRelatedRadiationProcedure.push(crrp);
 
@@ -836,10 +838,10 @@ describe('checkSurgicalProcedureFilterLogic-Resection', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
+  const sp: Coding[] = [];
 
   // Resection Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '446103006', display: 'N/A' } as Coding); // Any code in 'Treatment-Resection-Brain'
+  sp.push({ system: 'http://snomed.info/sct', code: '446103006', display: 'N/A' }); // Any code in 'Treatment-Resection-Brain'
   extractedMCODE.cancerRelatedSurgicalProcedure = sp;
 
   it('Test Resection Filter', () => {
@@ -851,10 +853,10 @@ describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
+  const sp: Coding[] = [];
 
   // Splenectomy Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' } as Coding); // Any code in 'Treatment-Splenectomy'
+  sp.push({ system: 'http://snomed.info/sct', code: '67097003', display: 'N/A' }); // Any code in 'Treatment-Splenectomy'
   extractedMCODE.cancerRelatedSurgicalProcedure = sp;
 
   it('Test Splenectomy Filter', () => {
@@ -868,10 +870,10 @@ describe('checkSurgicalProcedureFilterLogic-BoneMarrowTransplant', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
+  const sp: Coding[] = [];
 
   // Bone Marrow Transplant Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '58390007', display: 'N/A' } as Coding); // One specific Code for Bone Marrow Transplant
+  sp.push({ system: 'http://snomed.info/sct', code: '58390007', display: 'N/A' }); // One specific Code for Bone Marrow Transplant
   extractedMCODE.cancerRelatedSurgicalProcedure = sp;
 
   it('Test Bone Marrow Transplant Filter', () => {
@@ -883,10 +885,10 @@ describe('checkSurgicalProcedureFilterLogic-Splenectomy', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const sp: Coding[] = [] as Coding[];
+  const sp: Coding[] = [];
 
   // Splenectomy Filter Attributes
-  sp.push({ system: 'http://snomed.info/sct', code: '782655004', display: 'N/A' } as Coding); // Any code in 'Treatment-Organ_Transplant'
+  sp.push({ system: 'http://snomed.info/sct', code: '782655004', display: 'N/A' }); // Any code in 'Treatment-Organ_Transplant'
   extractedMCODE.cancerRelatedSurgicalProcedure = sp;
 
   it('Test Splenectomy Filter', () => {
@@ -900,10 +902,10 @@ describe('checkMedicationStatementFilterLogic-T-DM1', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // T-DM1 Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A' } as Coding); // Any code in 'Treatment-T-DM1'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A' }); // Any code in 'Treatment-T-DM1'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -919,10 +921,10 @@ describe('checkMedicationStatementFilterLogic-CDK4/6 inhibitor', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // CDK4/6 inhibitor Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' } as Coding); // Any code in 'Treatment-CDK4_6_Inhibtor'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' }); // Any code in 'Treatment-CDK4_6_Inhibtor'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -938,10 +940,10 @@ describe('checkMedicationStatementFilterLogic-Poly ICLC ', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Poly ICLC  Filter Attributes
-  ms.push({ system: 'NIH', code: '#C1198', display: 'N/A' } as Coding);
+  ms.push({ system: 'NIH', code: '#C1198', display: 'N/A' });
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -957,11 +959,11 @@ describe('checkMedicationStatementFilterLogic-DrugCombo-1', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // DrugCombo-1 Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A' } as Coding); // Any code in 'Treatment-Trastuzamab'  and 'Treatment-T-DM1'
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1298949', display: 'N/A' } as Coding); // Any code in 'Treatment-Pertuzumab'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1371046', display: 'N/A' }); // Any code in 'Treatment-Trastuzamab'  and 'Treatment-T-DM1'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1298949', display: 'N/A' }); // Any code in 'Treatment-Pertuzumab'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -977,10 +979,10 @@ describe('checkMedicationStatementFilterLogic-Pembrolizumab', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Pembrolizumab Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1547545', display: 'N/A' } as Coding); // Any code in 'Treatment-Pembrolizumab'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1547545', display: 'N/A' }); // Any code in 'Treatment-Pembrolizumab'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -996,10 +998,10 @@ describe('checkMedicationStatementFilterLogic-mTOR inhibitor', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // mTOR inhibitor Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '845509', display: 'N/A' } as Coding); // Any code in 'Treatment-mTOR_Inhibtor'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '845509', display: 'N/A' }); // Any code in 'Treatment-mTOR_Inhibtor'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1015,10 +1017,10 @@ describe('checkMedicationStatementFilterLogic-Concurrent Endocrine Therapy ', ()
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Concurrent Endocrine Therapy  Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' } as Coding); // Any code in 'Treatment-Endocrine_Therapy'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' }); // Any code in 'Treatment-Endocrine_Therapy'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1034,10 +1036,10 @@ describe('checkMedicationStatementFilterLogic-Anti-androgen', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Anti-androgen Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '151495', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-Androgen'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '151495', display: 'N/A' }); // Any code in 'Treatment-anti-Androgen'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1053,10 +1055,10 @@ describe('checkMedicationStatementFilterLogic-anti-HER2', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // anti-HER2 Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '101306', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-HER2'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '101306', display: 'N/A' }); // Any code in 'Treatment-anti-HER2'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1072,10 +1074,10 @@ describe('checkMedicationStatementFilterLogic-Tyrosine Kinase Inhibitor', () => 
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Tyrosine Kinase Inhibitor Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1430449', display: 'N/A' } as Coding); // Any code in 'Treatment-Tyrosine_Kinase_Inhib'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1430449', display: 'N/A' }); // Any code in 'Treatment-Tyrosine_Kinase_Inhib'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1091,10 +1093,10 @@ describe('checkMedicationStatementFilterLogic-P13K inhibitor ', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // P13K inhibitor  Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '2169302', display: 'N/A' } as Coding); // Any code in 'Treatment-P13K_Inhibitor'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '2169302', display: 'N/A' }); // Any code in 'Treatment-P13K_Inhibitor'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1110,10 +1112,10 @@ describe('checkMedicationStatementFilterLogic-anti-PD', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // anti-PD Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1792780', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-PD1,PDL1,PDL2'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1792780', display: 'N/A' }); // Any code in 'Treatment-anti-PD1,PDL1,PDL2'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1129,11 +1131,11 @@ describe('checkMedicationStatementFilterLogic-CDK4/6-mTOR and Endocrine', () => 
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // CDK4/6-mTOR and Endocrine Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' } as Coding); // Any code in 'Treatment-CDK4_6_Inhibtor'
-  ms.push({ system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' } as Coding); // Any code in 'Treatment-Endocrine_Therapy'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1873984', display: 'N/A' }); // Any code in 'Treatment-CDK4_6_Inhibtor'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '262485', display: 'N/A' }); // Any code in 'Treatment-Endocrine_Therapy'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1151,10 +1153,10 @@ describe('checkMedicationStatementFilterLogic-antiPARP', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // anti PARP Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1918231', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-PARP'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1918231', display: 'N/A' }); // Any code in 'Treatment-anti-PARP'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1170,10 +1172,10 @@ describe('checkMedicationStatementFilterLogic-SG', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // SG Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '2360231', display: 'N/A' } as Coding); // Any code in 'Treatment-SG'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '2360231', display: 'N/A' }); // Any code in 'Treatment-SG'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1189,10 +1191,10 @@ describe('checkMedicationStatementFilterLogic-Treatment-anti-topoisomerase-1', (
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Treatment-anti-topoisomerase-1 Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1719773', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-topoisomerase-1'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1719773', display: 'N/A' }); // Any code in 'Treatment-anti-topoisomerase-1'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1208,10 +1210,10 @@ describe('checkMedicationStatementFilterLogic-Treatment-Anti-CTLA4', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Treatment-Anti-CTLA4 Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '1657013', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-CTLA4'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '1657013', display: 'N/A' }); // Any code in 'Treatment-anti-CTLA4'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1227,10 +1229,10 @@ describe('checkMedicationStatementFilterLogic-Treatment-Anti-CD40', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Treatment-Anti-CD40 Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '226754', display: 'N/A' } as Coding); // Any code in 'Treatment-anti-CD40'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '226754', display: 'N/A' }); // Any code in 'Treatment-anti-CD40'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1246,10 +1248,10 @@ describe('checkMedicationStatementFilterLogic-Treatment-Trastuz-And-Pertuz', () 
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const ms: Coding[] = [] as Coding[];
+  const ms: Coding[] = [];
 
   // Treatment-Trastuz-And-Pertuz Filter Attributes
-  ms.push({ system: 'http://rxnorm.info/sct', code: '2382609', display: 'N/A' } as Coding); // Any code in 'Treatment-Trastuz_and_Pertuz'
+  ms.push({ system: 'http://rxnorm.info/sct', code: '2382609', display: 'N/A' }); // Any code in 'Treatment-Trastuz_and_Pertuz'
   extractedMCODE.cancerRelatedMedicationStatement = ms;
 
   const medications: string[] = extractedMCODE.getMedicationStatementValues();
@@ -1268,15 +1270,15 @@ describe('checkTumorMarkerFilterLogic-HER2+', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm: mcode.TumorMarker = {};
-  tm.code = [] as Coding[];
-  tm.interpretation = [] as Coding[];
-  tm.valueCodeableConcept = [] as Coding[];
-  tm.valueQuantity = [] as mcode.Quantity[];
-  tm.valueRatio = [] as mcode.Ratio[];
+  tm.code = [];
+  tm.interpretation = [];
+  tm.valueCodeableConcept = [];
+  tm.valueQuantity = [];
+  tm.valueRatio = [];
 
   // HER2+ Filter Attributes
-  tm.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm.valueQuantity.push({ value: '3+', comparator: '=' } as mcode.Quantity);
+  tm.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm.valueQuantity.push({ value: 3, comparator: '>=' });
 
   extractedMCODE.tumorMarker.push(tm);
 
@@ -1290,24 +1292,24 @@ describe('checkTumorMarkerFilterLogic-HER2+ and ER+', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
 
   // HER2+ Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
   // ER+ Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
-  tm2.valueQuantity.push({ value: '11', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity);
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
+  tm2.valueQuantity.push({ value: 11, comparator: '>=', unit: '%', code: '%' });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1323,31 +1325,31 @@ describe('checkTumorMarkerFilterLogic-HER2+ and PR+', () => {
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   extractedMCODE.tumorMarker = [] as mcode.TumorMarker[];
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
 
   // HER2+ Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
   tm1.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'POS',
     display: 'N/A'
-  } as Coding);
+  });
   // PR+ Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
   tm2.valueRatio.push({
-    numerator: { value: '30', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity,
-    denominator: { value: '2', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity
-  } as mcode.Ratio);
+    numerator: { value: 30, comparator: '>=', unit: '%', code: '%' },
+    denominator: { value: 2, comparator: '>=', unit: '%', code: '%' }
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1362,28 +1364,28 @@ describe('checkTumorMarkerFilterLogic-ER+ and HER-', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueQuantity.push({ value: '2+', comparator: '=' } as mcode.Quantity);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueQuantity.push({ value: 2, comparator: '>=' });
   // ER+ Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
   tm2.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'DET',
     display: 'N/A'
-  } as Coding);
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1398,32 +1400,32 @@ describe('checkTumorMarkerFilterLogic-PR+ and HER-', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
   tm1.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'NEG',
     display: 'N/A'
-  } as Coding);
+  });
   // PR+ Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
   tm2.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'H',
     display: 'N/A'
-  } as Coding);
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1438,37 +1440,37 @@ describe('checkTumorMarkerFilterLogic-ER+ and HER2- and FGFR amplifications', ()
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
   const tm3: mcode.TumorMarker = {};
-  tm3.code = [] as Coding[];
-  tm3.interpretation = [] as Coding[];
-  tm3.valueCodeableConcept = [] as Coding[];
-  tm3.valueQuantity = [] as mcode.Quantity[];
-  tm3.valueRatio = [] as mcode.Ratio[];
+  tm3.code = [];
+  tm3.interpretation = [];
+  tm3.valueCodeableConcept = [];
+  tm3.valueQuantity = [];
+  tm3.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
   tm1.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'NEG',
     display: 'N/A'
-  } as Coding);
+  });
   // ER+ Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
-  tm2.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
+  tm2.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
   // FGFR Amplifications Attributes
-  tm3.code.push({ system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A' } as Coding); // Any code in 'Biomarker-FGFR'
-  tm3.valueQuantity.push({ value: '1', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity);
+  tm3.code.push({ system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A' }); // Any code in 'Biomarker-FGFR'
+  tm3.valueQuantity.push({ value: 1, comparator: '>=', unit: '%', code: '%' });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1484,37 +1486,37 @@ describe('checkTumorMarkerFilterLogic-PR+ and HER- and FGFR Amplifications', () 
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
   const tm3: mcode.TumorMarker = {};
-  tm3.code = [] as Coding[];
-  tm3.interpretation = [] as Coding[];
-  tm3.valueCodeableConcept = [] as Coding[];
-  tm3.valueQuantity = [] as mcode.Quantity[];
-  tm3.valueRatio = [] as mcode.Ratio[];
+  tm3.code = [];
+  tm3.interpretation = [];
+  tm3.valueCodeableConcept = [];
+  tm3.valueQuantity = [];
+  tm3.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' } as Coding);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' });
   // PR+ Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
-  tm2.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' } as Coding);
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
+  tm2.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
   // FGFR Amplifications Attributes
-  tm3.code.push({ system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A' } as Coding); // Any code in 'Biomarker-FGFR'
+  tm3.code.push({ system: 'http://loinc.info/sct', code: '42785-6', display: 'N/A' }); // Any code in 'Biomarker-FGFR'
   tm3.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'POS',
     display: 'N/A'
-  } as mcode.Quantity);
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1530,40 +1532,40 @@ describe('checkTumorMarkerFilterLogic-ER+ and PR+ and HER2-', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
   const tm3: mcode.TumorMarker = {};
-  tm3.code = [] as Coding[];
-  tm3.interpretation = [] as Coding[];
-  tm3.valueCodeableConcept = [] as Coding[];
-  tm3.valueQuantity = [] as mcode.Quantity[];
-  tm3.valueRatio = [] as mcode.Ratio[];
+  tm3.code = [];
+  tm3.interpretation = [];
+  tm3.valueCodeableConcept = [];
+  tm3.valueQuantity = [];
+  tm3.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' } as Coding);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '260385009', display: 'N/A' });
   // PR+ Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
   tm2.valueRatio.push({
-    numerator: { value: '100', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity,
-    denominator: { value: '3', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity
-  } as mcode.Ratio);
+    numerator: { value: 100, comparator: '>=', unit: '%', code: '%' },
+    denominator: { value: 3, comparator: '>=', unit: '%', code: '%' }
+  });
   // ER+ Filter Attributes
-  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
+  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
   tm3.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'H',
     display: 'N/A'
-  } as Coding);
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1579,40 +1581,40 @@ describe('checkTumorMarkerFilterLogic-Triple negative', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
   const tm3: mcode.TumorMarker = {};
-  tm3.code = [] as Coding[];
-  tm3.interpretation = [] as Coding[];
-  tm3.valueCodeableConcept = [] as Coding[];
-  tm3.valueQuantity = [] as mcode.Quantity[];
-  tm3.valueRatio = [] as mcode.Ratio[];
+  tm3.code = [];
+  tm3.interpretation = [];
+  tm3.valueCodeableConcept = [];
+  tm3.valueQuantity = [];
+  tm3.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueQuantity.push({ value: '2+', comparator: '=' } as mcode.Quantity);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueQuantity.push({ value: 2, comparator: '>=' });
   // PR- Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
   tm2.valueRatio.push({
-    numerator: { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
-    denominator: { value: '110', comparator: '<', unit: '%', code: '%' } as mcode.Quantity
-  } as mcode.Ratio);
+    numerator: { value: 1, comparator: '<', unit: '%', code: '%' },
+    denominator: { value: 110, comparator: '<', unit: '%', code: '%' }
+  });
   // ER- Filter Attributes
-  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
+  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
   tm3.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'N',
     display: 'N/A'
-  } as Coding);
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1628,37 +1630,37 @@ describe('checkTumorMarkerFilterLogic-Triple negative-10', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
   const tm3: mcode.TumorMarker = {};
-  tm3.code = [] as Coding[];
-  tm3.interpretation = [] as Coding[];
-  tm3.valueCodeableConcept = [] as Coding[];
-  tm3.valueQuantity = [] as mcode.Quantity[];
-  tm3.valueRatio = [] as mcode.Ratio[];
+  tm3.code = [];
+  tm3.interpretation = [];
+  tm3.valueCodeableConcept = [];
+  tm3.valueQuantity = [];
+  tm3.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueQuantity.push({ value: '1', comparator: '=' } as mcode.Quantity);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueQuantity.push({ value: 1 });
   // PR- Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
-  tm2.valueQuantity.push({ value: '9', comparator: '<', unit: '%', code: '%' } as mcode.Quantity);
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
+  tm2.valueQuantity.push({ value: 9, comparator: '<', unit: '%', code: '%' });
   // ER- Filter Attributes
-  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
+  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
   tm3.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'N',
     display: 'N/A'
-  } as Coding);
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1674,50 +1676,50 @@ describe('checkTumorMarkerFilterLogic-Triple negative and RB Positive', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
   const tm3: mcode.TumorMarker = {};
-  tm3.code = [] as Coding[];
-  tm3.interpretation = [] as Coding[];
-  tm3.valueCodeableConcept = [] as Coding[];
-  tm3.valueQuantity = [] as mcode.Quantity[];
-  tm3.valueRatio = [] as mcode.Ratio[];
+  tm3.code = [];
+  tm3.interpretation = [];
+  tm3.valueCodeableConcept = [];
+  tm3.valueQuantity = [];
+  tm3.valueRatio = [];
   const tm4: mcode.TumorMarker = {};
-  tm4.code = [] as Coding[];
-  tm4.interpretation = [] as Coding[];
-  tm4.valueCodeableConcept = [] as Coding[];
-  tm4.valueQuantity = [] as mcode.Quantity[];
-  tm4.valueRatio = [] as mcode.Ratio[];
+  tm4.code = [];
+  tm4.interpretation = [];
+  tm4.valueCodeableConcept = [];
+  tm4.valueQuantity = [];
+  tm4.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueQuantity.push({ value: '1', comparator: '=' } as mcode.Quantity);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueQuantity.push({ value: 1 });
   // PR- Filter Attributes
-  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
+  tm2.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
   tm2.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'ND',
     display: 'N/A'
-  } as Coding);
+  });
   // ER- Filter Attributes
-  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
+  tm3.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
   tm3.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'N',
     display: 'N/A'
-  } as Coding);
+  });
   // RB+ Attributes
-  tm4.code.push({ system: 'http://loinc.info/sct', code: '42795-5', display: 'N/A' } as Coding); // Any code in 'Biomarker-RB'
-  tm4.valueQuantity.push({ value: '51', comparator: '>', unit: '%', code: '%' } as mcode.Quantity);
+  tm4.code.push({ system: 'http://loinc.info/sct', code: '42795-5', display: 'N/A' }); // Any code in 'Biomarker-RB'
+  tm4.valueQuantity.push({ value: 51, comparator: '>', unit: '%', code: '%' });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -1734,19 +1736,19 @@ describe('Ratio and Quantity Error Tests', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
 
-  // Invalid Operator
-  tm1.valueQuantity.push({ value: '51', comparator: '!=', unit: '%', code: '%' } as mcode.Quantity);
+  // Intentionally insert invalid comparator
+  tm1.valueQuantity.push({ value: 51, comparator: '!=', unit: '%', code: '%' } as unknown as Quantity);
   // Invalid Operator
   tm1.valueRatio.push({
-    numerator: { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
-    denominator: { value: '110', comparator: '<', unit: '%', code: '%' } as mcode.Quantity
-  } as mcode.Ratio);
+    numerator: { value: 1, comparator: '<', unit: '%', code: '%' },
+    denominator: { value: 110, comparator: '<', unit: '%', code: '%' }
+  });
 
   it('Test Quantity Error', () => {
     expect(extractedMCODE.quantityMatch(3, '%', [10], '<')).toBe(false);
@@ -1755,8 +1757,8 @@ describe('Ratio and Quantity Error Tests', () => {
   it('Test Ratio Error', () => {
     expect(
       extractedMCODE.ratioMatch(
-        { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
-        { value: '1', comparator: '<', unit: '%', code: '%' } as mcode.Quantity,
+        { value: 1, comparator: '<', unit: '%', code: '%' },
+        { value: 1, comparator: '<', unit: '%', code: '%' },
         10,
         '<'
       )
@@ -1771,8 +1773,8 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Germline', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const cgv: mcode.CancerGeneticVariant = {
-    valueCodeableConcept: [] as Coding[],
-    interpretation: [] as Coding[],
+    valueCodeableConcept: [],
+    interpretation: [],
     component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
@@ -1780,28 +1782,28 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Germline', () => {
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
   // BRCA1-Germline Filter Attributes
-  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
-  cgv.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
-  cgv.valueCodeableConcept.push({ system: 'http://loinc.info/sct', code: 'LA9633-4', display: 'N/A' });
-  cgv.interpretation.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
-  cgvGeneStudied.interpretation.coding.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
-  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+  cgvGeneStudied.valueCodeableConcept?.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
+  cgv.valueCodeableConcept?.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
+  cgv.valueCodeableConcept?.push({ system: 'http://loinc.info/sct', code: 'LA9633-4', display: 'N/A' });
+  cgv.interpretation?.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
+  cgvGeneStudied.interpretation?.coding.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
+  cgvGenomicSourceClass.valueCodeableConcept?.coding.push({
     system: ' http://loinc.info/sct',
     code: 'LA6683-2',
     display: 'N/A'
   });
 
-  cgvComponent.geneStudied.push(cgvGeneStudied);
-  cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
+  cgvComponent.geneStudied?.push(cgvGeneStudied);
+  cgvComponent.genomicsSourceClass?.push(cgvGenomicSourceClass);
   cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
@@ -1815,8 +1817,8 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Germline', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const cgv: mcode.CancerGeneticVariant = {
-    valueCodeableConcept: [] as Coding[],
-    interpretation: [] as Coding[],
+    valueCodeableConcept: [],
+    interpretation: [],
     component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
@@ -1824,25 +1826,25 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Germline', () => {
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
   // BRCA2-Germline Filter Attributes
-  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
-  cgv.valueCodeableConcept.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
-  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+  cgvGeneStudied.valueCodeableConcept?.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
+  cgv.valueCodeableConcept?.push({ system: 'http://snomed.info/sct', code: '10828004', display: 'N/A' });
+  cgvGenomicSourceClass.valueCodeableConcept?.coding.push({
     system: ' http://loinc.info/sct',
     code: 'LA6683-2',
     display: 'N/A'
   });
 
-  cgvComponent.geneStudied.push(cgvGeneStudied);
-  cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
+  cgvComponent.geneStudied?.push(cgvGeneStudied);
+  cgvComponent.genomicsSourceClass?.push(cgvGenomicSourceClass);
   cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
@@ -1856,8 +1858,8 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Somatic', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const cgv: mcode.CancerGeneticVariant = {
-    valueCodeableConcept: [] as Coding[],
-    interpretation: [] as Coding[],
+    valueCodeableConcept: [],
+    interpretation: [],
     component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
@@ -1865,25 +1867,25 @@ describe('checkTumorMarkerFilterLogic-BRCA1-Somatic', () => {
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
   // BRCA1-Somatic Filter Attributes
-  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
-  cgv.valueCodeableConcept.push({ system: 'http://loinc.info/sct', code: 'LA9633-4', display: 'N/A' });
-  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+  cgvGeneStudied.valueCodeableConcept?.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
+  cgv.valueCodeableConcept?.push({ system: 'http://loinc.info/sct', code: 'LA9633-4', display: 'N/A' });
+  cgvGenomicSourceClass.valueCodeableConcept?.coding.push({
     system: ' http://loinc.info/sct',
     code: 'LA6684-0',
     display: 'N/A'
   });
 
-  cgvComponent.geneStudied.push(cgvGeneStudied);
-  cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
+  cgvComponent.geneStudied?.push(cgvGeneStudied);
+  cgvComponent.genomicsSourceClass?.push(cgvGenomicSourceClass);
   cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
@@ -1897,8 +1899,8 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Somatic', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const cgv: mcode.CancerGeneticVariant = {
-    valueCodeableConcept: [] as Coding[],
-    interpretation: [] as Coding[],
+    valueCodeableConcept: [],
+    interpretation: [],
     component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
@@ -1906,25 +1908,25 @@ describe('checkTumorMarkerFilterLogic-BRCA2-Somatic', () => {
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
   // BRCA2-Somatic Filter Attributes
-  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
-  cgv.interpretation.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
-  cgvGenomicSourceClass.valueCodeableConcept.coding.push({
+  cgvGeneStudied.valueCodeableConcept?.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
+  cgv.interpretation?.push({ system: 'N/A', code: 'CAR', display: 'CAR' });
+  cgvGenomicSourceClass.valueCodeableConcept?.coding.push({
     system: ' http://loinc.info/sct',
     code: 'LA6684-0',
     display: 'N/A'
   });
 
-  cgvComponent.geneStudied.push(cgvGeneStudied);
-  cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
+  cgvComponent.geneStudied?.push(cgvGeneStudied);
+  cgvComponent.genomicsSourceClass?.push(cgvGenomicSourceClass);
   cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
@@ -1938,8 +1940,8 @@ describe('checkTumorMarkerFilterLogic-BRCA1', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const cgv: mcode.CancerGeneticVariant = {
-    valueCodeableConcept: [] as Coding[],
-    interpretation: [] as Coding[],
+    valueCodeableConcept: [],
+    interpretation: [],
     component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
@@ -1947,15 +1949,15 @@ describe('checkTumorMarkerFilterLogic-BRCA1', () => {
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
   // BRCA1 Filter Attributes
-  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
-  cgvGeneStudied.interpretation.coding.push({ system: 'N/A', code: 'A', display: 'AWW' });
+  cgvGeneStudied.valueCodeableConcept?.coding.push({ system: 'hgnc', code: '1100', display: 'BRCA1' });
+  cgvGeneStudied.interpretation?.coding.push({ system: 'N/A', code: 'A', display: 'AWW' });
 
-  cgvComponent.geneStudied.push(cgvGeneStudied);
+  cgvComponent.geneStudied?.push(cgvGeneStudied);
   cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
@@ -1969,8 +1971,8 @@ describe('checkTumorMarkerFilterLogic-BRCA2', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const cgv: mcode.CancerGeneticVariant = {
-    valueCodeableConcept: [] as Coding[],
-    interpretation: [] as Coding[],
+    valueCodeableConcept: [],
+    interpretation: [],
     component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
@@ -1978,15 +1980,15 @@ describe('checkTumorMarkerFilterLogic-BRCA2', () => {
     genomicsSourceClass: [] as mcode.CancerGeneticVariantComponentType[]
   };
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
   // BRCA2 Filter Attributes
-  cgvGeneStudied.valueCodeableConcept.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
-  cgv.interpretation.push({ system: 'N/A', code: 'POS', display: 'POS' });
+  cgvGeneStudied.valueCodeableConcept?.coding.push({ system: 'hgnc', code: '1101', display: 'BRCA2' });
+  cgv.interpretation?.push({ system: 'N/A', code: 'POS', display: 'POS' });
 
-  cgvComponent.geneStudied.push(cgvGeneStudied);
+  cgvComponent.geneStudied?.push(cgvGeneStudied);
   cgv.component = cgvComponent;
   extractedMCODE.cancerGeneticVariant.push(cgv);
 
@@ -2001,8 +2003,8 @@ describe('checkTumorMarkerFilterLogic-empty-components-added', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const cgv: mcode.CancerGeneticVariant = {
-    valueCodeableConcept: [] as Coding[],
-    interpretation: [] as Coding[],
+    valueCodeableConcept: [],
+    interpretation: [],
     component: {} as mcode.CancerGeneticVariantComponent
   };
   const cgvComponent: mcode.CancerGeneticVariantComponent = {
@@ -2011,17 +2013,17 @@ describe('checkTumorMarkerFilterLogic-empty-components-added', () => {
   };
 
   const cgvGenomicSourceClass: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
   const cgvGeneStudied: mcode.CancerGeneticVariantComponentType = {
-    valueCodeableConcept: { coding: [] as Coding[] },
-    interpretation: { coding: [] as Coding[] }
+    valueCodeableConcept: { coding: [] },
+    interpretation: { coding: [] }
   };
 
-  cgvComponent.geneStudied.push(cgvGeneStudied);
-  cgvComponent.genomicsSourceClass.push(cgvGenomicSourceClass);
+  cgvComponent.geneStudied?.push(cgvGeneStudied);
+  cgvComponent.genomicsSourceClass?.push(cgvGenomicSourceClass);
   cgv.component = cgvComponent;
 
   extractedMCODE.cancerGeneticVariant.push(cgv);
@@ -2036,24 +2038,24 @@ describe('checkTumorMarkerFilterLogic-PR+', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
   const tm2: mcode.TumorMarker = {};
-  tm2.code = [] as Coding[];
-  tm2.interpretation = [] as Coding[];
-  tm2.valueCodeableConcept = [] as Coding[];
-  tm2.valueQuantity = [] as mcode.Quantity[];
-  tm2.valueRatio = [] as mcode.Ratio[];
+  tm2.code = [];
+  tm2.interpretation = [];
+  tm2.valueCodeableConcept = [];
+  tm2.valueQuantity = [];
+  tm2.valueRatio = [];
 
   // PR+ Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' } as Coding); // Any code in 'Biomarker-PR'
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '85339-0', display: 'N/A' }); // Any code in 'Biomarker-PR'
   tm1.valueRatio.push({
-    numerator: { value: '100', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity,
-    denominator: { value: '3', comparator: '>=', unit: '%', code: '%' } as mcode.Quantity
-  } as mcode.Ratio);
+    numerator: { value: 100, comparator: '>=', unit: '%', code: '%' },
+    denominator: { value: 3, comparator: '>=', unit: '%', code: '%' }
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
   extractedMCODE.tumorMarker.push(tm2);
@@ -2068,19 +2070,19 @@ describe('checkTumorMarkerFilterLogic-ER+', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
 
   // ER+ Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' } as Coding); // Any code in 'Biomarker-ER'
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '85337-4', display: 'N/A' }); // Any code in 'Biomarker-ER'
   tm1.interpretation.push({
     system: 'http://hl7.org/fhir/R4/valueset-observation-interpretation.html',
     code: 'H',
     display: 'N/A'
-  } as Coding);
+  });
 
   extractedMCODE.tumorMarker.push(tm1);
 
@@ -2094,15 +2096,15 @@ describe('checkTumorMarkerFilterLogicHER-', () => {
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
   const tm1: mcode.TumorMarker = {};
-  tm1.code = [] as Coding[];
-  tm1.interpretation = [] as Coding[];
-  tm1.valueCodeableConcept = [] as Coding[];
-  tm1.valueQuantity = [] as mcode.Quantity[];
-  tm1.valueRatio = [] as mcode.Ratio[];
+  tm1.code = [];
+  tm1.interpretation = [];
+  tm1.valueCodeableConcept = [];
+  tm1.valueQuantity = [];
+  tm1.valueRatio = [];
 
   // HER2- Filter Attributes
-  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' } as Coding); // Any code in 'Biomarker-HER2'
-  tm1.valueQuantity.push({ value: '2+', comparator: '=' } as mcode.Quantity);
+  tm1.code.push({ system: 'http://loinc.info/sct', code: '32996-1', display: 'N/A' }); // Any code in 'Biomarker-HER2'
+  tm1.valueQuantity.push({ value: 2, comparator: '>=' });
 
   extractedMCODE.tumorMarker.push(tm1);
 
@@ -2155,7 +2157,7 @@ describe('InvalidCodeProfileTest', () => {
   // Initialize
   const patientBundle = null;
   const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
-  const code: Coding = { system: 'http://icD-10.info/sct', code: '32996-1', display: 'N/A' } as Coding;
+  const code: Coding = { system: 'http://icD-10.info/sct', code: '32996-1', display: 'N/A' };
 
   it('Test that an error throws for an invalid code profile input.', () => {
     expect(extractedMCODE.codeIsInSheet(code, 'INVALID_TEST_SHEET')).toBe(false);

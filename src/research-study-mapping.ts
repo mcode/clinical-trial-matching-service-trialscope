@@ -1,5 +1,7 @@
-import { ResearchStudy, fhir, convertStringsToCodeableConcept } from 'clinical-trial-matching-service';
+import { ResearchStudy, convertStringsToCodeableConcept } from 'clinical-trial-matching-service';
 import { TrialScopeTrial } from './trialscope';
+
+type ResearchStudyStatus = ResearchStudy['status'];
 
 // Mappings between trialscope value sets and FHIR value sets
 const phaseCodeMap = new Map<string, string>([
@@ -13,7 +15,7 @@ const phaseCodeMap = new Map<string, string>([
   ['Phase 4', 'phase-4']
 ]);
 
-const statusMap = new Map<string, fhir.ResearchStudyStatus>([
+const statusMap = new Map<string, ResearchStudyStatus>([
   ['Active, not recruiting', 'closed-to-accrual'],
   ['Approved for marketing', 'approved'],
   ['Available', 'active'],
@@ -22,7 +24,7 @@ const statusMap = new Map<string, fhir.ResearchStudyStatus>([
   ['Recruiting', 'active']
 ]);
 
-function convertStatus(tsStatus: string): fhir.ResearchStudyStatus {
+function convertStatus(tsStatus: string): ResearchStudyStatus {
   return statusMap.get(tsStatus);
 }
 
@@ -55,7 +57,7 @@ export function convertTrialScopeToResearchStudy(trial: TrialScopeTrial, id: num
     };
   }
   if (trial.studyType) {
-    result.category = [{ text: "Study Type: " + trial.studyType }];
+    result.category = [{ text: 'Study Type: ' + trial.studyType }];
   }
   if (trial.conditions) {
     const conditions = convertStringsToCodeableConcept(trial.conditions);
