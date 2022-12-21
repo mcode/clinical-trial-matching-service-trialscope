@@ -21,7 +21,7 @@ describe('TrailScopeService', () => {
       return request(server).get('/').set('Accept', 'application/json').expect(200);
     });
 
-    it('uses the query runner', (done) => {
+    it('uses the query runner', () => {
       const runQuery = spyOn(service.queryRunner, 'runQuery').and.callFake(() => {
         return Promise.resolve(new SearchSet([]));
       });
@@ -30,9 +30,8 @@ describe('TrailScopeService', () => {
         .send({ resourceType: 'Bundle', type: 'collection', entry: [] })
         .set('Accept', 'application/json')
         .expect(200)
-        .end(() => {
+        .then(() => {
           expect(runQuery).toHaveBeenCalled();
-          done();
         });
     });
   });

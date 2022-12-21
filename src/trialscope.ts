@@ -1,12 +1,12 @@
 /**
  * Module for running queries via TrialScope
  */
-import { ClinicalTrialsGovService, ServerError } from 'clinical-trial-matching-service';
+import { ClientError, ClinicalTrialsGovService, SearchSet, ServerError } from 'clinical-trial-matching-service';
+import { Bundle, ResearchStudy } from 'fhir/r4';
 import https from 'https';
 import { IncomingMessage } from 'http';
-import { convertTrialScopeToResearchStudy } from './research-study-mapping';
-import { ClientError, SearchSet, fhir } from 'clinical-trial-matching-service';
 import * as mcode from './mcode';
+import { convertTrialScopeToResearchStudy } from './research-study-mapping';
 
 /**
  * Maps FHIR phases to TrialScope phases.
@@ -183,7 +183,7 @@ export class TrialScopeQuery {
   phase = 'any';
   recruitmentStatus: string | null = null;
   after?: string = null;
-  first = 30;
+  first: number | null = 30;
   mcode?: {
     [key: string]: string;
     primaryCancer: string;
@@ -226,11 +226,11 @@ export class TrialScopeQuery {
     'maximumAge'
   ];
 
-  constructor(patientBundle: fhir.Bundle) {
+  constructor(patientBundle: Bundle) {
     const extractedMCODE = new mcode.ExtractedMCODE(patientBundle);
     console.log(extractedMCODE);
-    let stageValues = extractedMCODE.getStageValues();
-    let medicationStatementValues = extractedMCODE.getMedicationStatementValues();
+    const stageValues = extractedMCODE.getStageValues();
+    const medicationStatementValues = extractedMCODE.getMedicationStatementValues();
     this.mcode = {
       primaryCancer: extractedMCODE.getPrimaryCancerValue(),
       secondaryCancer: extractedMCODE.getSecondaryCancerValue(),
@@ -332,7 +332,7 @@ export class TrialScopeQuery {
 export class TrialScopeQueryRunner {
   constructor(public endpoint: string, private token: string, private backupService: ClinicalTrialsGovService) {}
 
-  runQuery(patientBundle: fhir.Bundle): Promise<SearchSet> {
+  runQuery(patientBundle: Bundle): Promise<SearchSet> {
     // update for advanced matches query
     return new Promise<TrialScopeResponse>((resolve, reject) => {
       const query = new TrialScopeQuery(patientBundle);
@@ -378,7 +378,7 @@ export class TrialScopeQueryRunner {
    */
   convertToSearchSet(trialscopeResponse: TrialScopeResponse): Promise<SearchSet> {
     const searchSet = new SearchSet();
-    const studies: fhir.ResearchStudy[] = [];
+    const studies: ResearchStudy[] = [];
     let index = 0;
     for (const node of trialscopeResponse.data.advancedMatches.edges) {
       const trial: TrialScopeTrial = node.node;

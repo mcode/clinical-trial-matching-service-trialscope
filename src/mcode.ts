@@ -1,35 +1,15 @@
-import { fhirclient } from 'fhirclient/lib/types';
+import { Bundle, Coding, Quantity, Ratio, Resource } from 'fhir/r4';
 import * as fhirpath from 'fhirpath';
 
 import { CodeProfile, ProfileSystemCodes } from './profileSystemLogic';
 
 import profile_system_codes_json from '../data/profile-system-codes-json.json';
-import { fhir } from 'clinical-trial-matching-service';
 
 const profile_system_codes = profile_system_codes_json as ProfileSystemCodes;
 
 export type FHIRPath = string;
 // fhirpath now has official TypeScript types. Unfortunately, the result they use is "any"
 export type PathLookupResult = Record<string, unknown> | string | number;
-
-export interface Coding {
-  system?: string;
-  code?: string;
-  display?: string;
-}
-
-export interface Quantity {
-  value?: number | string;
-  comparator?: string;
-  unit?: string;
-  system?: string;
-  code?: string;
-}
-
-export interface Ratio {
-  numerator?: Quantity;
-  denominator?: Quantity;
-}
 
 export interface PrimaryCancerCondition {
   clinicalStatus?: Coding[];
@@ -89,7 +69,7 @@ export class ExtractedMCODE {
   ecogPerformaceStatus: number;
   karnofskyPerformanceStatus: number;
 
-  constructor(patientBundle: fhir.Bundle) {
+  constructor(patientBundle: Bundle | null) {
     if (patientBundle != null) {
       for (const entry of patientBundle.entry) {
         if (!('resource' in entry)) {
@@ -319,12 +299,8 @@ export class ExtractedMCODE {
     }
   }
 
-  lookup(
-    resource: fhirclient.FHIR.Resource,
-    path: FHIRPath,
-    environment?: { [key: string]: string }
-  ): PathLookupResult[] {
-    return fhirpath.evaluate(resource, path, environment);
+  lookup(resource: Resource, path: FHIRPath, environment?: { [key: string]: string }): PathLookupResult[] {
+    return fhirpath.evaluate(resource, path, environment) as PathLookupResult[];
   }
   resourceProfile(profiles: PathLookupResult[], key: string): boolean {
     for (const profile of profiles) {
@@ -1299,13 +1275,10 @@ export class ExtractedMCODE {
     const system = this.normalizeCodeSystem(coding.system);
     for (const sheetName of sheetNames) {
       let codeProfile: CodeProfile = undefined;
-      try {
-        codeProfile = profile_system_codes[sheetName] as CodeProfile; // Pull the codes for the profile
-      } finally {
-        if (codeProfile == undefined) {
-          console.error('Code Profile ' + sheetName + ' is undefined.');
-          continue;
-        }
+      codeProfile = profile_system_codes[sheetName]; // Pull the codes for the profile
+      if (codeProfile == undefined) {
+        console.error('Code Profile ' + sheetName + ' is undefined.');
+        continue;
       }
 
       let codeSet: { code: string }[] = codeProfile[system] as { code: string }[]; // Pull the system codes from the codes

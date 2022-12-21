@@ -1,3 +1,8 @@
+import { ClinicalTrialsGovService, ResearchStudy } from 'clinical-trial-matching-service';
+import { Bundle, BundleEntry, FhirResource } from 'fhir/r4';
+// For spying purposes:
+import nock from 'nock';
+
 import {
   isTrialScopeResponse,
   isTrialScopeErrorResponse,
@@ -6,9 +11,6 @@ import {
   TrialScopeServerError,
   TrialScopeTrial
 } from '../src/trialscope';
-import { fhir, ClinicalTrialsGovService, ResearchStudy } from 'clinical-trial-matching-service';
-// For spying purposes:
-import nock from 'nock';
 
 describe('isTrialScopeResponse', () => {
   it('returns false with a non-object', () => {
@@ -45,12 +47,12 @@ describe('isTrialScopeErrorResponse', () => {
 describe('TrialScopeQuery', () => {
   it('ignores bad entries', () => {
     // This involves a bit of lying to TypeScript
-    const patientBundle: fhir.Bundle = {
+    const patientBundle: Bundle = {
       resourceType: 'Bundle',
       type: 'collection',
       entry: []
     };
-    patientBundle.entry.push(({ invalid: true } as unknown) as fhir.BundleEntry);
+    patientBundle.entry?.push({ invalid: true } as unknown as BundleEntry);
     new TrialScopeQuery(patientBundle);
     // Success is the object being created at all
   });
@@ -126,7 +128,7 @@ describe('TrialScopeQuery', () => {
     // TypeScript assumes extra fields are an error, although in this case the
     // FHIR types supplies are somewhat intentionally sparse as they're not a
     // full definition
-    const condition: fhir.Resource = {
+    const condition: FhirResource = {
       resourceType: 'Condition',
       meta: {
         profile: [
@@ -134,6 +136,7 @@ describe('TrialScopeQuery', () => {
           'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
         ]
       },
+      subject: {},
       clinicalStatus: {
         coding: [
           {
@@ -174,7 +177,7 @@ describe('TrialScopeQuery', () => {
           }
         }
       ]
-    } as fhir.Resource;
+    };
     const query = new TrialScopeQuery({
       resourceType: 'Bundle',
       type: 'collection',
@@ -203,15 +206,19 @@ describe('TrialScopeQuery', () => {
     // currently the case
     let m = /mcode:\s*{(.*?)}/.exec(graphQL);
     expect(m).toBeTruthy();
-    const mcodeFilters = m[1];
-    expect(mcodeFilters).toMatch(/primaryCancer:\s*BREAST_CANCER/);
+    if (m) {
+      const mcodeFilters = m[1];
+      expect(mcodeFilters).toMatch(/primaryCancer:\s*BREAST_CANCER/);
+    }
     m = /baseFilters:\s*{(.*?)}/.exec(graphQL);
     expect(m).toBeTruthy();
-    const baseFilters = m[1];
-    expect(baseFilters).toMatch(/zipCode:\s*"01234"/);
-    expect(baseFilters).toMatch(/travelRadius:\s*15\b/);
-    expect(baseFilters).toMatch(/phase:\s*PHASE_1\b/);
-    expect(baseFilters).toMatch(/recruitmentStatus:\s*RECRUITING\b/);
+    if (m) {
+      const baseFilters = m[1];
+      expect(baseFilters).toMatch(/zipCode:\s*"01234"/);
+      expect(baseFilters).toMatch(/travelRadius:\s*15\b/);
+      expect(baseFilters).toMatch(/phase:\s*PHASE_1\b/);
+      expect(baseFilters).toMatch(/recruitmentStatus:\s*RECRUITING\b/);
+    }
   });
 
   it("excludes parameters that weren't included", () => {
@@ -234,11 +241,13 @@ describe('TrialScopeQuery', () => {
     const graphQL = query.toQuery();
     const m = /baseFilters:\s*{(.*?)}/.exec(graphQL);
     expect(m).toBeTruthy();
-    const baseFilters = m[1];
-    expect(baseFilters).toMatch(/zipCode:\s*"98765"/);
-    expect(baseFilters).not.toMatch('travelRadius');
-    expect(baseFilters).not.toMatch('phase');
-    expect(baseFilters).not.toMatch('recruitmentStatus');
+    if (m) {
+      const baseFilters = m[1];
+      expect(baseFilters).toMatch(/zipCode:\s*"98765"/);
+      expect(baseFilters).not.toMatch('travelRadius');
+      expect(baseFilters).not.toMatch('phase');
+      expect(baseFilters).not.toMatch('recruitmentStatus');
+    }
   });
 });
 
@@ -256,8 +265,6 @@ describe('TrialScopeQueryRunner', () => {
   });
   afterEach(() => {
     expect(scope.isDone()).toBeTrue();
-    interceptor = null;
-    scope = null;
   });
 
   it('handles an empty response', () => {
@@ -308,7 +315,7 @@ describe('TrialScopeQueryRunner', () => {
   });
 
   describe('runQuery', () => {
-    let patientBundle: fhir.Bundle;
+    let patientBundle: Bundle;
     beforeEach(() => {
       // This is basically the minimum bundle required to run a query
       patientBundle = {
@@ -460,8 +467,9 @@ describe('TrialScopeQueryRunner', () => {
               expected.enrollment = [reference];
               // For the sake of this test, kill the createResourceId functions
               // (it shouldn't be enumerable anyway)
-              expected.createReferenceId = null;
-              (actual.entry[i].resource as ResearchStudy).createReferenceId = null;
+              // Note this involves lying to the TypeScript compiler
+              (expected as unknown as { createReferenceId: null }).createReferenceId = null;
+              (actual.entry[i].resource as unknown as { createReferenceId: null }).createReferenceId = null;
               expect(actual.entry[i].resource).toEqual(expected);
             }
             expect(actual.entry[0].search.score).toEqual(1);

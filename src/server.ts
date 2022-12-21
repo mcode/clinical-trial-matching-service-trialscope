@@ -1,20 +1,16 @@
-import express from 'express';
-import TrialScopeQueryRunner from './trialscope';
-
-import {
-  fhir,
-  ClinicalTrialsGovService,
-  ClinicalTrialMatchingService,
-  configFromEnv
-} from 'clinical-trial-matching-service';
+import { ClinicalTrialsGovService, ClinicalTrialMatchingService, configFromEnv } from 'clinical-trial-matching-service';
 import * as dotenv from 'dotenv-flow';
+import express from 'express';
+import { Bundle } from 'fhir/r4';
+
+import TrialScopeQueryRunner from './trialscope';
 
 export class TrialScopeService extends ClinicalTrialMatchingService {
   queryRunner: TrialScopeQueryRunner;
   backupService: ClinicalTrialsGovService;
 
   constructor(config: Record<string, string | number>) {
-    super((patientBundle: fhir.Bundle) => {
+    super((patientBundle: Bundle) => {
       return this.queryRunner.runQuery(patientBundle);
     }, config);
 
